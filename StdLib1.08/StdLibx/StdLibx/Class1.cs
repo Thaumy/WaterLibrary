@@ -11,7 +11,7 @@ using System.Net;//网页操作命名空间
 using System.Drawing;//GDI+命名空间
 #endregion
 
-namespace StdLib1_18//StdLib1.08
+namespace StdLib1_18//StdLib1.08人是
 {
     namespace Information//信息
     {
