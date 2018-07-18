@@ -10,7 +10,7 @@
     
     "architecture": "finallysee",
     "developmentCode": "finallysee",
-    "summary": "杩涜浜嗘洿娣卞眰娆＄殑浠ｇ爜閲嶆瀯锛岃繖鍖呮嫭鏋舵瀯鐨勬洿鏂般�傝鑼冧簡1.09鐗堟湰涓殑澶ч噺浠ｇ爜锛屾柊鍨嬬殑鐗堟湰鎺у埗鍣ㄤ娇寰桽tdLib绛惧悕鏇村姞瀹屽杽",
+    "summary": "进行了更深层次的代码重构，这包括架构的更新。规范了1.09版本中的大量代码，新型的版本控制器使得StdLib签名更加完善",
     "isNewVer": true,
     "newVerURL": "http://www.thaumy.cn/"
 }
