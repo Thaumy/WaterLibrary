@@ -1,0 +1,16 @@
+{
+    "projectVer": 110,
+    "projectMoniker": "st110",
+    "editionType": "public",
+    "stepping": "a0",
+    "targetFramework": ".NET Framework",
+    "targetFrameworkMoniker": "net461",
+    "compat": false,
+    "platform": "x86",
+    
+    "architecture": "finallysee",
+    "developmentCode": "finallysee",
+    "summary": "进行了更深层次的代码重构，这包括架构的更新。规范了1.09版本中的大量代码，新型的版本控制器使得StdLib签名更加完善",
+    "isNewVer": true,
+    "newVerURL": "http://www.thaumy.cn/"
+}
