@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Inf>
+	<SystemInf>
+	<copyright>false</copyright>
+	
+	<memory>1024</memory>
+	</SystemInf>
+	
+	<UserInf>
+	<name>player</name>
+	
+	<email>example@example.com</email>
+	
+	<passWord>examplePassWord</passWord>
+	</UserInf>
+</Inf>
