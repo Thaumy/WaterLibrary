@@ -11,22 +11,12 @@
         </member>
         <member name="P:LibStruct.Interface.IPaTextIndex.text_id">
             <summary>
-            索引
-            </summary>
-        </member>
-        <member name="P:LibStruct.Interface.IPaTextIndex.text_guid">
-            <summary>
-            GUID标识
-            </summary>
-        </member>
-        <member name="P:LibStruct.Interface.IPaTextIndex.time_set">
-            <summary>
-            创建时间
+            文本索引
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextIndex.text_mode">
             <summary>
-            展示模式
+            文本模式
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextIndex.text_type">
@@ -34,59 +24,49 @@
             文本类型
             </summary>
         </member>
-        <member name="P:LibStruct.Interface.IPaTextIndex.text_user">
-            <summary>
-            持有用户
-            </summary>
-        </member>
         <member name="T:LibStruct.Interface.IPaTextMain">
             <summary>
-            迭代表数据接口
-            </summary>
-        </member>
-        <member name="P:LibStruct.Interface.IPaTextMain.text_guid">
-            <summary>
-            GUID标识
-            </summary>
-        </member>
-        <member name="P:LibStruct.Interface.IPaTextMain.time_change">
-            <summary>
-            修改时间
+            主表数据接口
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextMain.text_title">
             <summary>
-            标题
+            文本标题
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextMain.text_summary">
             <summary>
-            摘要
+            文本概要
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextMain.text_content">
             <summary>
-            正文
-            </summary>
-        </member>
-        <member name="P:LibStruct.Interface.IPaTextMain.text_archiv">
-            <summary>
-            文本归档
-            </summary>
-        </member>
-        <member name="P:LibStruct.Interface.IPaTextMain.text_tag">
-            <summary>
-            文本标签
+            文本正文
             </summary>
         </member>
         <member name="T:LibStruct.Interface.IPaTextSub">
             <summary>
-            参数表数据接口
+            副表数据接口
             </summary>
         </member>
-        <member name="P:LibStruct.Interface.IPaTextSub.text_id">
+        <member name="P:LibStruct.Interface.IPaTextSub.text_archiv">
             <summary>
-            索引
+            文本归档
+            </summary>
+        </member>
+        <member name="P:LibStruct.Interface.IPaTextSub.text_editor">
+            <summary>
+            文本作者
+            </summary>
+        </member>
+        <member name="P:LibStruct.Interface.IPaTextSub.date_created">
+            <summary>
+            创建日期
+            </summary>
+        </member>
+        <member name="P:LibStruct.Interface.IPaTextSub.date_changed">
+            <summary>
+            变更日期
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextSub.count_pv">
@@ -102,6 +82,11 @@
         <member name="P:LibStruct.Interface.IPaTextSub.count_star">
             <summary>
             星星计数
+            </summary>
+        </member>
+        <member name="P:LibStruct.Interface.IPaTextSub.tags">
+            <summary>
+            标签集合
             </summary>
         </member>
         <member name="P:LibStruct.Interface.IPaTextSub.before_html">
@@ -156,10 +141,10 @@
         </member>
         <member name="P:LibStruct.Interface.ITextBasic.text_id">
             <summary>
-            索引
+            文本序列号
             </summary>
         </member>
-        <member name="P:LibStruct.Interface.ITextBasic.val">
+        <member name="P:LibStruct.Interface.ITextBasic.innerText">
             <summary>
             文本
             </summary>
@@ -274,7 +259,7 @@
             节点的属性值，用于XmlCreater类的AddRealNode方法
             </summary>
         </member>
-        <member name="P:LibStruct.XmlSign.val">
+        <member name="P:LibStruct.XmlSign.innerText">
             <summary>
             节点的子文本，用于XmlCreater类的AddRealNode方法
             </summary>
@@ -359,11 +344,6 @@
             
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.PaText.text_guid">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="P:LibStruct.pilipala.PaText.text_mode">
             <summary>
             
@@ -389,27 +369,22 @@
             
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.PaText.text_user">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="P:LibStruct.pilipala.PaText.text_archiv">
             <summary>
             
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.PaText.text_tag">
+        <member name="P:LibStruct.pilipala.PaText.text_editor">
             <summary>
             
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.PaText.time_set">
+        <member name="P:LibStruct.pilipala.PaText.date_created">
             <summary>
             
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.PaText.time_change">
+        <member name="P:LibStruct.pilipala.PaText.date_changed">
             <summary>
             
             </summary>
@@ -425,6 +400,11 @@
             </summary>
         </member>
         <member name="P:LibStruct.pilipala.PaText.count_star">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:LibStruct.pilipala.PaText.tags">
             <summary>
             
             </summary>
@@ -501,92 +481,47 @@
         </member>
         <member name="T:LibStruct.pilipala.TextTitle">
             <summary>
-            文章标题
+            分立文章标题
             </summary>
         </member>
         <member name="P:LibStruct.pilipala.TextTitle.text_id">
             <summary>
-            索引
+            文本序列号
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.TextTitle.val">
+        <member name="P:LibStruct.pilipala.TextTitle.innerText">
             <summary>
-            值
+            文本
             </summary>
         </member>
         <member name="T:LibStruct.pilipala.TextSummary">
             <summary>
-            文章摘要
+            分立文章概要
             </summary>
         </member>
         <member name="P:LibStruct.pilipala.TextSummary.text_id">
             <summary>
-            索引
+            文本序列号
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.TextSummary.val">
+        <member name="P:LibStruct.pilipala.TextSummary.innerText">
             <summary>
-            值
+            文本
             </summary>
         </member>
         <member name="T:LibStruct.pilipala.TextContent">
             <summary>
-            文章内容
+            分立文章内容
             </summary>
         </member>
         <member name="P:LibStruct.pilipala.TextContent.text_id">
             <summary>
-            索引
+            文本序列号
             </summary>
         </member>
-        <member name="P:LibStruct.pilipala.TextContent.val">
+        <member name="P:LibStruct.pilipala.TextContent.innerText">
             <summary>
-            值
-            </summary>
-        </member>
-        <member name="T:LibStruct.pilipala.TextType">
-            <summary>
-            文章类型
-            </summary>
-        </member>
-        <member name="P:LibStruct.pilipala.TextType.text_id">
-            <summary>
-            索引
-            </summary>
-        </member>
-        <member name="P:LibStruct.pilipala.TextType.val">
-            <summary>
-            值
-            </summary>
-        </member>
-        <member name="T:LibStruct.pilipala.TextArchiv">
-            <summary>
-            文章归档
-            </summary>
-        </member>
-        <member name="P:LibStruct.pilipala.TextArchiv.text_id">
-            <summary>
-            索引
-            </summary>
-        </member>
-        <member name="P:LibStruct.pilipala.TextArchiv.val">
-            <summary>
-            值
-            </summary>
-        </member>
-        <member name="T:LibStruct.pilipala.TextTag">
-            <summary>
-            文章标签
-            </summary>
-        </member>
-        <member name="P:LibStruct.pilipala.TextTag.text_id">
-            <summary>
-            索引
-            </summary>
-        </member>
-        <member name="P:LibStruct.pilipala.TextTag.val">
-            <summary>
-            值
+            文本
             </summary>
         </member>
         <member name="T:LibFrame.ILibFrameInfo">
@@ -1116,18 +1051,11 @@
         </member>
         <member name="M:basicUnit.BasicMethod.less(System.Int32,System.Int32)">
             <summary>
-            判断小于的方法
+            比较大小的方法
             </summary>
             <param name="i"></param>
             <param name="j"></param>
-            <returns>若i小于j返回true</returns>
-        </member>
-        <member name="M:basicUnit.BasicMethod.isOdd(System.Int32)">
-            <summary>
-            判断奇数的方法
-            </summary>
-            <param name="num">待判断的数值</param>
-            <returns>num为奇数返回true，num为偶数返回false</returns>
+            <returns></returns>
         </member>
         <member name="M:basicUnit.BasicMethod.easySort``1(``0[])">
             <summary>
@@ -1337,11 +1265,6 @@
             
             </summary>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.root_id">
-            <summary>
-            权限ID访问器
-            </summary>
-        </member>
         <member name="M:businessUnit.pilipala.PaRoot.#ctor(System.Int32,LibStruct.pilipala.PaDB)">
             <summary>
             初始化PaRoot
@@ -1365,12 +1288,12 @@
             默认pala数据视图
             </summary>
         </member>
-        <member name="T:businessUnit.pilipala.PaRoot.PalaSysTables">
+        <member name="T:businessUnit.pilipala.PaRoot.Tables">
             <summary>
             自定义pala数据表
             </summary>
         </member>
-        <member name="M:businessUnit.pilipala.PaRoot.PalaSysTables.#ctor(System.String,System.String,System.String,System.String)">
+        <member name="M:businessUnit.pilipala.PaRoot.Tables.#ctor(System.String,System.String,System.String,System.String)">
             <summary>
             初始化表名结构
             </summary>
@@ -1379,60 +1302,61 @@
             <parmm name="text_main"></parmm>
             <parmm name="text_sub"></parmm>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysTables.root">
+        <member name="P:businessUnit.pilipala.PaRoot.Tables.root">
             <summary>
             
             </summary>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysTables.text_index">
+        <member name="P:businessUnit.pilipala.PaRoot.Tables.text_index">
             <summary>
             
             </summary>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysTables.text_main">
+        <member name="P:businessUnit.pilipala.PaRoot.Tables.text_main">
             <summary>
             
             </summary>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysTables.text_sub">
+        <member name="P:businessUnit.pilipala.PaRoot.Tables.text_sub">
             <summary>
             
             </summary>
         </member>
-        <member name="T:businessUnit.pilipala.PaRoot.PalaSysViews">
+        <member name="T:businessUnit.pilipala.PaRoot.Views">
             <summary>
             自定义pala数据视图
             </summary>
         </member>
-        <member name="M:businessUnit.pilipala.PaRoot.PalaSysViews.#ctor(System.String,System.String,System.String)">
+        <member name="M:businessUnit.pilipala.PaRoot.Views.#ctor(System.String,System.String,System.String)">
             <summary>
             初始化视图名结构
             </summary>
-            <param name="text_index"></param>
-            <param name="text_main"></param>
-            <param name="text_sub"></param>
+            <parmm name="text_main"></parmm>
+            <parmm name="text_sub"></parmm>
+            <parmm name="text_index_post"></parmm>
+            <parmm name="text_index_page"></parmm>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysViews.view_index">
+        <member name="P:businessUnit.pilipala.PaRoot.Views.text_index">
             <summary>
             
             </summary>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysViews.view_main">
+        <member name="P:businessUnit.pilipala.PaRoot.Views.text_main">
             <summary>
             
             </summary>
         </member>
-        <member name="P:businessUnit.pilipala.PaRoot.PalaSysViews.view_sub">
+        <member name="P:businessUnit.pilipala.PaRoot.Views.text_sub">
             <summary>
             
             </summary>
         </member>
-        <member name="M:businessUnit.pilipala.PaRoot.defaultTables(businessUnit.pilipala.PaRoot.PalaSysTables@)">
+        <member name="M:businessUnit.pilipala.PaRoot.defaultTables(businessUnit.pilipala.PaRoot.Tables@)">
             <summary>
             以默认值定义表名（重载一::直接更改Tables）
             </summary>
         </member>
-        <member name="M:businessUnit.pilipala.PaRoot.defaultViews(businessUnit.pilipala.PaRoot.PalaSysViews@)">
+        <member name="M:businessUnit.pilipala.PaRoot.defaultViews(businessUnit.pilipala.PaRoot.Views@)">
             <summary>
             以默认值定义视图名（重载一::直接更改Views）
             </summary>
@@ -1460,6 +1384,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:businessUnit.pilipala.ITextListH.getTextIDList(System.String)">
+            <summary>
+            获得指定类型的文本ID列表
+            </summary>
+            <parmm name="text_type">自定义文本类型</parmm>
+            <returns></returns>
+        </member>
         <member name="M:businessUnit.pilipala.ITextListH.stepTextIDList(System.Int32,System.Int32)">
             <summary>
             获得全部文本ID列表(步进式)
@@ -1479,7 +1410,7 @@
         </member>
         <member name="M:businessUnit.pilipala.ITextListH.matchTextTitle(System.String)">
             <summary>
-            文章标题(text_title)匹配器
+            文章标题(text_id)匹配器
             </summary>
             <param name="str">匹配文本</param>
             <returns>返回符合匹配文本的text_id集合</returns>
@@ -1500,26 +1431,19 @@
         </member>
         <member name="T:businessUnit.pilipala.ITextH">
             <summary>
-            单一文本控制接口
+            文本控制接口
             </summary>
-        </member>
-        <member name="M:businessUnit.pilipala.ITextH.getTextIndex(System.Int32)">
-            <summary>
-            获得符合text_id的文本索引数据
-            </summary>
-            <parmm name="text_id">文本序列号</parmm>
-            <returns></returns>
         </member>
         <member name="M:businessUnit.pilipala.ITextH.getTextMain(System.Int32)">
             <summary>
-            获得符合text_id的文本数据
+            获得符合text_id的文本主要数据
             </summary>
             <parmm name="text_id">文本序列号</parmm>
             <returns></returns>
         </member>
         <member name="M:businessUnit.pilipala.ITextH.getTextSub(System.Int32)">
             <summary>
-             获得符合text_id的文本参数数据
+             获得符合text_id的文本次要数据
             </summary>
             <parmm name="text_id">文本序列号</parmm>
             <returns></returns>
@@ -1536,6 +1460,14 @@
             取得当前文本 text_id 的上一个文本 text_id
             </summary>
             <parmm name="current_text_id">当前文本序列号</parmm>
+            <returns>错误返回 -1</returns>
+        </member>
+        <member name="M:businessUnit.pilipala.ITextH.rdmTextID(System.Int32,System.String)">
+            <summary>
+            随机获得文本ID(text_id)
+            </summary>
+            <parmm name="excluded_text_id">不参与随机操作的文本的text_id</parmm>
+            <parmm name="text_type">自定义文本类型</parmm>
             <returns>错误返回 -1</returns>
         </member>
         <member name="T:businessUnit.pilipala.UI.TextListH">
@@ -1574,6 +1506,11 @@
             ITextListH接口的基础实现，详见其接口注释
             </summary>
         </member>
+        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.String)">
+            <summary>
+            ITextListH接口的基础实现，详见其接口注释
+            </summary>
+        </member>
         <member name="M:businessUnit.pilipala.UI.TextListH.stepTextIDList(System.Int32,System.Int32)">
             <summary>
             ITextListH接口的基础实现，详见其接口注释
@@ -1584,104 +1521,14 @@
             ITextListH接口的基础实现，详见其接口注释
             </summary>
         </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.String,System.String)">
+        <member name="M:businessUnit.pilipala.UI.TextListH.getTextMap">
             <summary>
-            获取总文本排行(无截止长度)
+            获得站点地图(由text_id和text_title构成的集合)
             </summary>
-            <param name="key">键名</param>
-            <param name="OrderType">asc(升序)或desc(降序)</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.String,System.String,System.Int32)">
-            <summary>
-            获取总文本排行(有截止长度)
-            </summary>
-            <param name="key">键名</param>
-            <param name="OrderType">asc(升序)或desc(降序)</param>
-            <param name="length">截止长度</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextType})">
-            <summary>
-            获得指定类型的文本ID列表
-            </summary>
-            <param name="text_type">类型集合</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextArchiv})">
-            <summary>
-            获得指定归档的文本ID列表
-            </summary>
-            <param name="text_archiv">归档集合</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextTag})">
-            <summary>
-            获得指定标签的文本ID列表
-            </summary>
-            <param name="text_tag">标签集合</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextType},System.String,System.String)">
-            <summary>
-            获得指定类型的文本ID列表(重载二:排序指定)
-            </summary>
-            <param name="text_type">类型集合</param>
-            <param name="key">被排序键</param>
-            <param name="OrderType">排序类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextArchiv},System.String,System.String)">
-            <summary>
-            获得指定归档的文本ID列表(重载二:排序指定)
-            </summary>
-            <param name="text_archiv">归档集合</param>
-            <param name="key">被排序键</param>
-            <param name="OrderType">排序类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextTag},System.String,System.String)">
-            <summary>
-            获得指定标签的文本ID列表(重载二:排序指定)
-            </summary>
-            <param name="text_tag">标签集合</param>
-            <param name="key">被排序键</param>
-            <param name="OrderType">排序类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextType},System.String,System.String,System.Int32)">
-            <summary>
-            获得指定类型的文本ID列表(重载三:排序指定,有限长度)
-            </summary>
-            <param name="text_type">类型集合</param>
-            <param name="key">被排序键</param>
-            <param name="OrderType">排序类型</param>
-            <param name="length">取用长度</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextArchiv},System.String,System.String,System.Int32)">
-            <summary>
-            获得指定归档的文本ID列表(重载三:排序指定,有限长度)
-            </summary>
-            <param name="text_archiv">归档集合</param>
-            <param name="key">被排序键</param>
-            <param name="OrderType">排序类型</param>
-            <param name="length">取用长度</param>
-            <returns></returns>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList(System.Collections.Generic.List{LibStruct.pilipala.TextTag},System.String,System.String,System.Int32)">
-            <summary>
-            获得指定标签的文本ID列表(重载三:排序指定,有限长度)
-            </summary>
-            <param name="text_tag">标签集合</param>
-            <param name="key">被排序键</param>
-            <param name="OrderType">排序类型</param>
-            <param name="length">取用长度</param>
-            <returns></returns>
         </member>
         <member name="M:businessUnit.pilipala.UI.TextListH.matchText``1(``0)">
             <summary>
-            文本匹配器
+            文章匹配器
             </summary>
             <typeparmm name="T">继承自ITextBasic的类型</typeparmm>
             <parmm name="obj">继承自ITextBasic的对象实例</parmm>
@@ -1702,9 +1549,26 @@
             ITextListH接口的基础实现，详见其接口注释
             </summary>
         </member>
+        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList_OrderBy(System.String,System.String)">
+            <summary>
+            获取文章排行(无截止长度)
+            </summary>
+            <param name="key">键名</param>
+            <param name="orderType">asc(升序)或desc(降序)</param>
+            <returns></returns>
+        </member>
+        <member name="M:businessUnit.pilipala.UI.TextListH.getTextIDList_OrderBy(System.String,System.String,System.Int32)">
+            <summary>
+            获取热度文章排行(有截止长度)
+            </summary>
+            <param name="key">键名</param>
+            <param name="orderType">asc(升序)或desc(降序)</param>
+            <param name="length">截止长度</param>
+            <returns></returns>
+        </member>
         <member name="T:businessUnit.pilipala.UI.TextH">
             <summary>
-            单一文本控制器
+            文本控制器
             </summary>
         </member>
         <member name="P:businessUnit.pilipala.UI.TextH.dataBase">
@@ -1733,19 +1597,6 @@
             </summary>
             <parmm name="PaDB">啪啦数据库信息</parmm>
         </member>
-        <member name="M:businessUnit.pilipala.UI.TextH.getTextIndex(System.Int32)">
-            <summary>
-            ITextH接口的基础实现，详见其接口注释
-            </summary>
-        </member>
-        <member name="M:businessUnit.pilipala.UI.TextH.getTextIndex(System.Int32,System.String)">
-            <summary>
-            取得Index表的一个键值
-            </summary>
-            <param name="text_id">文章序列号</param>
-            <param name="key">键名</param>
-            <returns></returns>
-        </member>
         <member name="M:businessUnit.pilipala.UI.TextH.getTextMain(System.Int32)">
             <summary>
             ITextH接口的基础实现，详见其接口注释
@@ -1756,7 +1607,7 @@
             取得Main表的一个键值
             </summary>
             <param name="text_id">文章序列号</param>
-            <param name="key">键名</param>
+            <param name="keyName">键名</param>
             <returns></returns>
         </member>
         <member name="M:businessUnit.pilipala.UI.TextH.getTextSub(System.Int32)">
@@ -1769,7 +1620,7 @@
             取得Sub表的一个键值
             </summary>
             <param name="text_id">文章序列号</param>
-            <param name="key">键名</param>
+            <param name="keyName">键名</param>
             <returns></returns>
         </member>
         <member name="M:businessUnit.pilipala.UI.TextH.getTextTitle(System.Int32)">
@@ -1827,6 +1678,11 @@
             ITextH接口的基础实现，详见其接口注释
             </summary>
         </member>
+        <member name="M:businessUnit.pilipala.UI.TextH.rdmTextID(System.Int32,System.String)">
+            <summary>
+            ITextH接口的基础实现，详见其接口注释
+            </summary>
+        </member>
         <member name="M:businessUnit.pilipala.UI.TextH.updateTextBasic``1(``0)">
             <summary>
             文章更改器
@@ -1873,9 +1729,14 @@
             ITextListH接口的基础实现，详见其接口注释
             </summary>
         </member>
+        <member name="M:businessUnit.pilipala.Edit.TextListH.getTextIDList(System.String)">
+            <summary>
+            ITextListH接口的基础实现，详见其接口注释
+            </summary>
+        </member>
         <member name="T:businessUnit.pilipala.Edit.TextH">
             <summary>
-            单一文本控制器
+            文本控制器
             方法注释参见ITextH接口
             </summary>
         </member>
@@ -1885,9 +1746,14 @@
             </summary>
             <parmm name="PaDB">啪啦数据库信息</parmm>
         </member>
-        <member name="M:businessUnit.pilipala.Edit.TextH.getTextData(System.Int32)">
+        <member name="M:businessUnit.pilipala.Edit.TextH.getTextMain(System.Int32)">
             <summary>
-            根据text_id取得数据，无论展示与否
+            获得符合text_id的且在展示文本主要数据，无论展示与否
+            </summary>
+        </member>
+        <member name="M:businessUnit.pilipala.Edit.TextH.getTextSub(System.Int32)">
+            <summary>
+            获得符合text_id的且在展示文本次要数据，无论展示与否
             </summary>
         </member>
         <member name="M:businessUnit.pilipala.Edit.TextH.updateTextBasic``1(``0)">
@@ -1943,12 +1809,26 @@
             啪啦函数
             </summary>
         </member>
-        <member name="M:businessUnit.pilipala.PaFn.fill(LibStruct.pilipala.PaText,LibStruct.pilipala.PaText,LibStruct.pilipala.PaText)">
+        <member name="M:businessUnit.pilipala.PaFn.fill(LibStruct.pilipala.PaText,LibStruct.pilipala.PaText)">
             <summary>
-            合并PaText数据表
+            合并主副表PaText数据
             </summary>
             <parmm name="TextMain">主表PaText</parmm>
             <parmm name="TextSub">副表PaText</parmm>
+            <returns></returns>
+        </member>
+        <member name="M:businessUnit.pilipala.PaFn.htmlFilter(System.String)">
+            <summary>
+            html过滤器
+            </summary>
+            <param name="str">待过滤的字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:businessUnit.pilipala.PaFn.timeFromNow(System.DateTime)">
+            <summary>
+            距现在字符串生成器
+            </summary>
+            <param name="dateTime">要计算的时间</param>
             <returns></returns>
         </member>
     </members>

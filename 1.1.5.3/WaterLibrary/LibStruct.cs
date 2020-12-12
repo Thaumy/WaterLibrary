@@ -18,62 +18,79 @@ namespace LibStruct
         /// </summary>
         public interface IPaTextIndex
         {
+
             /// <summary>
-            /// 文本索引
+            /// 索引
             /// </summary>
             int text_id { get; set; }
             /// <summary>
-            /// 文本模式
+            /// GUID标识
+            /// </summary>
+            string text_guid { get; set; }
+            /// <summary>
+            /// 创建时间
+            /// </summary>
+            DateTime time_set { get; set; }
+            /// <summary>
+            /// 展示模式
             /// </summary>
             string text_mode { get; set; }
             /// <summary>
             /// 文本类型
             /// </summary>
             string text_type { get; set; }
+            /// <summary>
+            /// 持有用户
+            /// </summary>
+            string text_user { get; set; }
+
         }
         /// <summary>
-        /// 主表数据接口
+        /// 迭代表数据接口
         /// </summary>
         public interface IPaTextMain
         {
+
             /// <summary>
-            /// 文本标题
+            /// GUID标识
+            /// </summary>
+            string text_guid { get; set; }
+            /// <summary>
+            /// 修改时间
+            /// </summary>
+            DateTime time_change { get; set; }
+            /// <summary>
+            /// 标题
             /// </summary>
             string text_title { get; set; }
             /// <summary>
-            /// 文本概要
+            /// 摘要
             /// </summary>
             string text_summary { get; set; }
             /// <summary>
-            /// 文本正文
+            /// 正文
             /// </summary>
             string text_content { get; set; }
-        }
-        /// <summary>
-        /// 副表数据接口
-        /// </summary>
-        public interface IPaTextSub
-        {
             /// <summary>
             /// 文本归档
             /// </summary>
             string text_archiv { get; set; }
             /// <summary>
-            /// 文本作者
-            /// </summary>
-            string text_editor { get; set; }
-            /// <summary>
             /// 文本标签
             /// </summary>
             string text_tag { get; set; }
+
+        }
+        /// <summary>
+        /// 参数表数据接口
+        /// </summary>
+        public interface IPaTextSub
+        {
+
             /// <summary>
-            /// 创建日期
+            /// 索引
             /// </summary>
-            DateTime date_created { get; set; }
-            /// <summary>
-            /// 变更日期
-            /// </summary>
-            DateTime date_changed { get; set; }
+            int text_id { get; set; }
             /// <summary>
             /// 浏览计数
             /// </summary>
@@ -90,6 +107,7 @@ namespace LibStruct
             /// 封面链接
             /// </summary>
             string before_html { get; set; }
+
         }
 
         /// <summary>
@@ -133,7 +151,7 @@ namespace LibStruct
         public interface ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             int text_id { get; set; }
             /// <summary>
@@ -357,11 +375,17 @@ namespace LibStruct
         /// </summary>
         public struct PaText : IPaTextIndex, IPaTextMain, IPaTextSub
         {
-            /* 索引表数据 */
+            /*文章索引*/
             /// <summary>
             /// 
             /// </summary>
             public int text_id { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
+            public string text_guid { get; set; }
+
+            /*文章模式*/
             /// <summary>
             /// 
             /// </summary>
@@ -371,7 +395,7 @@ namespace LibStruct
             /// </summary>
             public string text_type { get; set; }
 
-            /* 主表数据 */
+            /*文章体*/
             /// <summary>
             /// 
             /// </summary>
@@ -385,7 +409,11 @@ namespace LibStruct
             /// </summary>
             public string text_content { get; set; }
 
-            /* 副表数据 */
+            /*分类数据*/
+            /// <summary>
+            /// 
+            /// </summary>
+            public string text_user { get; set; }
             /// <summary>
             /// 
             /// </summary>
@@ -393,19 +421,19 @@ namespace LibStruct
             /// <summary>
             /// 
             /// </summary>
-            public string text_editor { get; set; }
-            /// <summary>
-            /// 
-            /// </summary>
             public string text_tag { get; set; }
+
+            /*时间数据*/
             /// <summary>
             /// 
             /// </summary>
-            public DateTime date_created { get; set; }
+            public DateTime time_set { get; set; }
             /// <summary>
             /// 
             /// </summary>
-            public DateTime date_changed { get; set; }
+            public DateTime time_change { get; set; }
+
+            /*计数数据*/
             /// <summary>
             /// 
             /// </summary>
@@ -418,6 +446,8 @@ namespace LibStruct
             /// 
             /// </summary>
             public int count_star { get; set; }
+
+            /*其他*/
             /// <summary>
             /// 
             /// </summary>
@@ -486,7 +516,7 @@ namespace LibStruct
         public struct TextTitle : ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             public int text_id { get; set; }
             /// <summary>
@@ -495,12 +525,12 @@ namespace LibStruct
             public string val { get; set; }
         }
         /// <summary>
-        /// 文章概要
+        /// 文章摘要
         /// </summary>
         public struct TextSummary : ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             public int text_id { get; set; }
             /// <summary>
@@ -514,7 +544,7 @@ namespace LibStruct
         public struct TextContent : ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             public int text_id { get; set; }
             /// <summary>
@@ -529,7 +559,7 @@ namespace LibStruct
         public struct TextType : ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             public int text_id { get; set; }
             /// <summary>
@@ -543,7 +573,7 @@ namespace LibStruct
         public struct TextArchiv : ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             public int text_id { get; set; }
             /// <summary>
@@ -557,7 +587,7 @@ namespace LibStruct
         public struct TextTag : ITextBasic
         {
             /// <summary>
-            /// 文本序列号
+            /// 索引
             /// </summary>
             public int text_id { get; set; }
             /// <summary>

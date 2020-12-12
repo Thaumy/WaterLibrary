@@ -63,7 +63,10 @@ namespace businessUnit
             /// </summary>
             public MySqlConnH MySqlConnH { get; set; }
 
-            int root_id;/* 权限ID */
+            /// <summary>
+            /// 权限ID访问器
+            /// </summary>
+            public int root_id { get; set; }
 
             /// <summary>
             /// 初始化PaRoot
@@ -135,9 +138,9 @@ namespace businessUnit
             /// </summary>
             private struct dftViews
             {
-                public static string text_index = "view>index";
-                public static string text_main = "view>main";
-                public static string text_sub = "view>sub";
+                public static string view_index = "view>index";
+                public static string view_main = "view>main";
+                public static string view_sub = "view>sub";
             }
 
             /// <summary>
@@ -190,22 +193,22 @@ namespace businessUnit
                 /// <param name="text_sub"></param>
                 public PalaSysViews(string text_index, string text_main, string text_sub) : this()
                 {
-                    this.text_index = text_index;
-                    this.text_main = text_main;
-                    this.text_sub = text_sub;
+                    this.view_index = text_index;
+                    this.view_main = text_main;
+                    this.view_sub = text_sub;
                 }
                 /// <summary>
                 /// 
                 /// </summary>
-                public string text_index { get; set; }
+                public string view_index { get; set; }
                 /// <summary>
                 /// 
                 /// </summary>
-                public string text_main { get; set; }
+                public string view_main { get; set; }
                 /// <summary>
                 /// 
                 /// </summary>
-                public string text_sub { get; set; }
+                public string view_sub { get; set; }
             }
 
             /// <summary>
@@ -223,10 +226,9 @@ namespace businessUnit
             /// </summary>
             public static void defaultViews(ref PalaSysViews Views)
             {
-                Views.text_main = dftViews.text_main;
-                Views.text_sub = dftViews.text_sub;
-
-                Views.text_index = dftViews.text_index;
+                Views.view_index = dftViews.view_index;
+                Views.view_main = dftViews.view_main;
+                Views.view_sub = dftViews.view_sub;
             }
 
             /// <summary>
@@ -240,7 +242,7 @@ namespace businessUnit
             /// </summary>
             /// <returns></returns>
             public static PalaSysViews defaultViews()
-            { return new PalaSysViews(dftViews.text_index, dftViews.text_main, dftViews.text_sub); }
+            { return new PalaSysViews(dftViews.view_index, dftViews.view_main, dftViews.view_sub); }
         }
 
         /// <summary>
@@ -271,7 +273,7 @@ namespace businessUnit
             List<int> stepTextIDList(int start, int length, string text_type);
 
             /// <summary>
-            /// 文章标题(text_id)匹配器
+            /// 文章标题(text_title)匹配器
             /// </summary>
             /// <param name="str">匹配文本</param>
             /// <returns>返回符合匹配文本的text_id集合</returns>
@@ -290,18 +292,24 @@ namespace businessUnit
             List<int> matchTextContent(string str);
         }
         /// <summary>
-        /// 文本控制接口
+        /// 单一文本控制接口
         /// </summary>
         interface ITextH : IPaRoot
         {
             /// <summary>
-            /// 获得符合text_id的文本主要数据
+            /// 获得符合text_id的文本索引数据
+            /// </summary>
+            /// <parmm name="text_id">文本序列号</parmm>
+            /// <returns></returns>
+            PaText getTextIndex(int text_id);
+            /// <summary>
+            /// 获得符合text_id的文本数据
             /// </summary>
             /// <parmm name="text_id">文本序列号</parmm>
             /// <returns></returns>
             PaText getTextMain(int text_id);
             /// <summary>
-            ///  获得符合text_id的文本次要数据
+            ///  获得符合text_id的文本参数数据
             /// </summary>
             /// <parmm name="text_id">文本序列号</parmm>
             /// <returns></returns>
@@ -319,14 +327,6 @@ namespace businessUnit
             /// <parmm name="current_text_id">当前文本序列号</parmm>
             /// <returns>错误返回 -1</returns>
             int prevTextID(int current_text_id);
-
-            /// <summary>
-            /// 随机获得文本ID(text_id)
-            /// </summary>
-            /// <parmm name="excluded_text_id">不参与随机操作的文本的text_id</parmm>
-            /// <parmm name="text_type">自定义文本类型</parmm>
-            /// <returns>错误返回 -1</returns>
-            int randTextID(int excluded_text_id, string text_type);
         }
 
         namespace UI
@@ -376,7 +376,7 @@ namespace businessUnit
                         List<int> List_text_id = new List<int>();
 
                         using (DataTable text_id_table
-                            = MySqlConnH.getTable("SELECT text_id FROM " + dataBase + ".`" + Views.text_index + "`"))
+                            = MySqlConnH.getTable("SELECT text_id FROM " + dataBase + ".`" + Views.view_index + "`"))
                         {
                             foreach (DataRow Row in text_id_table.Rows)/* 遍历数据库表行，逐行取得数据 */
                             {
@@ -392,6 +392,7 @@ namespace businessUnit
                     }
                 }
 
+                /*未经迭代式维护*/
                 /// <summary>
                 /// ITextListH接口的基础实现，详见其接口注释
                 /// </summary>
@@ -402,9 +403,9 @@ namespace businessUnit
                         List<int> List_text_id = new List<int>();
 
                         string SQL = "SELECT `" +
-                                     Views.text_index + "`.text_id" +
+                                     Views.view_index + "`.text_id" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index +
+                                     dataBase + ".`" + Views.view_index +
                                      "` LIMIT " +
                                      "?start , ?length";
 
@@ -439,9 +440,9 @@ namespace businessUnit
                     try
                     {
                         string SQL = "SELECT `" +
-                                     Views.text_index + "`.text_id" +
+                                     Views.view_index + "`.text_id" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index +
+                                     dataBase + ".`" + Views.view_index +
                                      "` WHERE " +
                                      "text_type = ?text_type" +
                                      " LIMIT " +
@@ -473,7 +474,7 @@ namespace businessUnit
                         MySqlConnH.disposeHCommand();
                     }
                 }
-
+                /*未经迭代式维护*/
                 /// <summary>
                 /// 获取总文本排行(无截止长度)
                 /// </summary>
@@ -486,7 +487,7 @@ namespace businessUnit
                     {
                         List<int> List_text_id = new List<int>();
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "` ORDER BY ?key ?OrderType";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_sub + "` ORDER BY ?key ?OrderType";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -524,7 +525,7 @@ namespace businessUnit
                     {
                         List<int> List_text_id = new List<int>();
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "` ORDER BY ?key ?OrderType LIMIT 0,?length";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_sub + "` ORDER BY ?key ?OrderType LIMIT 0,?length";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -570,7 +571,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_index + "`" + " WHERE text_type REGEXP ?str";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_index + "`" + " WHERE text_type REGEXP ?str";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -613,7 +614,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_archiv REGEXP ?str";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_main + "`" + " WHERE text_archiv REGEXP ?str";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -656,7 +657,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_main + "`" + " WHERE text_tag REGEXP ?str";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -702,7 +703,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_index + "`" + " WHERE text_type REGEXP ?str ORDER BY ?key ?OrderType";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -749,7 +750,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_main + "`" + " WHERE text_archiv REGEXP ?str ORDER BY ?key ?OrderType";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -796,7 +797,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_main + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -845,7 +846,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType LIMIT 0,?length";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_index + "`" + " WHERE text_type REGEXP ?str ORDER BY ?key ?OrderType LIMIT 0,?length";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -894,7 +895,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType LIMIT 0,?length";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_main + "`" + " WHERE text_archiv REGEXP ?str ORDER BY ?key ?OrderType LIMIT 0,?length";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -943,7 +944,7 @@ namespace businessUnit
                         }
                         str = str.Substring(0, str.Length - 1);//将最后一个或符号删除
 
-                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.text_sub + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType LIMIT 0,?length";
+                        string SQL = "SELECT text_id FROM " + dataBase + ".`" + Views.view_main + "`" + " WHERE text_tag REGEXP ?str ORDER BY ?key ?OrderType LIMIT 0,?length";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>
                         {
@@ -1139,6 +1140,77 @@ namespace businessUnit
                     MySqlConnH = PaDB.MySqlConnH;
                 }
 
+                /// <summary>
+                /// ITextH接口的基础实现，详见其接口注释
+                /// </summary>
+                public virtual PaText getTextIndex(int text_id)
+                {
+                    try
+                    {
+                        PaText PaText = new PaText();
+
+                        string SQL = "CALL " + dataBase + ".`get>index`( ?text_id )";
+                        List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
+                        {
+                            new mysqlParm() { parmName = "?text_id", parmValue = text_id }
+                        };
+
+                        using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
+                        {
+                            DataRow Row = MySqlConnH.getRow(MySqlCommand);
+
+                            PaText.text_id = Convert.ToInt32(Row["text_id"]);
+                            PaText.text_guid = Convert.ToString(Row["text_guid"]);
+                            PaText.time_set = Convert.ToDateTime(Row["time_set"]);
+                            PaText.text_mode = Convert.ToString(Row["text_mode"]);
+                            PaText.text_type = Convert.ToString(Row["text_type"]);
+                            PaText.text_user = Convert.ToString(Row["text_user"]);
+
+                            return PaText;
+                        }
+                    }
+                    finally
+                    {
+                        MySqlConnH.closeHConnection();
+                        MySqlConnH.nullHCommand();
+                        MySqlConnH.disposeHCommand();
+                    }
+                }
+                /// <summary>
+                /// 取得Index表的一个键值
+                /// </summary>
+                /// <param name="text_id">文章序列号</param>
+                /// <param name="key">键名</param>
+                /// <returns></returns>
+                public virtual string getTextIndex(int text_id, string key)
+                {
+                    try
+                    {
+                        string SQL = "SELECT " +
+                                     "`" + Views.view_index + "`.?key" +
+                                     " FROM " +
+                                     dataBase + ".`" + Views.view_index + "`" +
+                                     " WHERE `" +
+                                     Views.view_index + "`.text_id = ?text_id";
+
+                        List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
+                        {
+                            new mysqlParm() { parmName = "?key", parmValue = key },
+                            new mysqlParm() { parmName = "?text_id", parmValue = text_id }
+                        };
+
+                        using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
+                        {
+                            return MySqlConnH.getRow(MySqlCommand)[key].ToString();
+                        }
+                    }
+                    finally
+                    {
+                        MySqlConnH.closeHConnection();
+                        MySqlConnH.nullHCommand();
+                        MySqlConnH.disposeHCommand();
+                    }
+                }
 
                 /// <summary>
                 /// ITextH接口的基础实现，详见其接口注释
@@ -1157,15 +1229,15 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable pala_text_main = MySqlConnH.getTable(MySqlCommand);
+                            DataRow Row = MySqlConnH.getRow(MySqlCommand);
 
-                            foreach (DataRow Row in pala_text_main.Rows)/* 遍历数据库表以取得唯一的数据行 */
-                            {
-                                PaText.text_id = Convert.ToInt32(Row["text_id"]);
-                                PaText.text_title = Convert.ToString(Row["text_title"]);
-                                PaText.text_summary = Convert.ToString(Row["text_summary"]);
-                                PaText.text_content = Convert.ToString(Row["text_content"]);
-                            }
+                            PaText.time_change = Convert.ToDateTime(Row["time_change"]);
+                            PaText.text_title = Convert.ToString(Row["text_title"]);
+                            PaText.text_summary = Convert.ToString(Row["text_summary"]);
+                            PaText.text_content = Convert.ToString(Row["text_content"]);
+                            PaText.text_archiv = Convert.ToString(Row["text_archiv"]);
+                            PaText.text_tag = Convert.ToString(Row["text_tag"]);
+
                             return PaText;
                         }
                     }
@@ -1187,14 +1259,11 @@ namespace businessUnit
                     try
                     {
                         string SQL = "SELECT " +
-                                     "`" + Views.text_sub + "`.?key" +
+                                     "`" + Views.view_main + "`.?key" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
+                                     dataBase + ".`" + Views.view_main + "`" +
                                      " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id";
+                                     Views.view_main + "`.text_id = ?text_id";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                         {
@@ -1204,13 +1273,7 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable table = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in table.Rows)/* 遍历数据库表行，逐行取得数据 */
-                            {
-                                return Convert.ToString(Convert.ToInt32(Row[key]));
-                            }
-                            return null;
+                            return MySqlConnH.getRow(MySqlCommand)[key].ToString();
                         }
                     }
                     finally
@@ -1238,24 +1301,13 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable pala_text_sub = MySqlConnH.getTable(MySqlCommand);
+                            DataRow Row = MySqlConnH.getRow(MySqlCommand);
 
-                            foreach (DataRow Row in pala_text_sub.Rows)/* 遍历数据库表行，逐行取得数据 */
-                            {
-                                PaText.text_id = Convert.ToInt32(Row["text_id"]);
-                                PaText.text_archiv = Convert.ToString(Row["text_archiv"]);
-                                PaText.text_editor = Convert.ToString(Row["text_editor"]);
-                                PaText.text_tag = Convert.ToString(Row["text_tag"]);
+                            PaText.count_pv = Convert.ToInt32(Row["count_pv"]);
+                            PaText.count_comment = Convert.ToInt32(Row["count_comment"]);
+                            PaText.count_star = Convert.ToInt32(Row["count_star"]);
+                            PaText.before_html = Convert.ToString(Row["before_html"]);
 
-                                PaText.date_created = Convert.ToDateTime(Row["date_created"]);
-                                PaText.date_changed = Convert.ToDateTime(Row["date_changed"]);
-
-                                PaText.count_pv = Convert.ToInt32(Row["count_pv"]);
-                                PaText.count_comment = Convert.ToInt32(Row["count_comment"]);
-                                PaText.count_star = Convert.ToInt32(Row["count_star"]);
-                                
-                                PaText.before_html = Convert.ToString(Row["before_html"]);
-                            }
                             return PaText;
                         }
                     }
@@ -1277,14 +1329,11 @@ namespace businessUnit
                     try
                     {
                         string SQL = "SELECT " +
-                                     "`" + Views.text_sub + "`.?key" +
+                                     "`" + Views.view_sub + "`.?key" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_sub + "`" +
+                                     dataBase + ".`" + Views.view_index + "`," +
                                      " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_sub + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_sub + "`.text_id = ?text_id";
+                                     Views.view_sub + "`.text_id = ?text_id";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                         {
@@ -1294,13 +1343,7 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable table = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in table.Rows)/* 遍历数据库表行，逐行取得数据 */
-                            {
-                                return Convert.ToString(Convert.ToInt32(Row[key]));
-                            }
-                            return null;
+                            return MySqlConnH.getRow(MySqlCommand)[key].ToString();
                         }
                     }
                     finally
@@ -1321,14 +1364,10 @@ namespace businessUnit
                     try
                     {
                         string SQL = "SELECT " +
-                                     "`" + Views.text_main + "`.text_title" +
+                                     "`" + Views.view_main + "`.text_title" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
-                                     " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id";
+                                     dataBase + ".`" + Views.view_main + "`" +
+                                     " WHERE text_id = ?text_id";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                             {
@@ -1337,14 +1376,8 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable table = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in table.Rows)/* 遍历数据库表以取得唯一的数据行 */
-                            {
-                                return Convert.ToString(Row["text_title"]);
-                            }
+                            return MySqlConnH.getRow(MySqlCommand)[0].ToString();
                         }
-                        return null;
                     }
                     finally
                     {
@@ -1363,14 +1396,10 @@ namespace businessUnit
                     try
                     {
                         string SQL = "SELECT " +
-                                     "`" + Views.text_main + "`.text_summary" +
+                                     "`" + Views.view_main + "`.text_summary" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
-                                     " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id";
+                                     dataBase + ".`" + Views.view_main + "`" +
+                                     " WHERE text_id = ?text_id";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                             {
@@ -1379,14 +1408,8 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable table = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in table.Rows)/* 遍历数据库表以取得唯一的数据行 */
-                            {
-                                return Convert.ToString(Row["text_summary"]);
-                            }
+                            return MySqlConnH.getRow(MySqlCommand)[0].ToString();
                         }
-                        return null;
                     }
                     finally
                     {
@@ -1405,14 +1428,10 @@ namespace businessUnit
                     try
                     {
                         string SQL = "SELECT " +
-                                     "`" + Views.text_main + "`.text_content" +
+                                     "`" + Views.view_main + "`.text_content" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
-                                     " WHERE `" +
-                                      Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id";
+                                     dataBase + ".`" + Views.view_main + "`" +
+                                     " WHERE text_id = ?text_id";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                             {
@@ -1421,14 +1440,8 @@ namespace businessUnit
 
                         using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable table = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in table.Rows)/* 遍历数据库表以取得唯一的数据行 */
-                            {
-                                return Convert.ToString(Row["text_content"]);
-                            }
+                            return MySqlConnH.getRow(MySqlCommand)["text_content"].ToString();
                         }
-                        return null;
                     }
                     finally
                     {
@@ -1451,14 +1464,10 @@ namespace businessUnit
                         string SQL = "SELECT SUBSTRING((" +
 
                                      "SELECT " +
-                                     "`" + Views.text_main + "`.text_title" +
+                                     "`" + Views.view_main + "`.text_title" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
-                                     " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id" +
+                                     dataBase + ".`" + Views.view_main + "`" +
+                                     " WHERE text_id = ?text_id" +
 
                                      ") FROM 1 FOR ?length)";
 
@@ -1493,14 +1502,10 @@ namespace businessUnit
                         string SQL = "SELECT SUBSTRING((" +
 
                                      "SELECT " +
-                                     "`" + Views.text_main + "`.text_summary" +
+                                     "`" + Views.view_main + "`.text_summary" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
-                                     " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id" +
+                                     dataBase + ".`" + Views.view_main + "`" +
+                                     " WHERE text_id = ?text_id" +
 
                                      ") FROM 1 FOR ?length)";
 
@@ -1535,14 +1540,10 @@ namespace businessUnit
                         string SQL = "SELECT SUBSTRING((" +
 
                                      "SELECT " +
-                                     "`" + Views.text_main + "`.text_content" +
+                                     "`" + Views.view_main + "`.text_content" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index + "`," +
-                                     dataBase + ".`" + Views.text_main + "`" +
-                                     " WHERE `" +
-                                     Views.text_index + "`.text_id =`" + Views.text_main + "`.text_id" +
-                                     " AND `" +
-                                     Views.text_main + "`.text_id = ?text_id" +
+                                     dataBase + ".`" + Views.view_main + "`" +
+                                     " WHERE text_id = ?text_id" +
 
                                      ") FROM 1 FOR ?length)";
 
@@ -1575,9 +1576,9 @@ namespace businessUnit
                         /* 取得比当前 text_id 大的一行，实现对下一条数据的抓取 */
                         string SQL = "SELECT *" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index +
+                                     dataBase + ".`" + Views.view_index +
                                      "` WHERE " +
-                                     "text_id = (SELECT min(text_id) FROM " + dataBase + ".`" + Views.text_index + "` WHERE text_id > ?current_text_id);";
+                                     "text_id = (SELECT min(text_id) FROM " + dataBase + ".`" + Views.view_index + "` WHERE text_id > ?current_text_id);";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                         {
@@ -1610,9 +1611,9 @@ namespace businessUnit
                         /* 取得比当前 text_id 小的一行，实现对上一条数据的抓取 */
                         string SQL = "SELECT *" +
                                      " FROM " +
-                                     dataBase + ".`" + Views.text_index +
+                                     dataBase + ".`" + Views.view_index +
                                      "` WHERE " +
-                                     "text_id = (SELECT max(text_id) FROM " + dataBase + ".`" + Views.text_index + "` WHERE text_id < ?current_text_id);";
+                                     "text_id = (SELECT max(text_id) FROM " + dataBase + ".`" + Views.view_index + "` WHERE text_id < ?current_text_id);";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                         {
@@ -1636,43 +1637,9 @@ namespace businessUnit
                     }
                 }
 
-                /// <summary>
-                /// ITextH接口的基础实现，详见其接口注释
-                /// </summary>
-                public virtual int randTextID(int excluded_text_id, string text_type)
-                {
-                    try
-                    {
-                        string SQL = "CALL " + dataBase + ".`random>index`( ?excluded_text_id , ?text_type )";
-
-                        List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
-                        {
-                            new mysqlParm() { parmName = "?excluded_text_id", parmValue = excluded_text_id },
-                            new mysqlParm() { parmName = "?text_type", parmValue = text_type }
-                        };
-
-                        using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
-                        {
-                            DataTable pala_text_main = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in pala_text_main.Rows)/* 遍历数据库表以取得唯一的数据行 */
-                            {
-                                return Convert.ToInt32(Row["text_id"]);
-                            }
-                            return -1;
-                        }
-                    }
-                    finally
-                    {
-                        MySqlConnH.closeHConnection();
-                        MySqlConnH.nullHCommand();
-                        MySqlConnH.disposeHCommand();
-                    }
-                }
-
 
                 #region 抽象类
-
+                /*未经迭代式维护*/
                 /// <summary>
                 /// 文章更改器
                 /// </summary>
@@ -1755,81 +1722,64 @@ namespace businessUnit
                 /// <parmm name="PaDB">啪啦数据库信息</parmm>
                 public TextH(PaDB PaDB) : base(PaDB) { }
 
-
                 /// <summary>
-                /// 获得符合text_id的且在展示文本主要数据，无论展示与否
+                /// 根据text_id取得数据，无论展示与否
                 /// </summary>
-                public new PaText getTextMain(int text_id)
+                public PaText getTextData(int text_id)
                 {
                     try
                     {
                         PaText PaText = new PaText();
 
-                        string SQL = "SELECT * FROM " + dataBase + "." + Tables.text_main + " WHERE text_id = ?text_id";
-                        List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
-                        {
-                            new mysqlParm() { parmName = "?text_id", parmValue = text_id }
-                        };
+                        string SQL1 = "SELECT * FROM " +
+                             dataBase + "." + Tables.text_index + "," +
+                             dataBase + "." + Tables.text_sub +
+                             " WHERE " +
+                             Tables.text_index + ".text_guid = " + Tables.text_sub + ".text_guid" +
+                             " AND " +
+                             Tables.text_index + ".text_id = ?text_id";
 
-                        using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
-                        {
-                            DataTable pala_text_main = MySqlConnH.getTable(MySqlCommand);
-
-                            foreach (DataRow Row in pala_text_main.Rows)/* 遍历数据库表以取得唯一的数据行 */
-                            {
-                                PaText.text_id = Convert.ToInt32(Row["text_id"]);
-                                PaText.text_title = Convert.ToString(Row["text_title"]);
-                                PaText.text_summary = Convert.ToString(Row["text_summary"]);
-                                PaText.text_content = Convert.ToString(Row["text_content"]);
-                            }
-                            return PaText;
-                        }
-                    }
-                    finally
-                    {
-                        MySqlConnH.closeHConnection();
-                        MySqlConnH.nullHCommand();
-                        MySqlConnH.disposeHCommand();
-                    }
-                }
-                /// <summary>
-                /// 获得符合text_id的且在展示文本次要数据，无论展示与否
-                /// </summary>
-                public new PaText getTextSub(int text_id)
-                {
-                    try
-                    {
-                        PaText PaText = new PaText();
-
-                        string SQL = "SELECT * FROM " + dataBase + "." + Tables.text_sub + " WHERE text_id = ?text_id";
 
                         List<mysqlParm> List_mysqlParm = new List<mysqlParm>/* 为参数化查询添加元素 */
                         {
                             new mysqlParm() { parmName = "?text_id", parmValue = text_id }
                         };
 
-                        using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL, List_mysqlParm))/* 参数化查询 */
+                        using (MySqlCommand MySqlCommand = MySqlConnH.parmQueryCmd(SQL1, List_mysqlParm))/* 参数化查询 */
                         {
-                            DataTable pala_text_main = MySqlConnH.getTable(MySqlCommand);
+                            DataRow Row1 = MySqlConnH.getRow(MySqlCommand);/*得到查询结果*/
 
-                            foreach (DataRow Row in pala_text_main.Rows)/* 遍历数据库表行，逐行取得数据 */
-                            {
-                                PaText.text_id = Convert.ToInt32(Row["text_id"]);
-                                PaText.text_archiv = Convert.ToString(Row["text_archiv"]);
-                                PaText.text_editor = Convert.ToString(Row["text_editor"]);
-                                PaText.text_tag = Convert.ToString(Row["text_tag"]);
+                            /*pala_text_index表*/
+                            PaText.text_id = Convert.ToInt32(Row1["text_id"]);
+                            PaText.text_guid = Convert.ToString(Row1["text_guid"]);
+                            PaText.time_set = Convert.ToDateTime(Row1["time_set"]);
+                            PaText.text_mode = Convert.ToString(Row1["text_mode"]);
+                            PaText.text_type = Convert.ToString(Row1["text_type"]);
+                            PaText.text_user = Convert.ToString(Row1["text_user"]);
 
-                                PaText.date_created = Convert.ToDateTime(Row["date_created"]);
-                                PaText.date_changed = Convert.ToDateTime(Row["date_changed"]);
-
-                                PaText.count_pv = Convert.ToInt32(Row["count_pv"]);
-                                PaText.count_comment = Convert.ToInt32(Row["count_comment"]);
-                                PaText.count_star = Convert.ToInt32(Row["count_star"]);
-
-                                PaText.before_html = Convert.ToString(Row["before_html"]);
-                            }
-                            return PaText;
+                            /*pala_text_sub表*/
+                            PaText.count_pv = Convert.ToInt32(Row1["count_pv"]);
+                            PaText.count_comment = Convert.ToInt32(Row1["count_comment"]);
+                            PaText.count_star = Convert.ToInt32(Row1["count_star"]);
+                            PaText.before_html = Convert.ToString(Row1["before_html"]);
                         }
+
+                        #region pala_text_main表
+
+                        string SQL2 = "SELECT * FROM " + dataBase + "." + Tables.text_main + " WHERE text_guid = " + PaText.text_guid;
+
+                        DataRow Row2 = MySqlConnH.getRow(SQL2); ;
+
+                        PaText.time_change = Convert.ToDateTime(Row2["time_change"]);
+                        PaText.text_title = Convert.ToString(Row2["text_title"]);
+                        PaText.text_summary = Convert.ToString(Row2["text_summary"]);
+                        PaText.text_content = Convert.ToString(Row2["text_content"]);
+                        PaText.text_archiv = Convert.ToString(Row2["text_archiv"]);
+                        PaText.text_tag = Convert.ToString(Row2["text_tag"]);
+
+                        #endregion
+
+                        return PaText;
                     }
                     finally
                     {
@@ -2006,119 +1956,40 @@ namespace businessUnit
         public class PaFn
         {
             /// <summary>
-            /// 合并主副表PaText数据
+            /// 合并PaText数据表
             /// </summary>
             /// <parmm name="TextMain">主表PaText</parmm>
             /// <parmm name="TextSub">副表PaText</parmm>
             /// <returns></returns>
-            public static PaText fill(PaText TextMain, PaText TextSub)
+            public static PaText fill(PaText index, PaText main, PaText sub)
             {
                 return new PaText
                 {
-                    /* 主表数据填充 */
-                    text_id = TextMain.text_id,
-                    text_title = TextMain.text_title,
-                    text_summary = TextMain.text_summary,
-                    text_content = TextMain.text_content,
+                    /*pala_text_index表*/
+                    text_id = index.text_id,
+                    text_guid = index.text_guid,
+                    time_set = index.time_set,
+                    text_mode = index.text_mode,
+                    text_type = index.text_type,
+                    text_user = index.text_user,
 
-                    /* 副表数据填充 */
-                    text_archiv = TextSub.text_archiv,
-                    text_editor = TextSub.text_editor,
-                    text_tag = TextSub.text_tag,
-                    date_created = TextSub.date_created,
-                    date_changed = TextSub.date_changed,
-                    count_pv = TextSub.count_pv,
-                    count_comment = TextSub.count_comment,
-                    count_star = TextSub.count_star,
-                    before_html = TextSub.before_html,
+                    /*pala_text_sub表*/
+                    count_pv = sub.count_pv,
+                    count_comment = sub.count_comment,
+                    count_star = sub.count_star,
+                    before_html = sub.before_html,
+
+                    /*pala_text_main表*/
+                    time_change = main.time_change,
+                    text_title = main.text_title,
+                    text_summary = main.text_summary,
+                    text_content = main.text_content,
+                    text_archiv = main.text_archiv,
+                    text_tag = main.text_tag
+
                 };
             }
-
-            /// <summary>
-            /// html过滤器
-            /// </summary>
-            /// <param name="str">待过滤的字符串</param>
-            /// <returns></returns>
-            public static string htmlFilter(string str)
-            {
-                if (string.IsNullOrEmpty(str))
-                {
-                    return "";
-                }
-
-                string regEx_style = "<style[^>]*?>[\\s\\S]*?<\\/style>";
-                string regEx_script = "<script[^>]*?>[\\s\\S]*?<\\/script>";
-                string regEx_html = "<[^>]+>";
-
-                str = Regex.Replace(str, regEx_style, "");
-                str = Regex.Replace(str, regEx_script, "");
-                str = Regex.Replace(str, regEx_html, "");
-                str = Regex.Replace(str, "\\s*|\t|\r|\n", "");
-                str = str.Replace(" ", "");
-
-                return str.Trim();
-            }
-
-            /// <summary>
-            /// 距现在字符串生成器
-            /// </summary>
-            /// <param name="dateTime">要计算的时间</param>
-            /// <returns></returns>
-            public static string timeFromNow(DateTime dateTime)
-            {
-                //获取当前时间
-                DateTime DateTime1 = DateTime.Now;
-
-                TimeSpan ts1 = new TimeSpan(DateTime1.Ticks);
-                TimeSpan ts2 = new TimeSpan(dateTime.Ticks);
-
-                //时间比较，得出差值
-                TimeSpan ts = ts1.Subtract(ts2).Duration();
-
-                if (ts.Days >= 60)
-                {
-                    return null;
-                }
-                else
-                if (ts.Days >= 28 && ts.Days < 60)
-                {
-                    return "一月前";
-                }
-                else
-                if (ts.Days >= 21 && ts.Days < 28)
-                {
-                    return "三周前";
-                }
-                else
-                if (ts.Days >= 14 && ts.Days < 21)
-                {
-                    return "二周前";
-                }
-                else
-                if (ts.Days >= 7)
-                {
-                    return "一周前";
-                }
-                else
-                if (ts.Days < 1 && ts.Hours < 6)
-                {
-                    return "刚刚";
-                }
-                else
-                {
-                    switch (ts.Days)
-                    {
-                        case 0: return "今天";
-                        case 1: return "昨天";
-                        case 2: return "二天前";
-                        case 3: return "三天前";
-                        case 4: return "四天前";
-                        case 5: return "五天前";
-                        case 6: return "六天前";
-                        default: return null;
-                    }
-                }
-            }
         }
+
     }
 }
