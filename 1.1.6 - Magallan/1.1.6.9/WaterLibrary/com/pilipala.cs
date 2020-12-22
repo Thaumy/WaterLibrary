@@ -231,7 +231,7 @@ namespace WaterLibrary.pilipala
     /// </summary>
     interface IPLComponent<T>
     {
-        T Ready(ICORE CORE);
+        
     }
     interface IPLComponentFactory
     {
@@ -266,10 +266,18 @@ namespace WaterLibrary.pilipala
         string UserGUID { get; }
 
         /// <summary>
-        /// 启动内核
+        /// 以其他用户身份启动内核
+        /// </summary>
+        /// <param name="UserName">用户名</param>
+        /// <param name="UserPWD">用户密码</param>
+        /// <returns></returns>
+        public Entity.User Run(string UserName, string UserPWD);
+        /// <summary>
+        /// 以初始化用户身份启动内核
         /// </summary>
         /// <returns></returns>
-        Entity.User Run();
+        public Entity.User Run();
+
         /// <summary>
         /// 关闭内核
         /// </summary>
@@ -326,8 +334,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public string UserGUID { get; }
 
-        internal string UserName { get; }
-        internal string UserPWD { get; }
+        internal string UserName { get; private set; }
+        internal string UserPWD { get; private set; }
 
         /// <summary>
         /// 初始化pilipala内核
@@ -347,18 +355,23 @@ namespace WaterLibrary.pilipala
         }
 
         /// <summary>
-        /// 内核启动
+        /// 以其他用户身份启动内核
         /// </summary>
-        /// <returns>返回用户数据</returns>
-        public Entity.User Run()
+        /// <param name="UserName">用户名</param>
+        /// <param name="UserPWD">用户密码</param>
+        /// <returns></returns>
+        public Entity.User Run(string UserName, string UserPWD)
         {
+            this.UserName = UserName;
+            this.UserPWD = UserPWD;
+
             MySqlManager.Open();
             string SQL = $"SELECT COUNT(*) FROM {Tables.User} WHERE Name = ?UserName AND PWD = ?UserPWD";
 
             if (MySqlManager.GetKey(SQL, new MySqlParameter[]
             {
-                new("UserName", UserName),
-                new("UserPWD", MathH.MD5(UserPWD))
+                new("UserName", this.UserName),
+                new("UserPWD", MathH.MD5(this.UserPWD))
             })
             .ToString() == "1")
             {
@@ -367,7 +380,7 @@ namespace WaterLibrary.pilipala
                 /* 取得用户数据并返回 */
                 return new Entity.User()
                 {
-                    GUID = MySqlManager.GetRow($"SELECT GUID FROM {Tables.User} WHERE Name = '{UserName}'")["GUID"].ToString(),
+                    GUID = MySqlManager.GetRow($"SELECT GUID FROM {Tables.User} WHERE Name = '{this.UserName}'")["GUID"].ToString(),
                     Tables = Tables,
                     MySqlManager = MySqlManager,
                 };
@@ -375,8 +388,16 @@ namespace WaterLibrary.pilipala
             else
             {
                 MySqlManager.Close();
-                throw (new Exception("非法的用户签名"));
+                throw new Exception("非法的用户签名");
             }
+        }
+        /// <summary>
+        /// 以初始化用户身份启动内核
+        /// </summary>
+        /// <returns></returns>
+        public Entity.User Run()
+        {
+            return Run(UserName, UserPWD);
         }
         /// <summary>
         /// 关闭内核
@@ -910,18 +931,6 @@ namespace WaterLibrary.pilipala
             private PLViews Views { get; set; }
             private MySqlManager MySqlManager { get; set; }
 
-            /// <summary>
-            /// 准备读取器
-            /// </summary>
-            /// <param name="CORE"></param>
-            public Reader Ready(ICORE CORE)
-            {
-                Views = CORE.Views;
-                MySqlManager = CORE.MySqlManager;
-
-                return this;
-            }
-
             internal Reader Ready(PLViews Views, MySqlManager MySqlManager)
             {
                 this.Views = Views;
@@ -1209,19 +1218,6 @@ namespace WaterLibrary.pilipala
             private MySqlManager MySqlManager { get; set; }
 
             private string UserGUID;
-
-            /// <summary>
-            /// 准备修改器
-            /// </summary>
-            /// <param name="CORE"></param>
-            public Writer Ready(ICORE CORE)
-            {
-                Tables = CORE.Tables;
-                MySqlManager = CORE.MySqlManager;
-                UserGUID = CORE.UserGUID;
-
-                return this;
-            }
 
             internal Writer Ready(PLTables Tables, MySqlManager MySqlManager, string UserGUID)
             {
@@ -1799,17 +1795,6 @@ namespace WaterLibrary.pilipala
         {
             private PLTables Tables { get; set; }
             private MySqlManager MySqlManager { get; set; }
-
-            /// <summary>
-            /// 准备计数器
-            /// </summary>
-            /// <param name="CORE"></param>
-            public Counter Ready(ICORE CORE)
-            {
-                Tables = CORE.Tables;
-                MySqlManager = CORE.MySqlManager;
-                return this;
-            }
 
             internal Counter Ready(PLTables Tables, MySqlManager MySqlManager)
             {
