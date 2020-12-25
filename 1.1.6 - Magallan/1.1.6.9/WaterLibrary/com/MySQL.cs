@@ -11,7 +11,7 @@ namespace WaterLibrary.MySQL
     /// <summary>
     /// MySql数据库管理器
     /// </summary>
-    public class MySqlManager
+    public class MySqlManager : IDisposable
     {
         private MySqlConnMsg MySqlConnMsg { get; set; }
         /// <summary>
@@ -61,7 +61,7 @@ namespace WaterLibrary.MySQL
         /// <returns>成功返回ture，反之或报错返回false</returns>
         public void Dispose()
         {
-            Connection.Close();
+            Connection.Dispose();
         }
 
 
@@ -123,7 +123,7 @@ namespace WaterLibrary.MySQL
             return MySqlCommand.ExecuteScalar();
         }
         /// <summary>
-        /// 取得首个键值（键匹配查询）
+        /// 取得指定键值（键匹配查询）
         /// </summary>
         /// <param name="MySqlKey">操作定位器</param>
         /// <param name="KeyName">键名</param>
@@ -184,11 +184,9 @@ namespace WaterLibrary.MySQL
         /// <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
         public DataTable GetTable(string SQL)
         {
-            DataTable table = new DataTable();
+            using DataTable table = new DataTable();
 
-            /* 新建MySqlDataAdapter后填表 */
             new MySqlDataAdapter(SQL, Connection).Fill(table);
-
             return table;
         }
         /// <summary>
@@ -202,11 +200,9 @@ namespace WaterLibrary.MySQL
             using MySqlCommand MySqlCommand = new MySqlCommand(SQL, Connection);
             MySqlCommand.Parameters.AddRange(parameters);//添加参数
 
-            DataTable table = new DataTable();
+            using DataTable table = new DataTable();
 
-            /* 新建MySqlDataAdapter后填表 */
             new MySqlDataAdapter(MySqlCommand).Fill(table);
-
             return table;
         }
 
@@ -359,16 +355,6 @@ namespace WaterLibrary.MySQL
         public int QueryOnly(string SQL)
         {
             return new MySqlCommand(SQL, Connection).ExecuteNonQuery();
-        }
-        /// <summary>
-        /// 单纯执行SQL查询（适用于参数化查询）
-        /// </summary>
-        /// <param name="MySqlCommand">CMD实例</param>
-        /// <returns>返回受影响的行数</returns>
-        public int QueryOnly(ref MySqlCommand MySqlCommand)
-        {
-            MySqlCommand.Connection = Connection;
-            return MySqlCommand.ExecuteNonQuery();
         }
     }
 
