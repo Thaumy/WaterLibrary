@@ -1529,22 +1529,13 @@
             </summary>
             <param name="MySqlConnMsg"></param>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetSqlConnection(WaterLibrary.MySQL.MySqlConnMsg)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInConnection``1(System.Func{MySql.Data.MySqlClient.MySqlConnection,``0})">
             <summary>
-            生成MySqlConnection（重载一）
+            一次性连接使用器
             </summary>
-            <param name="MySqlConnMsg">连接签名</param>
-            <returns>返回一个MySqlConnection对象，错误则返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetSqlConnection(System.String,System.String,System.String,System.String)">
-            <summary>
-            生成MySqlConnection（重载二）
-            </summary>
-            <param name="DataSource">数据源</param>
-            <param name="Port">端口</param>
-            <param name="User">用户名</param>
-            <param name="PWD">密码</param>
-            <returns>返回一个MySqlConnection对象，错误则返回null</returns>
+            <typeparam name="T">返回值类型</typeparam>
+            <param name="todo">委托</param>
+            <returns></returns>
         </member>
         <member name="M:WaterLibrary.MySQL.MySqlManager.GetTable(System.String)">
             <summary>

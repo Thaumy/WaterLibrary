@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using System.Linq;
 using System.Data;
 using MySql.Data.MySqlClient;
 
@@ -14,8 +15,8 @@ namespace WaterLibrary.MySQL
     /// </summary>
     public class MySqlManager
     {
-        private MySqlConnMsg MySqlConnMsg { get; set; }
-        private List<MySqlConnection> ConnectionPool = new();//连接池
+        private MySqlConnMsg MySqlConnMsg;
+        private readonly List<MySqlConnection> ConnectionPool = new();
         /// <summary>
         /// 数据库连接访问器
         /// </summary>
@@ -23,7 +24,6 @@ namespace WaterLibrary.MySQL
         {
             get
             {
-
                 MySqlConnection GenConn()
                 {
                     var conn = new MySqlConnection(
@@ -38,23 +38,22 @@ namespace WaterLibrary.MySQL
                     return conn;
                 }
 
-                if (ConnectionPool.Count >= 8)/* 在连接数达到8时检查无用连接并进行清理 */
+                if (ConnectionPool.Count > 8)/* 在连接数超过8时检查无用连接并进行清理 */
                 {
                     for (int i = ConnectionPool.Count - 1; i >= 0; i--)
-                    { /* 如果连接打开、中断或是关闭（这都是不工作的状态） */
+                    { /* 如果连接中断或是关闭（这都是不工作的状态） */
                         if (ConnectionPool[i].State == ConnectionState.Broken
                          || ConnectionPool[i].State == ConnectionState.Closed)
                         {
-                            ConnectionPool[i].Dispose();
-                            ConnectionPool.Remove(ConnectionPool[i]);
+                            ConnectionPool[i].Dispose();/* 注销并移除连接池 */
+                            ConnectionPool.RemoveAt(i);
                         }
                     };
                 }
 
                 ConnectionPool.Add(GenConn());
-                if (ConnectionPool[0].State != ConnectionState.Open)
-                    ConnectionPool[0].Open();
-                return ConnectionPool[0];
+                ConnectionPool.Last().Open();
+                return ConnectionPool.Last();
             }
         }
 
@@ -68,37 +67,18 @@ namespace WaterLibrary.MySQL
         }
 
         /// <summary>
-        /// 生成MySqlConnection（重载一）
+        /// 一次性连接使用器
         /// </summary>
-        /// <param name="MySqlConnMsg">连接签名</param>
-        /// <returns>返回一个MySqlConnection对象，错误则返回null</returns>
-        public static MySqlConnection GetSqlConnection(MySqlConnMsg MySqlConnMsg)
+        /// <typeparam name="T">返回值类型</typeparam>
+        /// <param name="todo">委托</param>
+        /// <returns></returns>
+        public T DoInConnection<T>(Func<MySqlConnection, T> todo)
         {
-            //返回创建的连接
-            return new MySqlConnection
-                (//组建连接信息
-                "Data source=" + MySqlConnMsg.DataSource + ";port=" +
-                MySqlConnMsg.Port + ";User Id=" + MySqlConnMsg.User + ";password=" + MySqlConnMsg.PWD + ";"
-                );
+            MySqlConnection conn = Connection;
+            T result = todo(conn);
+            conn.Close();
+            return result;
         }
-        /// <summary>
-        /// 生成MySqlConnection（重载二）
-        /// </summary>
-        /// <param name="DataSource">数据源</param>
-        /// <param name="Port">端口</param>
-        /// <param name="User">用户名</param>
-        /// <param name="PWD">密码</param>
-        /// <returns>返回一个MySqlConnection对象，错误则返回null</returns>
-        public static MySqlConnection GetSqlConnection(string DataSource, string Port, string User, string PWD)
-        {
-            //返回创建的连接
-            return new MySqlConnection
-                (//组建连接信息
-                "Data source=" + DataSource + ";port="
-                + Port + ";User Id=" + User + ";password=" + PWD + ";"
-                );
-        }
-
 
         /// <summary>
         /// 获取单张数据表
@@ -107,11 +87,13 @@ namespace WaterLibrary.MySQL
         /// <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
         public DataTable GetTable(string SQL)
         {
-            using DataTable table = new DataTable();
+            return DoInConnection(conn =>
+            {
+                using DataTable table = new DataTable();
+                new MySqlDataAdapter(SQL, conn).Fill(table);
 
-            new MySqlDataAdapter(SQL, Connection).Fill(table);
-
-            return table;
+                return table;
+            });
         }
         /// <summary>
         /// 获取单张数据表（适用于参数化查询）
@@ -121,14 +103,17 @@ namespace WaterLibrary.MySQL
         /// <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
         public DataTable GetTable(string SQL, MySqlParameter[] parameters)
         {
-            using MySqlCommand MySqlCommand = new MySqlCommand(SQL, Connection);
-            MySqlCommand.Parameters.AddRange(parameters);//添加参数
+            return DoInConnection(conn =>
+            {
+                using DataTable table = new DataTable();
+                using (MySqlCommand MySqlCommand = new MySqlCommand(SQL, conn))
+                {
+                    MySqlCommand.Parameters.AddRange(parameters);//添加参数
+                    new MySqlDataAdapter(MySqlCommand).Fill(table);
+                }
 
-            using DataTable table = new DataTable();
-
-            new MySqlDataAdapter(MySqlCommand).Fill(table);
-
-            return table;
+                return table;
+            });
         }
 
         /// <summary>
@@ -138,8 +123,11 @@ namespace WaterLibrary.MySQL
         /// <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
         public object GetKey(string SQL)
         {
-            /* 如果结果集为空，该方法返回null */
-            return new MySqlCommand(SQL, Connection).ExecuteScalar();
+            return DoInConnection(conn =>
+            {
+                /* 如果结果集为空，该方法返回null */
+                return new MySqlCommand(SQL, conn).ExecuteScalar(); ;
+            });
         }
         /// <summary>
         /// 取得首个键值（键匹配查询）
@@ -149,11 +137,14 @@ namespace WaterLibrary.MySQL
         /// <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
         public object GetKey(string SQL, MySqlParameter[] parameters)
         {
-            using MySqlCommand MySqlCommand = new MySqlCommand(SQL, Connection);
-            MySqlCommand.Parameters.AddRange(parameters);
+            return DoInConnection(conn =>
+            {
+                using MySqlCommand MySqlCommand = new MySqlCommand(SQL, conn);
+                MySqlCommand.Parameters.AddRange(parameters);
 
-            /* 如果结果集为空，该方法返回null */
-            return MySqlCommand.ExecuteScalar();
+                /* 如果结果集为空，该方法返回null */
+                return MySqlCommand.ExecuteScalar(); ;
+            });
         }
         /// <summary>
         /// 取得指定键值（键匹配查询）
@@ -163,10 +154,12 @@ namespace WaterLibrary.MySQL
         /// <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
         public object GetKey(MySqlKey MySqlKey, string KeyName)
         {
-            string SQL = $"SELECT {KeyName} FROM {MySqlKey.Table} WHERE {MySqlKey.Name}='{MySqlKey.Val}';";
-
-            /* 如果结果集为空，该方法返回null */
-            return new MySqlCommand(SQL, Connection).ExecuteScalar();
+            return DoInConnection(conn =>
+            {
+                string SQL = $"SELECT {KeyName} FROM {MySqlKey.Table} WHERE {MySqlKey.Name}='{MySqlKey.Val}';";
+                /* 如果结果集为空，该方法返回null */
+                return new MySqlCommand(SQL, conn).ExecuteScalar(); ;
+            });
         }
 
 
@@ -300,25 +293,28 @@ namespace WaterLibrary.MySQL
         /// <returns></returns>
         public bool UpdateKey(MySqlKey MySqlKey, string Key, string NewValue)
         {
-            using MySqlCommand MySqlCommand = new()
+            return DoInConnection(conn =>
             {
-                CommandText = $"UPDATE {MySqlKey.Table} SET {Key}=?NewValue WHERE {MySqlKey.Name}=?Val",
-                Connection = Connection,
-                Transaction = Connection.BeginTransaction()
-            };
-            MySqlCommand.Parameters.AddWithValue("NewValue", NewValue);
-            MySqlCommand.Parameters.AddWithValue("Val", MySqlKey.Val);
+                using MySqlCommand MySqlCommand = new()
+                {
+                    CommandText = $"UPDATE {MySqlKey.Table} SET {Key}=?NewValue WHERE {MySqlKey.Name}=?Val",
+                    Connection = conn,
+                    Transaction = Connection.BeginTransaction()
+                };
+                MySqlCommand.Parameters.AddWithValue("NewValue", NewValue);
+                MySqlCommand.Parameters.AddWithValue("Val", MySqlKey.Val);
 
-            if (MySqlCommand.ExecuteNonQuery() == 1)
-            {
-                MySqlCommand.Transaction.Commit();
-                return true;
-            }
-            else
-            {
-                MySqlCommand.Transaction.Rollback();
-                return false;
-            }
+                if (MySqlCommand.ExecuteNonQuery() == 1)
+                {
+                    MySqlCommand.Transaction.Commit();
+                    return true;
+                }
+                else
+                {
+                    MySqlCommand.Transaction.Rollback();
+                    return false;
+                }
+            });
         }
         /// <summary>
         /// 更新单个键值
@@ -330,25 +326,28 @@ namespace WaterLibrary.MySQL
         /// <returns></returns>
         public bool UpdateKey(string Table, string Key, string OldValue, string NewValue)
         {
-            using MySqlCommand MySqlCommand = new()
+            return DoInConnection(conn =>
             {
-                CommandText = $"UPDATE {Table} SET {Key}=?NewValue WHERE {Key}=?OldValue",
-                Connection = Connection,
-                Transaction = Connection.BeginTransaction()
-            };
-            MySqlCommand.Parameters.AddWithValue("NewValue", NewValue);
-            MySqlCommand.Parameters.AddWithValue("OldValue", OldValue);
+                using MySqlCommand MySqlCommand = new()
+                {
+                    CommandText = $"UPDATE {Table} SET {Key}=?NewValue WHERE {Key}=?OldValue",
+                    Connection = conn,
+                    Transaction = Connection.BeginTransaction()
+                };
+                MySqlCommand.Parameters.AddWithValue("NewValue", NewValue);
+                MySqlCommand.Parameters.AddWithValue("OldValue", OldValue);
 
-            if (MySqlCommand.ExecuteNonQuery() == 1)
-            {
-                MySqlCommand.Transaction.Commit();
-                return true;
-            }
-            else
-            {
-                MySqlCommand.Transaction.Rollback();
-                return false;
-            }
+                if (MySqlCommand.ExecuteNonQuery() == 1)
+                {
+                    MySqlCommand.Transaction.Commit();
+                    return true;
+                }
+                else
+                {
+                    MySqlCommand.Transaction.Rollback();
+                    return false;
+                }
+            });
         }
 
 

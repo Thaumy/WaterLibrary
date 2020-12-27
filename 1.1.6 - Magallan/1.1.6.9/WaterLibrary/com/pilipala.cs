@@ -1414,18 +1414,20 @@ namespace WaterLibrary.pilipala
             /// <returns>返回受影响的行数</returns>
             public bool Reg(Post Post)
             {
-                DateTime t = DateTime.Now;
-
-                string SQL = $"INSERT INTO {Tables.Index}" +
-                            " ( ID, GUID, CT, Mode, Type, User, UVCount, StarCount) VALUES" +
-                            " (?ID,?GUID,?CT,?Mode,?Type,?User,?UVCount,?StarCount);" +
-                            $"INSERT INTO {Tables.Backup}" +
-                            " ( ID, GUID, LCT, Title, Summary, Content, Archiv, Label, Cover) VALUES" +
-                            " (?ID,?GUID,?LCT,?Title,?Summary,?Content,?Archiv,?Label,?Cover);";
-
-
-                MySqlParameter[] parameters =
+                return MySqlManager.DoInConnection(conn =>
                 {
+                    DateTime t = DateTime.Now;
+
+                    string SQL = $"INSERT INTO {Tables.Index}" +
+                                " ( ID, GUID, CT, Mode, Type, User, UVCount, StarCount) VALUES" +
+                                " (?ID,?GUID,?CT,?Mode,?Type,?User,?UVCount,?StarCount);" +
+                                $"INSERT INTO {Tables.Backup}" +
+                                " ( ID, GUID, LCT, Title, Summary, Content, Archiv, Label, Cover) VALUES" +
+                                " (?ID,?GUID,?LCT,?Title,?Summary,?Content,?Archiv,?Label,?Cover);";
+
+
+                    MySqlParameter[] parameters =
+                    {
                     new("ID", GetMaxID() + 1 ),
                     new("GUID", MathH.GenerateGUID("N") ),
 
@@ -1450,23 +1452,24 @@ namespace WaterLibrary.pilipala
                     new("Cover", Post.Cover )
                 };
 
-                using MySqlCommand MySqlCommand = new MySqlCommand(SQL, MySqlManager.Connection);
-                MySqlCommand.Parameters.AddRange(parameters);
+                    using MySqlCommand MySqlCommand = new MySqlCommand(SQL, conn);
+                    MySqlCommand.Parameters.AddRange(parameters);
 
-                /* 开始事务 */
-                MySqlCommand.Transaction = MySqlManager.Connection.BeginTransaction();
+                    /* 开始事务 */
+                    MySqlCommand.Transaction = conn.BeginTransaction();
 
-                if (MySqlCommand.ExecuteNonQuery() == 2)
-                {
-                    /* 指向表和拷贝表分别添加1行数据 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                }
+                    if (MySqlCommand.ExecuteNonQuery() == 2)
+                    {
+                        /* 指向表和拷贝表分别添加1行数据 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                    }
+                });
             }
             /// <summary>
             /// 注销文章
@@ -1475,29 +1478,32 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool Dispose(int ID)
             {
-                /* int参数无法用于参数化攻击 */
-                using MySqlCommand MySqlCommand = new MySqlCommand
+                return MySqlManager.DoInConnection(conn =>
                 {
-                    CommandText =
+                    /* int参数无法用于参数化攻击 */
+                    using MySqlCommand MySqlCommand = new MySqlCommand
+                    {
+                        CommandText =
                     $"DELETE FROM {Tables.Index} WHERE ID={ID};DELETE FROM {Tables.Backup} WHERE ID={ID};",
 
-                    Connection = MySqlManager.Connection,
+                        Connection = conn,
 
-                    /* 开始事务 */
-                    Transaction = MySqlManager.Connection.BeginTransaction()
-                };
+                        /* 开始事务 */
+                        Transaction = conn.BeginTransaction()
+                    };
 
-                if (MySqlCommand.ExecuteNonQuery() >= 2)
-                {
-                    /* 指向表只删除1行数据，拷贝表至少删除1行数据 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                }
+                    if (MySqlCommand.ExecuteNonQuery() >= 2)
+                    {
+                        /* 指向表只删除1行数据，拷贝表至少删除1行数据 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                    }
+                });
             }
             /// <summary>
             /// 更新文章
@@ -1506,14 +1512,16 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool Update(Post Post)
             {
-                string SQL =
+                return MySqlManager.DoInConnection(conn =>
+                {
+                    string SQL =
                     $"UPDATE {Tables.Index} SET GUID=?GUID, Mode=?Mode, Type=?Type, User=?User, UVCount=?UVCount, StarCount=?StarCount WHERE ID=?ID;" +
                     $"INSERT INTO {Tables.Backup}" +
                     " ( ID, GUID, LCT, Title, Summary, Content, Archiv, Label, Cover) VALUES" +
                     " (?ID,?GUID,?LCT,?Title,?Summary,?Content,?Archiv,?Label,?Cover);";
 
-                MySqlParameter[] parameters =
-                {
+                    MySqlParameter[] parameters =
+                    {
                     new("GUID", MathH.GenerateGUID("N") ),
                     new("LCT", DateTime.Now ),
 
@@ -1537,24 +1545,25 @@ namespace WaterLibrary.pilipala
                     new("Cover", Post.Cover)
                 };
 
-                using MySqlCommand MySqlCommand = new MySqlCommand(SQL, MySqlManager.Connection);
-                MySqlCommand.Parameters.AddRange(parameters);
+                    using MySqlCommand MySqlCommand = new MySqlCommand(SQL, conn);
+                    MySqlCommand.Parameters.AddRange(parameters);
 
-                /* 开始事务 */
-                MySqlCommand.Transaction = MySqlManager.Connection.BeginTransaction();
+                    /* 开始事务 */
+                    MySqlCommand.Transaction = conn.BeginTransaction();
 
-                if (MySqlCommand.ExecuteNonQuery() == 2)
-                {
-                    /* 指向表修改1行数据，拷贝表添加1行数据 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                    /* 由于GUID更新，影响行始终为2，若出现其他情况则一定为错误 */
-                }
+                    if (MySqlCommand.ExecuteNonQuery() == 2)
+                    {
+                        /* 指向表修改1行数据，拷贝表添加1行数据 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                        /* 由于GUID更新，影响行始终为2，若出现其他情况则一定为错误 */
+                    }
+                });
             }
 
             /// <summary>
@@ -1564,34 +1573,37 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool Delete(string GUID)
             {
-                string SQL = string.Format
+                return MySqlManager.DoInConnection(conn =>
+                {
+                    string SQL = string.Format
                     (
                     "DELETE {1} FROM {0} INNER JOIN {1} ON {0}.ID={1}.ID AND {0}.GUID<>{1}.GUID AND {1}.GUID = ?GUID"
                     , Tables.Index, Tables.Backup
                     );
 
-                MySqlParameter[] parameters =
-                {
+                    MySqlParameter[] parameters =
+                    {
                     new("GUID", GUID )
                 };
 
-                using MySqlCommand MySqlCommand = new MySqlCommand(SQL, MySqlManager.Connection);
-                MySqlCommand.Parameters.AddRange(parameters);
+                    using MySqlCommand MySqlCommand = new MySqlCommand(SQL, conn);
+                    MySqlCommand.Parameters.AddRange(parameters);
 
-                /* 开始事务 */
-                MySqlCommand.Transaction = MySqlManager.Connection.BeginTransaction();
+                    /* 开始事务 */
+                    MySqlCommand.Transaction = conn.BeginTransaction();
 
-                if (MySqlCommand.ExecuteNonQuery() == 1)
-                {
-                    /* 拷贝表删除一行数据 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                }
+                    if (MySqlCommand.ExecuteNonQuery() == 1)
+                    {
+                        /* 拷贝表删除一行数据 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                    }
+                });
             }
             /// <summary>
             /// 应用拷贝
@@ -1600,36 +1612,39 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool Apply(string GUID)
             {
-                /* 此处，即使SQL注入造成了ID错误，由于第二步参数化查询的作用，GUID也会造成错误无法成功攻击 */
-                object ID = MySqlManager.GetKey($"SELECT ID FROM {Tables.Backup} WHERE GUID = '{GUID}'");
-
-                string SQL =
-                    $"DELETE FROM {Tables.Backup} WHERE GUID = (SELECT GUID FROM {Tables.Index} WHERE ID = ?ID);" +
-                    $"UPDATE {Tables.Index} SET GUID = ?GUID WHERE ID = ?ID;";
-
-                MySqlParameter[] parameters =
+                return MySqlManager.DoInConnection(conn =>
                 {
+                    /* 此处，即使SQL注入造成了ID错误，由于第二步参数化查询的作用，GUID也会造成错误无法成功攻击 */
+                    object ID = MySqlManager.GetKey($"SELECT ID FROM {Tables.Backup} WHERE GUID = '{GUID}'");
+
+                    string SQL =
+                        $"DELETE FROM {Tables.Backup} WHERE GUID = (SELECT GUID FROM {Tables.Index} WHERE ID = ?ID);" +
+                        $"UPDATE {Tables.Index} SET GUID = ?GUID WHERE ID = ?ID;";
+
+                    MySqlParameter[] parameters =
+                    {
                     new("ID", ID),
                     new("GUID", GUID)
                 };
 
-                using MySqlCommand MySqlCommand = new MySqlCommand(SQL, MySqlManager.Connection);
-                MySqlCommand.Parameters.AddRange(parameters);
+                    using MySqlCommand MySqlCommand = new MySqlCommand(SQL, conn);
+                    MySqlCommand.Parameters.AddRange(parameters);
 
-                /* 开始事务 */
-                MySqlCommand.Transaction = MySqlManager.Connection.BeginTransaction();
+                    /* 开始事务 */
+                    MySqlCommand.Transaction = conn.BeginTransaction();
 
-                if (MySqlCommand.ExecuteNonQuery() == 2)
-                {
-                    /* 指向表修改1行数据，拷贝表删除一行数据 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                }
+                    if (MySqlCommand.ExecuteNonQuery() == 2)
+                    {
+                        /* 指向表修改1行数据，拷贝表删除一行数据 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                    }
+                });
             }
             /// <summary>
             /// 回滚拷贝
@@ -1638,32 +1653,35 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool Rollback(int ID)
             {
-                using MySqlCommand MySqlCommand = new MySqlCommand
+                return MySqlManager.DoInConnection(conn =>
                 {
-                    CommandText = string.Format
+                    using MySqlCommand MySqlCommand = new MySqlCommand
+                    {
+                        CommandText = string.Format
                      (
                      "DELETE {1} FROM {0} INNER JOIN {1} ON {0}.GUID={1}.GUID AND {0}.ID={2};" +
                      "UPDATE {0} SET GUID = (SELECT GUID FROM {1} WHERE ID={2} ORDER BY LCT DESC LIMIT 0,1) WHERE ID={2};"
                      , Tables.Index, Tables.Backup, ID
                      ),
 
-                    Connection = MySqlManager.Connection,
+                        Connection = conn,
 
-                    /* 开始事务 */
-                    Transaction = MySqlManager.Connection.BeginTransaction()
-                };
+                        /* 开始事务 */
+                        Transaction = conn.BeginTransaction()
+                    };
 
-                if (MySqlCommand.ExecuteNonQuery() == 2)
-                {
-                    /* 指向表修改1行数据，拷贝表删除1行数据 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                }
+                    if (MySqlCommand.ExecuteNonQuery() == 2)
+                    {
+                        /* 指向表修改1行数据，拷贝表删除1行数据 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                    }
+                });
             }
             /// <summary>
             /// 释放拷贝
@@ -1672,31 +1690,34 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool Release(int ID)
             {
-                using MySqlCommand MySqlCommand = new MySqlCommand
+                return MySqlManager.DoInConnection(conn =>
                 {
-                    CommandText = string.Format
+                    using MySqlCommand MySqlCommand = new MySqlCommand
+                    {
+                        CommandText = string.Format
                      (
                      "DELETE {1} FROM {0} INNER JOIN {1} ON {0}.ID={1}.ID AND {0}.GUID<>{1}.GUID AND {0}.ID={2}"
                      , Tables.Index, Tables.Backup, ID
                      ),
 
-                    Connection = MySqlManager.Connection,
+                        Connection = conn,
 
-                    /* 开始事务 */
-                    Transaction = MySqlManager.Connection.BeginTransaction()
-                };
+                        /* 开始事务 */
+                        Transaction = conn.BeginTransaction()
+                    };
 
-                if (MySqlCommand.ExecuteNonQuery() >= 0)
-                {
-                    /* 删除拷贝表的所有冗余，不存在冗余时影响行数为0 */
-                    MySqlCommand.Transaction.Commit();
-                    return true;
-                }
-                else
-                {
-                    MySqlCommand.Transaction.Rollback();
-                    return false;
-                }
+                    if (MySqlCommand.ExecuteNonQuery() >= 0)
+                    {
+                        /* 删除拷贝表的所有冗余，不存在冗余时影响行数为0 */
+                        MySqlCommand.Transaction.Commit();
+                        return true;
+                    }
+                    else
+                    {
+                        MySqlCommand.Transaction.Rollback();
+                        return false;
+                    }
+                });
             }
 
             /// <summary>
