@@ -8,6 +8,8 @@ using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Markdig;
 
 
@@ -362,6 +364,16 @@ namespace WaterLibrary.Tools
                 PrivateKey = "";
             }
         }
+        /// <summary>
+        /// 将当前对象序列化到JSON
+        /// </summary>
+        /// <returns></returns>
+        public string ToJSON()
+        {
+            return JsonConvert.SerializeObject
+                (this, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
+        }
+
         /// <summary>
         /// 公钥
         /// </summary>

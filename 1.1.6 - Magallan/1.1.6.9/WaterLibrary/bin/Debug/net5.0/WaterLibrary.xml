@@ -1877,6 +1877,12 @@
             <param name="keySize">密钥位数</param>
             <param name="IS_INIT">是否在初始化时自动填充密钥对</param>
         </member>
+        <member name="M:WaterLibrary.Tools.KeyPair.ToJSON">
+            <summary>
+            将当前对象序列化到JSON
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:WaterLibrary.Tools.KeyPair.PublicKey">
             <summary>
             公钥
