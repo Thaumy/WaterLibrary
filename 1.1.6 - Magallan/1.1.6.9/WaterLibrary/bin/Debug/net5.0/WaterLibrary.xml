@@ -1726,14 +1726,14 @@
             数学管理器
             </summary>
         </member>
-        <member name="M:WaterLibrary.Tools.MathH.Exch(System.Int32@,System.Int32@)">
+        <member name="M:WaterLibrary.Tools.MathH.Exch``1(``0@,``0@)">
             <summary>
             交换值的方法，引用类型
             </summary>
             <param name="i"></param>
             <param name="j"></param>
         </member>
-        <member name="M:WaterLibrary.Tools.MathH.Less(System.Int32,System.Int32)">
+        <member name="M:WaterLibrary.Tools.MathH.Less``1(``0,``0)">
             <summary>
             判断小于的方法
             </summary>
@@ -1771,14 +1771,7 @@
             <param name="array">数组，顺序由小到大</param>
             <returns>若数组存在被检索值,则返回值在数组中的位置,若不存在则返回-1</returns>
         </member>
-        <member name="M:WaterLibrary.Tools.MathH.BubbleSort``1(``0[])">
-            <summary>
-            冒泡排序
-            </summary>
-            <param name="array">被排序的数组</param>
-            <returns>通常返回有序数组(由小到大)</returns>
-        </member>
-        <member name="M:WaterLibrary.Tools.MathH.ShellSort(System.Int32[])">
+        <member name="M:WaterLibrary.Tools.MathH.ShellSort``1(``0[])">
             <summary>
             希尔排序
             </summary>

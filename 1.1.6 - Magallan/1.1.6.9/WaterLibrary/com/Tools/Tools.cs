@@ -25,9 +25,9 @@ namespace WaterLibrary.Tools
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        public static void Exch(ref int i, ref int j)
+        public static void Exch<T>(ref T i, ref T j)
         {
-            int temp = i;
+            T temp = i;
             i = j;
             j = temp;
         }
@@ -37,7 +37,7 @@ namespace WaterLibrary.Tools
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns>若i小于j返回true</returns>
-        public static bool Less(int i, int j)
+        public static bool Less<T>(T i, T j) where T : IComparable
         {
             return i.CompareTo(j) < 0;
         }
@@ -111,50 +111,24 @@ namespace WaterLibrary.Tools
             return -1;
         }
 
-        /// <summary>
-        /// 冒泡排序
-        /// </summary>
-        /// <param name="array">被排序的数组</param>
-        /// <returns>通常返回有序数组(由小到大)</returns>
-        public static T[] BubbleSort<T>(T[] array) where T : IComparable
-        {
-            for (int path = 0; path < array.Length; path++)//正被有序的起始位
-            {
-                for (int i = 0; i < array.Length; i++)//临近元素排序
-                {
-                    if (i + 1 < array.Length)//元素交换
-                    {
-                        T tmp;
-                        if (array[i].CompareTo(array[i + 1]) > 0)
-                        {
-                            tmp = array[i];
-                            array[i] = array[i + 1];
-                            array[i + 1] = tmp;
-                        }
-                    }
 
-                }
-            }
-            return array;
-        }
         /// <summary>
         /// 希尔排序
         /// </summary>
         /// <param name="array">待排序的整数组</param>
         /// <returns>返回排序完成的数组</returns>
-        public static int[] ShellSort(int[] array)
+        public static T[] ShellSort<T>(T[] array) where T : IComparable
         {
             int N = array.Length;
             int h = 1;
 
-            while (h < N / 3)
-                h = 3 * h + 1;
+            while (h < N / 3) h = 3 * h + 1;
             while (h >= 1)
             {
                 for (int i = h; i < N; i++)
                 {
-                    for (int j = i; j >= h && MathH.Less(array[j], array[j - h]); j -= h)
-                        MathH.Exch(ref array[j], ref array[j - h]);
+                    for (int j = i; j >= h && Less(array[j], array[j - h]); j -= h)
+                        Exch(ref array[j], ref array[j - h]);
                 }
                 h /= 3;
             }
