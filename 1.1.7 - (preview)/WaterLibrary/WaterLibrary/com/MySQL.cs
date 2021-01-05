@@ -38,7 +38,7 @@ namespace WaterLibrary.MySQL
                     return conn;
                 }
 
-                if (ConnectionPool.Count > 8)/* 在连接数超过8时检查无用连接并进行清理 */
+                if (ConnectionPool.Count > 16)/* 在连接数超过8时检查无用连接并进行清理 */
                 {
                     for (int i = ConnectionPool.Count - 1; i >= 0; i--)
                     { /* 如果连接中断或是关闭（这都是不工作的状态） */
