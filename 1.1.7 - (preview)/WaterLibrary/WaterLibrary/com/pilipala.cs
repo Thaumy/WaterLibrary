@@ -419,11 +419,8 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public object this[string Key]
             {
-                get
-                {
-                    /* 通过反射获取属性 */
-                    return GetType().GetProperty(Key).GetValue(this);
-                }
+                /* 通过反射获取属性 */
+                get => GetType().GetProperty(Key).GetValue(this);
                 set
                 {
                     /* 通过反射设置属性 */
@@ -995,23 +992,23 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 用户名
             /// </summary>
-            public string Name { get { return Get("Name"); } set { Set("Name", value); } }
+            public string Name { get => Get("Name"); set => Set("Name", value); }
             /// <summary>
             /// 自我介绍
             /// </summary>
-            public string Bio { get { return Get("Bio"); } set { Set("Bio", value); } }
+            public string Bio { get => Get("Bio"); set => Set("Bio", value); }
             /// <summary>
             /// 组别
             /// </summary>
-            public string GroupType { get { return Get("GroupType"); } set { Set("GroupType", value); } }
+            public string GroupType { get => Get("GroupType"); set => Set("GroupType", value); }
             /// <summary>
             /// 邮箱
             /// </summary>
-            public string Email { get { return Get("Email"); } set { Set("Email", value); } }
+            public string Email { get => Get("Email"); set => Set("Email", value); }
             /// <summary>
             /// 头像(链接)
             /// </summary>
-            public string Avatar { get { return Get("Avatar"); } set { Set("Avatar", value); } }
+            public string Avatar { get => Get("Avatar"); set => Set("Avatar", value); }
 
             private string Get(string Key)
             {
@@ -1903,14 +1900,14 @@ namespace WaterLibrary.pilipala
             /// </summary>
             public int TotalPostCount
             {
-                get { return GetPostCountByMode("^"); }
+                get => GetPostCountByMode("^");
             }
             /// <summary>
             /// 拷贝计数
             /// </summary>
             public int BackupCount
             {
-                get { return GetBackupCount(); }
+                get => GetBackupCount();
             }
 
             /// <summary>
@@ -1918,28 +1915,28 @@ namespace WaterLibrary.pilipala
             /// </summary>
             public int HiddenCount
             {
-                get { return GetPostCountByMode("^hidden$"); }
+                get => GetPostCountByMode("^hidden$");
             }
             /// <summary>
             /// 展示中文章计数
             /// </summary>
             public int OnDisplayCount
             {
-                get { return GetPostCountByMode("^$"); }
+                get => GetPostCountByMode("^$");
             }
             /// <summary>
             /// 归档中文章计数
             /// </summary>
             public int ArchivedCount
             {
-                get { return GetPostCountByMode("^archived$"); }
+                get => GetPostCountByMode("^archived$");
             }
             /// <summary>
             /// 计划中文章计数
             /// </summary>
             public int ScheduledCount
             {
-                get { return GetPostCountByMode("^scheduled$"); }
+                get => GetPostCountByMode("^scheduled$");
             }
 
             private int GetPostCountByMode(string REGEXP)

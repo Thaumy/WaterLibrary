@@ -41,7 +41,7 @@
         </member>
         <member name="T:WaterLibrary.pilipala.Components.CommentLake">
             <summary>
-            评论湖
+            评论湖组件
             </summary>
         </member>
         <member name="P:WaterLibrary.pilipala.Components.CommentLake.Tables">

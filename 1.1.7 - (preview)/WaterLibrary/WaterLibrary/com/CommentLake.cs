@@ -17,18 +17,18 @@ using WaterLibrary.pilipala.Database;
 namespace WaterLibrary.pilipala.Components
 {
     /// <summary>
-    /// 评论湖
+    /// 评论湖组件
     /// </summary>
     public class CommentLake : IPLComponent<CommentLake>
     {
         /// <summary>
         /// 表集
         /// </summary>
-        private PLTables Tables { get; set; }
+        private PLTables Tables { get; init; }
         /// <summary>
         /// MySql数据库管理器
         /// </summary>
-        private MySqlManager MySqlManager { get; set; }
+        private MySqlManager MySqlManager { get; init; }
 
         /// <summary>
         /// 默认构造
@@ -41,8 +41,7 @@ namespace WaterLibrary.pilipala.Components
         /// <param name="MySqlManager">数据库管理器</param>
         internal CommentLake(PLTables Tables, MySqlManager MySqlManager)
         {
-            this.Tables = Tables;
-            this.MySqlManager = MySqlManager;
+            (this.Tables, this.MySqlManager) = (Tables, MySqlManager);
         }
 
         /// <summary>
@@ -342,11 +341,8 @@ namespace WaterLibrary.pilipala.Entity
         /// <returns></returns>
         public object this[string Key]
         {
-            get
-            {
-                /* 通过反射获取属性 */
-                return GetType().GetProperty(Key).GetValue(this);
-            }
+            /* 通过反射获取属性 */
+            get => GetType().GetProperty(Key).GetValue(this);
             set
             {
                 /* 通过反射设置属性 */
@@ -444,7 +440,7 @@ namespace WaterLibrary.pilipala.Entity
         /// </summary>
         public int Count
         {
-            get { return CommentList.Count; }
+            get => CommentList.Count;
         }
 
         /// <summary>
