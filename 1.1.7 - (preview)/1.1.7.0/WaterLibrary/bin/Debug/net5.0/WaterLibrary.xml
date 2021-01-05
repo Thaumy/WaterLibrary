@@ -1567,7 +1567,7 @@
             <param name="parameters">查询参数列表</param>
             <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.ValueTuple{System.String,System.String,System.String},System.String)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.ValueTuple{System.String,System.String,System.Object},System.String)">
             <summary>
             取得指定键值（键匹配查询）
             </summary>
@@ -1652,7 +1652,7 @@
             <param name="Key">目标列键名</param>
             <returns>返回非泛型List{object}实例</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.UpdateKey(System.ValueTuple{System.String,System.String,System.String},System.String,System.String)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.UpdateKey(System.ValueTuple{System.String,System.String,System.Object},System.String,System.Object)">
             <summary>
             更新单个键值
             </summary>
@@ -1661,7 +1661,7 @@
             <param name="NewValue">新键值</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.UpdateKey(System.String,System.String,System.String,System.String)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.UpdateKey(System.String,System.String,System.Object,System.Object)">
             <summary>
             更新单个键值
             </summary>

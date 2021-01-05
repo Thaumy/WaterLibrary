@@ -152,7 +152,7 @@ namespace WaterLibrary.MySQL
         /// <param name="MySqlKey">操作定位器</param>
         /// <param name="KeyName">键名</param>
         /// <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
-        public object GetKey((string Table, string Name, string Val) MySqlKey, string KeyName)
+        public object GetKey((string Table, string Name, object Val) MySqlKey, string KeyName)
         {
             return DoInConnection(conn =>
             {
@@ -291,7 +291,7 @@ namespace WaterLibrary.MySQL
         /// <param name="Key">要更改的键</param>
         /// <param name="NewValue">新键值</param>
         /// <returns></returns>
-        public bool UpdateKey((string Table, string Name, string Val) MySqlKey, string Key, string NewValue)
+        public bool UpdateKey((string Table, string Name, object Val) MySqlKey, string Key, object NewValue)
         {
             return DoInConnection(conn =>
             {
@@ -324,7 +324,7 @@ namespace WaterLibrary.MySQL
         /// <param name="OldValue">旧值</param>
         /// <param name="NewValue">新值</param>
         /// <returns></returns>
-        public bool UpdateKey(string Table, string Key, string OldValue, string NewValue)
+        public bool UpdateKey(string Table, string Key, object OldValue, object NewValue)
         {
             return DoInConnection(conn =>
             {

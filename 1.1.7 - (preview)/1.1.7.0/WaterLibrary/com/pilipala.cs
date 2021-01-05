@@ -1714,7 +1714,7 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool UnsetType(int ID)
             {
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
+                var MySqlKey = (Tables.Index, "ID", ID);
                 return MySqlManager.UpdateKey(MySqlKey, "Type", "");
             }
             /// <summary>
@@ -1725,7 +1725,7 @@ namespace WaterLibrary.pilipala
             public bool NoteType(int ID)
             {
 
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
+                var MySqlKey = (Tables.Index, "ID", ID);
                 return MySqlManager.UpdateKey(MySqlKey, "Type", "note");
             }
 
@@ -1737,7 +1737,7 @@ namespace WaterLibrary.pilipala
             public bool UnsetMode(int ID)
             {
                 //初始化键定位
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
+                var MySqlKey = (Tables.Index, "ID", ID);
                 return MySqlManager.UpdateKey(MySqlKey, "Mode", "");
             }
             /// <summary>
@@ -1748,7 +1748,7 @@ namespace WaterLibrary.pilipala
             public bool HiddenMode(int ID)
             {
                 //初始化键定位
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
+                var MySqlKey = (Tables.Index, "ID", ID);
                 return MySqlManager.UpdateKey(MySqlKey, "Mode", "hidden");
             }
             /// <summary>
@@ -1759,7 +1759,7 @@ namespace WaterLibrary.pilipala
             public bool ScheduledMode(int ID)
             {
                 //初始化键定位
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
+                var MySqlKey = (Tables.Index, "ID", ID);
                 return MySqlManager.UpdateKey(MySqlKey, "Mode", "scheduled");
             }
             /// <summary>
@@ -1770,7 +1770,7 @@ namespace WaterLibrary.pilipala
             public bool ArchivedMode(int ID)
             {
                 //初始化键定位
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
+                var MySqlKey = (Tables.Index, "ID", ID);
                 return MySqlManager.UpdateKey(MySqlKey, "Mode", "archived");
             }
 
@@ -1784,8 +1784,8 @@ namespace WaterLibrary.pilipala
             public bool UpdateIndex<T>(int ID, object Value) where T : IProperty
             {
                 //初始化键定位
-                var MySqlKey = (Tables.Index, "ID", ID.ToString());
-                return MySqlManager.UpdateKey(MySqlKey, typeof(T).Name, Convert.ToString(Value));
+                var MySqlKey = (Tables.Index, "ID", ID);
+                return MySqlManager.UpdateKey(MySqlKey, typeof(T).Name, Value);
             }
             /// <summary>
             /// 通用文章拷贝更新器
@@ -1798,7 +1798,7 @@ namespace WaterLibrary.pilipala
             {
                 //初始化键定位
                 var MySqlKey = (Tables.Backup, "GUID", GetPositiveGUID(ID));
-                return MySqlManager.UpdateKey(MySqlKey, typeof(T).Name, Convert.ToString(Value));
+                return MySqlManager.UpdateKey(MySqlKey, typeof(T).Name, Value);
             }
 
             /// <summary>
