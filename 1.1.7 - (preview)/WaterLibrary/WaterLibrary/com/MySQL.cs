@@ -42,8 +42,7 @@ namespace WaterLibrary.MySQL
                 {
                     for (int i = ConnectionPool.Count - 1; i >= 0; i--)
                     { /* 如果连接中断或是关闭（这都是不工作的状态） */
-                        if (ConnectionPool[i].State == ConnectionState.Broken
-                         || ConnectionPool[i].State == ConnectionState.Closed)
+                        if (ConnectionPool[i].State is ConnectionState.Broken or ConnectionState.Closed)
                         {
                             ConnectionPool[i].Dispose();/* 注销并移除连接池 */
                             ConnectionPool.RemoveAt(i);

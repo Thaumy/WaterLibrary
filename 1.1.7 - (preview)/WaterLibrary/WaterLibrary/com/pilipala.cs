@@ -323,7 +323,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// MySql控制器
         /// </summary>
-        public MySqlManager MySqlManager { get; private set; }
+        public MySqlManager MySqlManager { get; init; }
 
         /// <summary>
         /// 登录内核的用户GUID
@@ -825,8 +825,7 @@ namespace WaterLibrary.pilipala
             /// <param name="User">用户对象</param>
             public void Ready(ICORE CORE, User User)
             {
-                this.CORE = CORE;
-                this.User = User;
+                (this.CORE, this.User) = (CORE, User);
             }
 
 
@@ -862,8 +861,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Authentication : IPLComponent<Authentication>
         {
-            private PLTables Tables { get; set; }
-            private MySqlManager MySqlManager { get; set; }
+            private PLTables Tables { get; init; }
+            private MySqlManager MySqlManager { get; init; }
 
             private readonly User User;
 
@@ -939,8 +938,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class User
         {
-            internal PLTables Tables { get; set; }
-            internal MySqlManager MySqlManager { get; set; }
+            internal PLTables Tables { get; init; }
+            internal MySqlManager MySqlManager { get; init; }
 
             /// <summary>
             /// 默认构造
@@ -1028,8 +1027,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Reader : IPLComponent<Reader>
         {
-            private PLViews Views { get; set; }
-            private MySqlManager MySqlManager { get; set; }
+            private PLViews Views { get; init; }
+            private MySqlManager MySqlManager { get; init; }
 
             /// <summary>
             /// 默认构造
@@ -1316,8 +1315,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Writer : IPLComponent<Writer>
         {
-            private PLTables Tables { get; set; }
-            private MySqlManager MySqlManager { get; set; }
+            private PLTables Tables { get; init; }
+            private MySqlManager MySqlManager { get; init; }
 
             /// <summary>
             /// 默认构造
@@ -1880,8 +1879,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Counter : IPLComponent<Counter>
         {
-            private PLTables Tables { get; set; }
-            private MySqlManager MySqlManager { get; set; }
+            private PLTables Tables { get; init; }
+            private MySqlManager MySqlManager { get; init; }
 
             /// <summary>
             /// 默认构造
