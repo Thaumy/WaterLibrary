@@ -26,7 +26,7 @@ namespace WaterLibrary.MySQL
             {
                 MySqlConnection GenConn()
                 {
-                    var conn = new MySqlConnection(
+                    return new(
                         "DataSource=" + MySqlConnMsg.DataSource +
                         ";DataBase=" + MySqlConnMsg.DataBase +
                         ";Port=" + MySqlConnMsg.Port +
@@ -35,7 +35,6 @@ namespace WaterLibrary.MySQL
                         /* UPDATE语句返回受影响的行数而不是符合查询条件的行数|兼容旧版语法 */
                         ";UseAffectedRows=TRUE;"
                         );
-                    return conn;
                 }
 
                 if (ConnectionPool.Count > 16)/* 在连接数超过8时检查无用连接并进行清理 */
