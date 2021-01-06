@@ -277,21 +277,6 @@ namespace WaterLibrary.pilipala
         /// </summary>
         /// <returns></returns>
         public void Run();
-
-        /// <summary>
-        /// 设置内核所需要的表
-        /// </summary>
-        /// <param name="User">用户表</param>
-        /// <param name="Index">索引表</param>
-        /// <param name="Backup">备份表</param>
-        /// <param name="Comment">备份表</param>
-        void SetTables(string User = "pl_user", string Index = "pl_index", string Backup = "pl_backup", string Comment = "comment_lake");
-        /// <summary>
-        /// 设置内核所需要的视图
-        /// </summary>
-        /// <param name="PosUnion">积极联合视图</param>
-        /// <param name="NegUnion">消极联合视图</param>
-        void SetViews(string PosUnion = "pos>union", string NegUnion = "neg>union");
     }
 
 
@@ -337,8 +322,10 @@ namespace WaterLibrary.pilipala
         public CORE(PLDatabase PLDatabase)
         {
             MySqlManager = PLDatabase.MySqlManager;
-            SetTables(PLDatabase.Tables.User, PLDatabase.Tables.Index, PLDatabase.Tables.Backup);
-            SetViews(PLDatabase.Views.PosUnion, PLDatabase.Views.NegUnion);
+            Tables =
+                new(PLDatabase.Tables.User, PLDatabase.Tables.Index, PLDatabase.Tables.Backup, PLDatabase.Tables.Comment);
+            Views =
+                new(PLDatabase.Views.PosUnion, PLDatabase.Views.NegUnion);
         }
 
         /// <summary>
@@ -379,28 +366,6 @@ namespace WaterLibrary.pilipala
         public void Run()
         {
             CoreReady(this, null);/* 分配一个空用户给工厂 */
-        }
-
-        /// <summary>
-        /// 设置内核所需要的表
-        /// </summary>
-        /// <param name="User">用户表</param>
-        /// <param name="Index">索引表</param>
-        /// <param name="Backup">备份表</param>
-        /// <param name="Comment">备份表</param>
-        public void SetTables(string User = "pl_user", string Index = "pl_index", string Backup = "pl_backup", string Comment = "comment_lake")
-        {
-            Tables = new PLTables(User, Index, Backup, Comment);
-
-        }
-        /// <summary>
-        /// 设置内核所需要的视图
-        /// </summary>
-        /// <param name="PosUnion">积极联合视图</param>
-        /// <param name="NegUnion">消极联合视图</param>
-        public void SetViews(string PosUnion = "pos>union", string NegUnion = "neg>union")
-        {
-            Views = new PLViews(PosUnion, NegUnion);
         }
     }
 

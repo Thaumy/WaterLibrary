@@ -1334,22 +1334,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.ICORE.SetTables(System.String,System.String,System.String,System.String)">
-            <summary>
-            设置内核所需要的表
-            </summary>
-            <param name="User">用户表</param>
-            <param name="Index">索引表</param>
-            <param name="Backup">备份表</param>
-            <param name="Comment">备份表</param>
-        </member>
-        <member name="M:WaterLibrary.pilipala.ICORE.SetViews(System.String,System.String)">
-            <summary>
-            设置内核所需要的视图
-            </summary>
-            <param name="PosUnion">积极联合视图</param>
-            <param name="NegUnion">消极联合视图</param>
-        </member>
         <member name="T:WaterLibrary.pilipala.CoreReadyEventHandler">
             <summary>
             内核准备完成委托
@@ -1406,22 +1390,6 @@
             以访客身份启动内核
             </summary>
             <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.CORE.SetTables(System.String,System.String,System.String,System.String)">
-            <summary>
-            设置内核所需要的表
-            </summary>
-            <param name="User">用户表</param>
-            <param name="Index">索引表</param>
-            <param name="Backup">备份表</param>
-            <param name="Comment">备份表</param>
-        </member>
-        <member name="M:WaterLibrary.pilipala.CORE.SetViews(System.String,System.String)">
-            <summary>
-            设置内核所需要的视图
-            </summary>
-            <param name="PosUnion">积极联合视图</param>
-            <param name="NegUnion">消极联合视图</param>
         </member>
         <member name="T:WaterLibrary.MySQL.MySqlManager">
             <summary>
