@@ -13,13 +13,33 @@ using Newtonsoft.Json.Converters;
 using Markdig;
 
 
-namespace WaterLibrary.Tools
+namespace WaterLibrary.Util
 {
     /// <summary>
     /// 数学管理器
     /// </summary>
     public static class MathH
     {
+        /// <summary>
+        /// 顺序表示枚举
+        /// </summary>
+        public sealed class ORDER
+        {
+            /// <summary>
+            /// 升序(0123)
+            /// </summary>
+            public static string ASC
+            {
+                get => "ASC";
+            }
+            /// <summary>
+            /// 降序(3210)
+            /// </summary>
+            public static string DESC
+            {
+                get => "DESC";
+            }
+        }
         /// <summary>
         /// 交换值的方法，引用类型
         /// </summary>
