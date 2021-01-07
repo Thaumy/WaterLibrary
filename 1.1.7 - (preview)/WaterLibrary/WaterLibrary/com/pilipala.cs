@@ -429,8 +429,6 @@ namespace WaterLibrary.pilipala
 
                 UVCount = -1;
                 StarCount = -1;
-
-                PropertyContainer = new();
             }
 
             /// <summary>
@@ -564,7 +562,11 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 属性容器
             /// </summary>
-            public Hashtable PropertyContainer { get; set; }
+            public Hashtable PropertyContainer
+            {
+                get => PropertyContainer ??= new();
+                private set => PropertyContainer = value;
+            }
         }
         /// <summary>
         /// 文章数据集
