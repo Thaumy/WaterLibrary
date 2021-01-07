@@ -150,10 +150,11 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Components.ComponentFactory.GenReader">
+        <member name="M:WaterLibrary.pilipala.Components.ComponentFactory.GenReader(WaterLibrary.pilipala.Components.Reader.ReadMode)">
             <summary>
             生成读组件
             </summary>
+            <param name="ReadMode">读取模式枚举</param>
             <returns></returns>
         </member>
         <member name="M:WaterLibrary.pilipala.Components.ComponentFactory.GenWriter">
@@ -295,6 +296,21 @@
         <member name="T:WaterLibrary.pilipala.Components.Reader">
             <summary>
             数据读取组件
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Components.Reader.ReadMode">
+            <summary>
+            读取模式枚举
+            </summary>
+        </member>
+        <member name="F:WaterLibrary.pilipala.Components.Reader.ReadMode.CleanRead">
+            <summary>
+            净读，表示不读取隐藏文章。适用于面向访问者的渲染
+            </summary>
+        </member>
+        <member name="F:WaterLibrary.pilipala.Components.Reader.ReadMode.DirtyRead">
+            <summary>
+            净读，表示读取隐藏文章。适用于面向管理员的渲染
             </summary>
         </member>
         <member name="M:WaterLibrary.pilipala.Components.Reader.#ctor">
@@ -1079,7 +1095,7 @@
             文本表
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Database.IPLDatabase.Views">
+        <member name="P:WaterLibrary.pilipala.Database.IPLDatabase.ViewsSet">
             <summary>
             文本视图
             </summary>
@@ -1275,7 +1291,7 @@
             数据表
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.Views">
+        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.ViewsSet">
             <summary>
             数据视图
             </summary>
@@ -1295,14 +1311,14 @@
             噼里啪啦内核接口
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.ICORE.Views">
-            <summary>
-            内核视图访问器
-            </summary>
-        </member>
         <member name="P:WaterLibrary.pilipala.ICORE.Tables">
             <summary>
             内核表访问器
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.ICORE.ViewsSet">
+            <summary>
+            内核视图访问器
             </summary>
         </member>
         <member name="P:WaterLibrary.pilipala.ICORE.MySqlManager">
@@ -1356,7 +1372,7 @@
             核心表结构
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.CORE.Views">
+        <member name="P:WaterLibrary.pilipala.CORE.ViewsSet">
             <summary>
             核心视图结构
             </summary>

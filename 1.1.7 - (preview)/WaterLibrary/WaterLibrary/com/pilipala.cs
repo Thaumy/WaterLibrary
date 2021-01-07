@@ -32,7 +32,7 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 文本视图
             /// </summary>
-            PLViews Views { get; }
+            (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; }
             /// <summary>
             /// 数据库管理器实例
             /// </summary>
@@ -218,7 +218,7 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 数据视图
             /// </summary>
-            public PLViews Views { get; set; }
+            public (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; set; }
             /// <summary>
             /// 数据库管理器实例
             /// </summary>
@@ -243,13 +243,13 @@ namespace WaterLibrary.pilipala
     public interface ICORE
     {
         /// <summary>
-        /// 内核视图访问器
-        /// </summary>
-        PLViews Views { get; }
-        /// <summary>
         /// 内核表访问器
         /// </summary>
         PLTables Tables { get; }
+        /// <summary>
+        /// 内核视图访问器
+        /// </summary>
+        (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; }
         /// <summary>
         /// 内核MySql数据库控制器
         /// </summary>
@@ -304,7 +304,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 核心视图结构
         /// </summary>
-        public PLViews Views { get; private set; }
+        public (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; private set; }
         /// <summary>
         /// MySql控制器
         /// </summary>
@@ -322,10 +322,8 @@ namespace WaterLibrary.pilipala
         public CORE(PLDatabase PLDatabase)
         {
             MySqlManager = PLDatabase.MySqlManager;
-            Tables =
-                new(PLDatabase.Tables.User, PLDatabase.Tables.Index, PLDatabase.Tables.Backup, PLDatabase.Tables.Comment);
-            Views =
-                new(PLDatabase.Views.PosUnion, PLDatabase.Views.NegUnion);
+            Tables = PLDatabase.Tables;
+            ViewsSet = PLDatabase.ViewsSet;
         }
 
         /// <summary>
@@ -429,6 +427,8 @@ namespace WaterLibrary.pilipala
 
                 UVCount = -1;
                 StarCount = -1;
+
+                PropertyContainer = new();
             }
 
             /// <summary>
@@ -562,11 +562,7 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 属性容器
             /// </summary>
-            public Hashtable PropertyContainer
-            {
-                get => PropertyContainer ??= new();
-                private set => PropertyContainer = value;
-            }
+            public Hashtable PropertyContainer { get; set; }
         }
         /// <summary>
         /// 文章数据集
@@ -801,8 +797,17 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 生成读组件
             /// </summary>
+            /// <param name="ReadMode">读取模式枚举</param>
             /// <returns></returns>
-            public Reader GenReader() => new(CORE.Views, CORE.MySqlManager);
+            public Reader GenReader(Reader.ReadMode ReadMode)
+            {
+                return ReadMode switch
+                {
+                    Reader.ReadMode.CleanRead => new(CORE.ViewsSet.CleanViews, CORE.MySqlManager),
+                    Reader.ReadMode.DirtyRead => new(CORE.ViewsSet.DirtyViews, CORE.MySqlManager),
+                    _ => throw new NotImplementedException(),
+                };
+            }
             /// <summary>
             /// 生成写组件
             /// </summary>
@@ -991,7 +996,23 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Reader : IPLComponent<Reader>
         {
+            /// <summary>
+            /// 读取模式枚举
+            /// </summary>
+            public enum ReadMode
+            {
+                /// <summary>
+                /// 净读，表示不读取隐藏文章。适用于面向访问者的渲染
+                /// </summary>
+                CleanRead = 0,
+                /// <summary>
+                /// 净读，表示读取隐藏文章。适用于面向管理员的渲染
+                /// </summary>
+                DirtyRead = 1
+            }
+
             private PLViews Views { get; init; }
+
             private MySqlManager MySqlManager { get; init; }
 
             /// <summary>
