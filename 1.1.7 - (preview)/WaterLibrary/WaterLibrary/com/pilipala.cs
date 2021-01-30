@@ -807,6 +807,11 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public Counter GenCounter() => new(CORE.Tables.Index, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
+            /// 生成归档管理组件
+            /// </summary>
+            /// <returns></returns>
+            public Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
+            /// <summary>
             /// 生成评论湖组件
             /// </summary>
             /// <returns></returns>
@@ -1285,7 +1290,7 @@ namespace WaterLibrary.pilipala
             }
 
             /// <summary>
-            /// 得到最大文章PostID（私有）
+            /// 得到最大PostID（私有）
             /// </summary>
             /// <returns></returns>
             internal int GetMaxPostID()
@@ -1296,7 +1301,7 @@ namespace WaterLibrary.pilipala
                 return Convert.ToInt32(result == DBNull.Value ? 12000 : result);
             }
             /// <summary>
-            /// 得到最小文章PostID（私有）
+            /// 得到最小PostID（私有）
             /// </summary>
             /// <returns>错误则返回-1</returns>
             internal int GetMinPostID()
@@ -1837,7 +1842,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 归档管理组件
         /// </summary>
-        public class Archive
+        public class Archiver
         {
             private string ArchiveTable { get; set; }
             private MySqlManager MySqlManager { get; init; }
@@ -1845,37 +1850,71 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 默认构造
             /// </summary>
-            private Archive() { }
+            private Archiver() { }
             /// <summary>
-            /// 使用归档名构造
+            /// 工厂构造
             /// </summary>
             /// <param name="ArchiveTable">归档表</param>
             /// <param name="MySqlManager">数据库管理器</param>
             /// <returns></returns>
-            internal Archive(string ArchiveTable, MySqlManager MySqlManager)
+            internal Archiver(string ArchiveTable, MySqlManager MySqlManager)
             {
                 this.ArchiveTable = ArchiveTable;
                 this.MySqlManager = MySqlManager;
             }
 
             /// <summary>
-            /// 
+            /// 得到最大ArchiveID（私有）
             /// </summary>
-            /// <typeparam name="T"></typeparam>
-            /// <param name="ReaderTodo"></param>
             /// <returns></returns>
-            public T Select<T>(Func<T> ReaderTodo) where T : IEnumerable
+            internal int GetMaxArchiveID()
             {
-                return ReaderTodo();
+                string SQL = $"SELECT MAX(ArchiveID) FROM {ArchiveTable}";
+                /* 始终具有最大ArchiveID，因为0是无归档状态 */
+                return Convert.ToInt32(MySqlManager.GetKey(SQL));
             }
 
-            public bool AddArchive(string ArchiveName)
+            /// <summary>
+            /// 创建归档
+            /// </summary>
+            /// <param name="Name">归档名</param>
+            /// <returns></returns>
+            public bool CreateArchive(string Name)
             {
+                return MySqlManager.ExecuteInsert(ArchiveTable, ("ArchiveID", 0), ("Name", Name));
+            }
+            /// <summary>
+            /// 注销归档
+            /// </summary>
+            /// <param name="Name">归档名</param>
+            /// <returns></returns>
+            public bool DisposeArchive(string Name)
+            {
+                return MySqlManager.ExecuteDelete(ArchiveTable, new("Name", Name));
+            }
+
+            /// <summary>
+            /// 将文章移入归档
+            /// </summary>
+            /// <param name="Name">归档名</param>
+            /// <param name="PostID">目标文章PostID</param>
+            /// <returns></returns>
+            public bool MoveIntoArchive(string Name, int PostID)
+            {
+                //TODO
                 return false;
             }
-            public bool RemoveArchive(string ArchiveName)
+
+            /// <summary>
+            /// 归档下的文章计数
+            /// </summary>
+            /// <param name="Name">归档名</param>
+            /// <returns></returns>
+            public int Count(string Name)
             {
-                return false;
+                return Convert.ToInt32(
+                    MySqlManager.GetKey($"SELECT COUNT(*) FROM {ArchiveTable} WHERE Name = ?Name",
+                    new MySqlParameter[] { new("Name", Name) }));
             }
         }
         /// <summary>
@@ -1883,11 +1922,11 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Plugin
         {
-            //private PLTables Tables { get; init; }
-            //private MySqlManager MySqlManager { get; init; }
+            /*private PLTables Tables { get; init; }
+            private MySqlManager MySqlManager { get; init; }
 
-            //private List<string> PluginPool;
-            /* 此组件是为未来而保留的 */
+            private List<string> PluginPool;
+            此组件是为未来而保留的 */
         }
     }
 }

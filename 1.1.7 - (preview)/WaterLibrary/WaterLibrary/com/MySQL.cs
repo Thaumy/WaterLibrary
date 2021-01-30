@@ -337,6 +337,56 @@ namespace WaterLibrary.MySQL
             return List;
         }
 
+        /// <summary>
+        /// 执行任意SQL语句
+        /// </summary>
+        /// <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+        /// <param name="SQL">SQL语句</param>
+        /// <returns>返回受影响的行数</returns>
+        public int ExecuteAny(string SQL)
+        {
+            return DoInConnection(conn =>
+            {
+                return DoInCommand(conn, cmd =>
+                {
+                    cmd.CommandText = SQL;
+
+                    return DoInTransaction(conn, tx =>
+                    {
+                        int AffectedRows = cmd.ExecuteNonQuery();
+                        tx.Commit();/*提交事务*/
+
+                        return AffectedRows;
+                    });
+                });
+            });
+        }
+        /// <summary>
+        /// 执行任意SQL语句
+        /// </summary>
+        /// <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+        /// <param name="SQL">SQL语句</param>
+        /// <param name="parameters">查询参数列表</param>
+        /// <returns>返回受影响的行数</returns>
+        public int ExecuteAny(string SQL, params MySqlParameter[] parameters)
+        {
+            return DoInConnection(conn =>
+            {
+                return DoInCommand(conn, cmd =>
+                {
+                    cmd.CommandText = SQL;
+                    cmd.Parameters.AddRange(parameters);/* 添加参数 */
+
+                    return DoInTransaction(conn, tx =>
+                    {
+                        int AffectedRows = cmd.ExecuteNonQuery();
+                        tx.Commit();/*提交事务*/
+
+                        return AffectedRows;
+                    });
+                });
+            });
+        }
 
         /// <summary>
         /// 更新操作
@@ -449,28 +499,34 @@ namespace WaterLibrary.MySQL
                 });
             });
         }
-
-
         /// <summary>
-        /// 执行任意SQL语句
+        /// 删除操作
         /// </summary>
-        /// <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
-        /// <param name="SQL">SQL语句</param>
-        /// <returns>返回受影响的行数</returns>
-        public int ExecuteAny(string SQL)
+        /// <remarks>此方法仅允许删除一条记录，若发生多条记录的删除，事务将被回滚。</remarks>
+        /// <param name="Table">目标表</param>
+        /// <param name="Pair">键值对，满足此条件的行将被删除</param>
+        /// <returns></returns>
+        public bool ExecuteDelete(string Table, (string Key, object Value) Pair)
         {
             return DoInConnection(conn =>
             {
                 return DoInCommand(conn, cmd =>
                 {
-                    cmd.CommandText = SQL;
+                    cmd.CommandText = $"DELETE FROM {Table} WHERE `{Pair.Key}`=?Value";
+                    cmd.Parameters.AddWithValue("Value", Pair.Value);/* 参数添加 */
 
                     return DoInTransaction(conn, tx =>
                     {
-                        int AffectedRows = cmd.ExecuteNonQuery();
-                        tx.Commit();/*提交事务*/
-
-                        return AffectedRows;
+                        if (cmd.ExecuteNonQuery() == 1)
+                        {
+                            tx.Commit();
+                            return true;
+                        }
+                        else
+                        {
+                            tx.Rollback();
+                            return false;
+                        }
                     });
                 });
             });

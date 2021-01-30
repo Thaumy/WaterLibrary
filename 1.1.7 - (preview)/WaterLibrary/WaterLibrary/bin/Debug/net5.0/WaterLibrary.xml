@@ -166,6 +166,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:WaterLibrary.pilipala.Components.ComponentFactory.GenArchiver">
+            <summary>
+            生成归档管理组件
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:WaterLibrary.pilipala.Components.ComponentFactory.GenCommentLake">
             <summary>
             生成评论湖组件
@@ -412,13 +418,13 @@
         </member>
         <member name="M:WaterLibrary.pilipala.Components.Writer.GetMaxPostID">
             <summary>
-            得到最大文章PostID（私有）
+            得到最大PostID（私有）
             </summary>
             <returns></returns>
         </member>
         <member name="M:WaterLibrary.pilipala.Components.Writer.GetMinPostID">
             <summary>
-            得到最小文章PostID（私有）
+            得到最小PostID（私有）
             </summary>
             <returns>错误则返回-1</returns>
         </member>
@@ -597,30 +603,57 @@
             <param name="Value">属性值</param>
             <returns>计数为0、未检索到、异常等情况均返回0</returns>
         </member>
-        <member name="T:WaterLibrary.pilipala.Components.Archive">
+        <member name="T:WaterLibrary.pilipala.Components.Archiver">
             <summary>
             归档管理组件
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Components.Archive.#ctor">
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.#ctor">
             <summary>
             默认构造
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Components.Archive.#ctor(System.String,WaterLibrary.MySQL.MySqlManager)">
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.#ctor(System.String,WaterLibrary.MySQL.MySqlManager)">
             <summary>
-            使用归档名构造
+            工厂构造
             </summary>
             <param name="ArchiveTable">归档表</param>
             <param name="MySqlManager">数据库管理器</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Components.Archive.Select``1(System.Func{``0})">
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.GetMaxArchiveID">
             <summary>
-            
+            得到最大ArchiveID（私有）
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="ReaderTodo"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.CreateArchive(System.String)">
+            <summary>
+            创建归档
+            </summary>
+            <param name="Name">归档名</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.DisposeArchive(System.String)">
+            <summary>
+            注销归档
+            </summary>
+            <param name="Name">归档名</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.MoveIntoArchive(System.String,System.Int32)">
+            <summary>
+            将文章移入归档
+            </summary>
+            <param name="Name">归档名</param>
+            <param name="PostID">目标文章PostID</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.Count(System.String)">
+            <summary>
+            归档下的文章计数
+            </summary>
+            <param name="Name">归档名</param>
             <returns></returns>
         </member>
         <member name="T:WaterLibrary.pilipala.Components.Plugin">
@@ -1592,6 +1625,23 @@
             <param name="Key">目标列键名</param>
             <returns>返回非泛型List{object}实例</returns>
         </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String)">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="SQL">SQL语句</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="SQL">SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>返回受影响的行数</returns>
+        </member>
         <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.ValueTuple{System.String,System.String,System.Object},System.String,System.Object)">
             <summary>
             更新操作
@@ -1622,13 +1672,14 @@
             <param name="Pairs">键值对</param>
             <returns>返回插入的成功与否</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteDelete(System.String,System.ValueTuple{System.String,System.Object})">
             <summary>
-            执行任意SQL语句
+            删除操作
             </summary>
-            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
-            <param name="SQL">SQL语句</param>
-            <returns>返回受影响的行数</returns>
+            <remarks>此方法仅允许删除一条记录，若发生多条记录的删除，事务将被回滚。</remarks>
+            <param name="Table">目标表</param>
+            <param name="Pair">键值对，满足此条件的行将被删除</param>
+            <returns></returns>
         </member>
         <member name="T:WaterLibrary.MySQL.MySqlConnMsg">
             <summary>
