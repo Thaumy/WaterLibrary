@@ -99,7 +99,7 @@ namespace WaterLibrary.MySQL
         /// <param name="Connection">承载命令的数据库连接</param>
         /// <param name="todo">委托</param>
         /// <returns></returns>
-        public T DoInCommand<T>(MySqlConnection Connection, Func<MySqlCommand, T> todo)
+        public static T DoInCommand<T>(MySqlConnection Connection, Func<MySqlCommand, T> todo)
         {
             MySqlCommand Command = Connection.CreateCommand();
             T result = todo(Command);
@@ -114,7 +114,7 @@ namespace WaterLibrary.MySQL
         /// <param name="Connection">承载事务的数据库连接</param>
         /// <param name="todo">委托</param>
         /// <returns></returns>
-        public T DoInTransaction<T>(MySqlConnection Connection, Func<MySqlTransaction, T> todo)
+        public static T DoInTransaction<T>(MySqlConnection Connection, Func<MySqlTransaction, T> todo)
         {
             MySqlTransaction Transaction = Connection.BeginTransaction();
             T result = todo(Transaction);

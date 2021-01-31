@@ -1352,11 +1352,11 @@ namespace WaterLibrary.pilipala
 
                     string SQL =
                     $@"INSERT INTO {IndexTable}
-                       ( PostID, UUID, CT, Mode, Type, User, UVCount, StarCount) VALUES
-                       (?PostID,?UUID,?CT,?Mode,?Type,?User,?UVCount,?StarCount);
+                       ( PostID, UUID, CT, Mode, Type, User, UVCount, StarCount, ArchiveID) VALUES
+                       (?PostID,?UUID,?CT,?Mode,?Type,?User,?UVCount,?StarCount,?ArchiveID);
                        INSERT INTO {StackTable}
-                       ( PostID, UUID, LCT, Title, Summary, Content, ArchiveID, Label, Cover) VALUES
-                       (?PostID,?UUID,?LCT,?Title,?Summary,?Content,?ArchiveID,?Label,?Cover);";
+                       ( PostID, UUID, LCT, Title, Summary, Content, Label, Cover) VALUES
+                       (?PostID,?UUID,?LCT,?Title,?Summary,?Content,?Label,?Cover);";
 
                     MySqlParameter[] parameters =
                     {
@@ -1453,10 +1453,10 @@ namespace WaterLibrary.pilipala
                 return MySqlManager.DoInConnection(conn =>
                 {
                     string SQL =
-                    $@"UPDATE {IndexTable} SET UUID=?UUID, Mode=?Mode, Type=?Type, User=?User, UVCount=?UVCount, StarCount=?StarCount WHERE PostID=?PostID;
+                    $@"UPDATE {IndexTable} SET UUID=?UUID, Mode=?Mode, Type=?Type, User=?User, UVCount=?UVCount, StarCount=?StarCount, ArchiveID=?ArchiveID WHERE PostID=?PostID;
                        INSERT INTO {StackTable}
-                       ( PostID, UUID, LCT, Title, Summary, Content, ArchiveID, Label, Cover) VALUES
-                       (?PostID,?UUID,?LCT,?Title,?Summary,?Content,?ArchiveID,?Label,?Cover);";
+                       ( PostID, UUID, LCT, Title, Summary, Content, Label, Cover) VALUES
+                       (?PostID,?UUID,?LCT,?Title,?Summary,?Content,?Label,?Cover);";
 
                     MySqlParameter[] parameters =
                     {
