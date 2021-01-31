@@ -467,7 +467,7 @@
             更新文章
             </summary>
             <remarks>
-            新建一个拷贝，并将index更改为指向该拷贝
+            此方法会新建一个拷贝，并将index更改为指向该拷贝
             </remarks>
             <param name="Post">文章数据</param>
             <returns></returns>
@@ -525,24 +525,6 @@
             </summary>
             <param name="PostID">文章索引</param>
             <param name="ModeState">目标模式</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Components.Writer.UpdateIndexTable``1(System.Int32,System.Object)">
-            <summary>
-            通用文章指向更新器
-            </summary>
-            <typeparam name="T">目标属性类型</typeparam>
-            <param name="PostID">目标文章PostID</param>
-            <param name="Value">新属性值</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Components.Writer.UpdateStackTable``1(System.Int32,System.Object)">
-            <summary>
-            通用文章拷贝更新器
-            </summary>
-            <typeparam name="T">目标属性类型</typeparam>
-            <param name="PostID">目标文章PostID</param>
-            <param name="Value">新属性值</param>
             <returns></returns>
         </member>
         <member name="T:WaterLibrary.pilipala.Components.Counter">
@@ -638,14 +620,22 @@
             <summary>
             注销归档
             </summary>
+            <remarks>不可注销归档"无"，否则将返回false</remarks>
             <param name="ArchiveName">归档名</param>
-            <returns></returns>
+            <returns>受影响的文章数</returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Components.Archiver.MoveIntoArchive(System.String,System.Int32)">
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.ArchiveIn(System.String,System.Int32)">
             <summary>
             将文章移入归档
             </summary>
             <param name="ArchiveName">归档名</param>
+            <param name="PostID">目标文章PostID</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Components.Archiver.ArchiveOut(System.Int32)">
+            <summary>
+            将文章设为无归档
+            </summary>
             <param name="PostID">目标文章PostID</param>
             <returns></returns>
         </member>
@@ -1490,13 +1480,13 @@
             <param name="todo">委托</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInTransaction``1(MySql.Data.MySqlClient.MySqlConnection,System.Func{MySql.Data.MySqlClient.MySqlTransaction,``0})">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInTransaction``1(MySql.Data.MySqlClient.MySqlCommand,System.Func{MySql.Data.MySqlClient.MySqlTransaction,``0})">
             <summary>
             事务托管器
             </summary>
             <remarks>此托管器提供了一个已经启动的事务，当委托完成时，事务会自动销毁。事务的提交等操作需在委托中完成。</remarks>
             <typeparam name="T">返回值类型</typeparam>
-            <param name="Connection">承载事务的数据库连接</param>
+            <param name="Command">承载事务的数据库命令</param>
             <param name="todo">委托</param>
             <returns></returns>
         </member>
@@ -1632,32 +1622,31 @@
             <param name="parameters">查询参数列表</param>
             <returns>返回受影响的行数</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.ValueTuple{System.String,System.String,System.Object},System.String,System.Object)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
             <summary>
             更新操作
             </summary>
-            <remarks>此方法仅允许更新一条记录，若发生多条记录的更新，事务将被回滚。</remarks>
-            <param name="MySqlKey">操作定位器</param>
-            <param name="Key">要更改的键</param>
-            <param name="NewValue">新键值</param>
-            <returns>是否操作成功</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.String,System.Object,System.Object)">
-            <summary>
-            更新操作
-            </summary>
-            <remarks>此方法仅允许更新一条记录，若发生多条记录的更新，事务将被回滚。</remarks>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
             <param name="Table">目标表</param>
-            <param name="Key">键名</param>
-            <param name="OldValue">旧值</param>
-            <param name="NewValue">新值</param>
+            <param name="SET">被更新键值对</param>
+            <param name="WHERE">定位键值对</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.ValueTuple{System.String,System.Object},System.Object)">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="OldValue">被更新键的旧值</param>
             <returns>是否操作成功</returns>
         </member>
         <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteInsert(System.String,System.ValueTuple{System.String,System.Object}[])">
             <summary>
             插入操作
             </summary>
-            <remarks>此方法仅允许更新一条记录，若发生多条记录的更新，事务将被回滚。</remarks>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
             <param name="Table">目标表</param>
             <param name="Pairs">键值对</param>
             <returns>返回插入的成功与否</returns>
@@ -1666,7 +1655,73 @@
             <summary>
             删除操作
             </summary>
-            <remarks>此方法仅允许删除一条记录，若发生多条记录的删除，事务将被回滚。</remarks>
+            <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="Table">目标表</param>
+            <param name="Pair">键值对，满足此条件的行将被删除</param>
+            <returns></returns>
+        </member>
+        <member name="T:WaterLibrary.MySQL.Extension">
+            <summary>
+            扩展方法
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.MySQL.Extension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String)">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="SQL">SQL语句</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.Extension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="SQL">SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.Extension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="WHERE">定位键值对</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.Extension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.Object)">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">事务</param>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="OldValue">被更新键的旧值</param>
+            <returns>是否操作成功</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.Extension.ExecuteInsert(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+            插入操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="Table">目标表</param>
+            <param name="Pairs">键值对</param>
+            <returns>返回插入的成功与否</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.Extension.ExecuteDelete(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object})">
+            <summary>
+            删除操作
+            </summary>
+            <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">承载命令</param>
             <param name="Table">目标表</param>
             <param name="Pair">键值对，满足此条件的行将被删除</param>
             <returns></returns>

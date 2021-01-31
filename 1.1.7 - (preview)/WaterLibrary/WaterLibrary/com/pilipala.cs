@@ -114,7 +114,6 @@ namespace WaterLibrary.pilipala
     }
 
 
-
     /// <summary>
     /// 内核准备完成委托
     /// </summary>
@@ -1881,19 +1880,38 @@ namespace WaterLibrary.pilipala
             /// </summary>
             /// <remarks>不可注销归档"无"，否则将返回false</remarks>
             /// <param name="ArchiveName">归档名</param>
-            /// <returns></returns>
-            public bool DisposeArchive(string ArchiveName)
+            /// <returns>受影响的文章数</returns>
+            public int DisposeArchive(string ArchiveName)
             {
                 if (ArchiveName != "无")
                 {
-                    bool result = MySqlManager.ExecuteDelete(ArchiveTable, ("Name", ArchiveName));//删除归档
                     var SET = ("ArchiveID", 0);
                     var OldValue = ArchiveCache[ArchiveName];
-                    MySqlManager.ExecuteUpdate(IndexTable, SET, OldValue);//将该归档内的文章设为无归档
+                    var result = MySqlManager.DoInConnection(conn =>
+                    {
+                        return MySqlManager.DoInCommand(conn, cmd =>
+                        {
+                            return MySqlManager.DoInTransaction(cmd, tx =>
+                            {
+                                int affectedArchives = cmd.ExecuteDelete(ArchiveTable, ("Name", ArchiveName));//删除归档
+                                int affectedPosts = cmd.ExecuteUpdate(IndexTable, SET, OldValue);//将该归档内的文章设为无归档
+                                if (affectedArchives == 1)
+                                {
+                                    tx.Commit();//归档被删除时提交
+                                    return affectedPosts;
+                                }
+                                else
+                                {
+                                    tx.Rollback();
+                                    return 0;//影响行数异常，返回0
+                                }
+                            });
+                        });
+                    });
                     RefreshCache();
                     return result;
                 }
-                else return false;
+                else return 0;
             }
 
             /// <summary>

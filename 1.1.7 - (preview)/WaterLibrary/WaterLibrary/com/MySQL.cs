@@ -508,10 +508,112 @@ namespace WaterLibrary.MySQL
                 });
             });
         }
-
-
     }
 
+    /// <summary>
+    /// 扩展方法
+    /// </summary>
+    public static class Extension
+    {
+        /// <summary>
+        /// 执行任意SQL语句
+        /// </summary>
+        /// <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+        /// <param name="cmd">承载命令</param>
+        /// <param name="SQL">SQL语句</param>
+        /// <returns>返回受影响的行数</returns>
+        public static int ExecuteAny(this MySqlCommand cmd, string SQL)
+        {
+            cmd.CommandText = SQL;
+            return cmd.ExecuteNonQuery();
+        }
+        /// <summary>
+        /// 执行任意SQL语句
+        /// </summary>
+        /// <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+        /// <param name="cmd">承载命令</param>
+        /// <param name="SQL">SQL语句</param>
+        /// <param name="parameters">查询参数列表</param>
+        /// <returns>返回受影响的行数</returns>
+        public static int ExecuteAny(this MySqlCommand cmd, string SQL, params MySqlParameter[] parameters)
+        {
+            cmd.CommandText = SQL;
+            cmd.Parameters.AddRange(parameters);/* 添加参数 */
+
+            return cmd.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 更新操作
+        /// </summary>
+        /// <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+        /// <param name="cmd">承载命令</param>
+        /// <param name="Table">目标表</param>
+        /// <param name="SET">被更新键值对</param>
+        /// <param name="WHERE">定位键值对</param>
+        /// <returns></returns>
+        public static int ExecuteUpdate(this MySqlCommand cmd, string Table, (string K, object V) SET, (string K, object V) WHERE)
+        {
+            cmd.CommandText = $"UPDATE {Table} SET {SET.K}=?SET_V WHERE {WHERE.K}=?WHERE_V";
+            cmd.Parameters.AddWithValue("SET_V", SET.V);
+            cmd.Parameters.AddWithValue("WHERE_V", WHERE.V);
+
+            return cmd.ExecuteNonQuery();
+        }
+        /// <summary>
+        /// 更新操作
+        /// </summary>
+        /// <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+        /// <param name="cmd">事务</param>
+        /// <param name="Table">目标表</param>
+        /// <param name="SET">被更新键值对</param>
+        /// <param name="OldValue">被更新键的旧值</param>
+        /// <returns>是否操作成功</returns>
+        public static int ExecuteUpdate(this MySqlCommand cmd, string Table, (string K, object V) SET, object OldValue)
+        {
+            return ExecuteUpdate(cmd, Table, SET, new(SET.K, OldValue));
+        }
+        /// <summary>
+        /// 插入操作
+        /// </summary>
+        /// <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+        /// <param name="cmd">承载命令</param>
+        /// <param name="Table">目标表</param>
+        /// <param name="Pairs">键值对</param>
+        /// <returns>返回插入的成功与否</returns>
+        public static int ExecuteInsert(this MySqlCommand cmd, string Table, params (string K, object V)[] Pairs)
+        {
+            string part1 = "";/* VALUES语句前半部分 */
+            string part2 = "";/* VALUES语句后半部分 */
+            foreach (var (K, V) in Pairs)
+            {
+                part1 += $"`{K}`,";
+                part2 += $"?{K} ,";
+
+                cmd.Parameters.AddWithValue(K, V);/* 参数添加 */
+            }
+            part1 = part1[0..^1];/* 末尾逗号去除 */
+            part2 = part2[0..^1];
+            cmd.CommandText = $"INSERT INTO {Table} ({part1})VALUES({part2})";
+
+            return cmd.ExecuteNonQuery();
+        }
+        /// <summary>
+        /// 删除操作
+        /// </summary>
+        /// <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+        /// <param name="cmd">承载命令</param>
+        /// <param name="Table">目标表</param>
+        /// <param name="Pair">键值对，满足此条件的行将被删除</param>
+        /// <returns></returns>
+        public static int ExecuteDelete(this MySqlCommand cmd, string Table, (string K, object V) Pair)
+        {
+            cmd.CommandText = $"DELETE FROM {Table} WHERE `{Pair.K}`=?Value";
+            cmd.Parameters.AddWithValue("Value", Pair.V);/* 参数添加 */
+
+            return cmd.ExecuteNonQuery();
+        }
+    }
 
     /// <summary>
     /// MySql数据库连接信息
