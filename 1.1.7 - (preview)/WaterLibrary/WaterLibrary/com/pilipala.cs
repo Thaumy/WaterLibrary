@@ -247,7 +247,6 @@ namespace WaterLibrary.pilipala
                 Content = "";
                 Cover = "";
 
-                ArchiveID = -1;
                 ArchiveName = "";
                 Label = "";
 
@@ -347,10 +346,6 @@ namespace WaterLibrary.pilipala
             /// </summary>
             public string Cover { get; set; }
 
-            /// <summary>
-            /// 归档ID
-            /// </summary>
-            public int ArchiveID { get; set; }
             /// <summary>
             /// 归档名
             /// </summary>
@@ -536,10 +531,6 @@ namespace WaterLibrary.pilipala
             /// 封面
             /// </summary>
             Cover,
-            /// <summary>
-            /// 归档ID
-            /// </summary>
-            ArchiveID,
             /// <summary>
             /// 归档名
             /// </summary>
@@ -874,8 +865,9 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool SetPrivateKey(string PrivateKey)
             {
-                return MySqlManager.ExecuteUpdate
-                    ((Tables.User, "Account", User.Account), "PrivateKey", PrivateKey);
+                var SET = ("PrivateKey", PrivateKey);
+                var WHERE = ("Account", User.Account);
+                return MySqlManager.ExecuteUpdate(Tables.User, SET, WHERE);
             }
             /// <summary>
             /// 取得最后Token获取时间
@@ -891,8 +883,9 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool UpdateTokenTime()
             {
-                return MySqlManager.ExecuteUpdate
-                    ((Tables.User, "Account", User.Account), "TokenTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                var SET = ("TokenTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                var WHERE = ("Account", User.Account);
+                return MySqlManager.ExecuteUpdate(Tables.User, SET, WHERE);
             }
         }
         /// <summary>
@@ -981,7 +974,9 @@ namespace WaterLibrary.pilipala
             }
             private bool Set(string Key, string Value)
             {
-                return MySqlManager.ExecuteUpdate((Tables.User, "Account", Account), Key, Value);
+                var SET = (Key, Value);
+                var WHERE = ("Account", Account);
+                return MySqlManager.ExecuteUpdate(Tables.User, SET, WHERE);
             }
         }
         /// <summary>
@@ -1045,7 +1040,6 @@ namespace WaterLibrary.pilipala
                     Summary = Convert.ToString(Row["Summary"]),
                     Content = Convert.ToString(Row["Content"]),
 
-                    ArchiveID = Convert.ToInt32(Row["ArchiveID"]),
                     ArchiveName = Convert.ToString(Row["ArchiveName"]),
                     Label = Convert.ToString(Row["Label"]),
                     Cover = Convert.ToString(Row["Cover"]),
@@ -1102,7 +1096,6 @@ namespace WaterLibrary.pilipala
                         Summary = Convert.ToString(Row["Summary"]),
                         Content = Convert.ToString(Row["Content"]),
 
-                        ArchiveID = Convert.ToInt32(Row["ArchiveID"]),
                         ArchiveName = Convert.ToString(Row["ArchiveName"]),
                         Label = Convert.ToString(Row["Label"]),
                         Cover = Convert.ToString(Row["Cover"]),
@@ -1371,6 +1364,7 @@ namespace WaterLibrary.pilipala
                     /* 可传参数 */
                     new("Mode", Post.Mode),
                     new("Type", Post.Type),
+                    new("ArchiveID",0),
 
                     new("UVCount", Post.UVCount),
                     new("StarCount", Post.StarCount),
@@ -1379,7 +1373,6 @@ namespace WaterLibrary.pilipala
                     new("Summary", Post.Summary ),
                     new("Content", Post.Content ),
 
-                    new("ArchiveID", Post.ArchiveID ),
                     new("Label", Post.Label ),
                     new("Cover", Post.Cover )
                     };
@@ -1444,7 +1437,7 @@ namespace WaterLibrary.pilipala
             /// 更新文章
             /// </summary>
             /// <remarks>
-            /// 新建一个拷贝，并将index更改为指向该拷贝
+            /// 此方法会新建一个拷贝，并将index更改为指向该拷贝
             /// </remarks>
             /// <param name="Post">文章数据</param>
             /// <returns></returns>
@@ -1470,6 +1463,7 @@ namespace WaterLibrary.pilipala
 
                     new("Mode", Post.Mode),
                     new("Type", Post.Type),
+                    new("ArchiveID",0),
 
                     new("UVCount", Post.UVCount),
                     new("StarCount", Post.StarCount),
@@ -1478,7 +1472,6 @@ namespace WaterLibrary.pilipala
                     new("Summary", Post.Summary),
                     new("Content", Post.Content),
 
-                    new("ArchiveID", Post.ArchiveID),
                     new("Label", Post.Label),
                     new("Cover", Post.Cover)
                     };
@@ -1676,7 +1669,12 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool UpdateType(int PostID, Type.States TypeState)
             {
-                bool fun(string value) => MySqlManager.ExecuteUpdate((IndexTable, "PostID", PostID), "Type", value);
+                bool fun(string value)
+                {
+                    var SET = ("Type", value);
+                    var WHERE = ("PostID", PostID);
+                    return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                }
                 return TypeState switch
                 {
                     Type.States.Unset => fun(""),
@@ -1692,7 +1690,12 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public bool UpdateMode(int PostID, Mode.States ModeState)
             {
-                bool fun(string value) => MySqlManager.ExecuteUpdate((IndexTable, "PostID", PostID), "Mode", value);
+                bool fun(string value)
+                {
+                    var SET = ("Mode", value);
+                    var WHERE = ("PostID", PostID);
+                    return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                };
 
                 return ModeState switch
                 {
@@ -1702,33 +1705,6 @@ namespace WaterLibrary.pilipala
                     Mode.States.Archived => fun("archived"),
                     _ => throw new NotImplementedException("模式匹配失败")
                 };
-            }
-
-            /// <summary>
-            /// 通用文章指向更新器
-            /// </summary>
-            /// <typeparam name="T">目标属性类型</typeparam>
-            /// <param name="PostID">目标文章PostID</param>
-            /// <param name="Value">新属性值</param>
-            /// <returns></returns>
-            public bool UpdateIndexTable<T>(int PostID, object Value) where T : IPostProp
-            {
-                //初始化键定位
-                var MySqlKey = (IndexTable, "PostID", PostID);
-                return MySqlManager.ExecuteUpdate(MySqlKey, typeof(T).Name, Value);
-            }
-            /// <summary>
-            /// 通用文章拷贝更新器
-            /// </summary>
-            /// <typeparam name="T">目标属性类型</typeparam>
-            /// <param name="PostID">目标文章PostID</param>
-            /// <param name="Value">新属性值</param>
-            /// <returns></returns>
-            public bool UpdateStackTable<T>(int PostID, object Value) where T : IPostProp
-            {
-                //初始化键定位
-                var MySqlKey = (StackTable, "UUID", GetPositiveUUID(PostID));
-                return MySqlManager.ExecuteUpdate(MySqlKey, typeof(T).Name, Value);
             }
         }
         /// <summary>
@@ -1845,7 +1821,19 @@ namespace WaterLibrary.pilipala
         public class Archiver
         {
             private string ArchiveTable { get; set; }
+            private string IndexTable { get; set; }
             private MySqlManager MySqlManager { get; init; }
+            private readonly Dictionary<string, int> ArchiveCache = new();//归档表缓存
+            private void RefreshCache()
+            {
+                ArchiveCache.Clear();
+                //重建缓存
+                foreach (DataRow Row in MySqlManager.GetTable($"SELECT * FROM {ArchiveTable}").Rows)
+                {
+                    ArchiveCache.Add(Row["Name"].ToString(), Convert.ToInt32(Row["ArchiveID"]));
+                }
+            }
+
 
             /// <summary>
             /// 默认构造
@@ -1861,6 +1849,8 @@ namespace WaterLibrary.pilipala
             {
                 this.ArchiveTable = ArchiveTable;
                 this.MySqlManager = MySqlManager;
+
+                RefreshCache();//建立缓存
             }
 
             /// <summary>
@@ -1869,52 +1859,79 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             internal int GetMaxArchiveID()
             {
-                string SQL = $"SELECT MAX(ArchiveID) FROM {ArchiveTable}";
                 /* 始终具有最大ArchiveID，因为0是无归档状态 */
-                return Convert.ToInt32(MySqlManager.GetKey(SQL));
+                return ArchiveCache.Values.OrderBy(x => x).Last();
             }
 
             /// <summary>
             /// 创建归档
             /// </summary>
-            /// <param name="Name">归档名</param>
+            /// <param name="ArchiveName">归档名</param>
             /// <returns></returns>
-            public bool CreateArchive(string Name)
+            public bool CreateArchive(string ArchiveName)
             {
-                return MySqlManager.ExecuteInsert(ArchiveTable, ("ArchiveID", 0), ("Name", Name));
+                bool result = MySqlManager.ExecuteInsert(ArchiveTable,
+                    new("ArchiveID", GetMaxArchiveID() + 1),
+                    new("Name", ArchiveName));
+                RefreshCache();
+                return result;
             }
             /// <summary>
             /// 注销归档
             /// </summary>
-            /// <param name="Name">归档名</param>
+            /// <remarks>不可注销归档"无"，否则将返回false</remarks>
+            /// <param name="ArchiveName">归档名</param>
             /// <returns></returns>
-            public bool DisposeArchive(string Name)
+            public bool DisposeArchive(string ArchiveName)
             {
-                return MySqlManager.ExecuteDelete(ArchiveTable, new("Name", Name));
+                if (ArchiveName != "无")
+                {
+                    bool result = MySqlManager.ExecuteDelete(ArchiveTable, ("Name", ArchiveName));//删除归档
+                    var SET = ("ArchiveID", 0);
+                    var OldValue = ArchiveCache[ArchiveName];
+                    MySqlManager.ExecuteUpdate(IndexTable, SET, OldValue);//将该归档内的文章设为无归档
+                    RefreshCache();
+                    return result;
+                }
+                else return false;
             }
 
             /// <summary>
             /// 将文章移入归档
             /// </summary>
-            /// <param name="Name">归档名</param>
+            /// <param name="ArchiveName">归档名</param>
             /// <param name="PostID">目标文章PostID</param>
             /// <returns></returns>
-            public bool MoveIntoArchive(string Name, int PostID)
+            public bool ArchiveIn(string ArchiveName, int PostID)
             {
-                //TODO
+                var SET = ("ArchiveID", ArchiveCache[ArchiveName]);
+                var WHERE = ("PostID", PostID);
+                MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                return false;
+            }
+            /// <summary>
+            /// 将文章设为无归档
+            /// </summary>
+            /// <param name="PostID">目标文章PostID</param>
+            /// <returns></returns>
+            public bool ArchiveOut(int PostID)
+            {
+                var SET = ("ArchiveID", 0);
+                var WHERE = ("PostID", PostID);
+                MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
                 return false;
             }
 
             /// <summary>
             /// 归档下的文章计数
             /// </summary>
-            /// <param name="Name">归档名</param>
+            /// <param name="ArchiveName">归档名</param>
             /// <returns></returns>
-            public int Count(string Name)
+            public int Count(string ArchiveName)
             {
                 return Convert.ToInt32(
                     MySqlManager.GetKey($"SELECT COUNT(*) FROM {ArchiveTable} WHERE Name = ?Name",
-                    new MySqlParameter[] { new("Name", Name) }));
+                    new MySqlParameter[] { new("Name", ArchiveName) }));
             }
         }
         /// <summary>

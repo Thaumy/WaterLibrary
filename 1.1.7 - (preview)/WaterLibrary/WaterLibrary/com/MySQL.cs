@@ -391,20 +391,20 @@ namespace WaterLibrary.MySQL
         /// <summary>
         /// 更新操作
         /// </summary>
-        /// <remarks>此方法仅允许更新一条记录，若发生多条记录的更新，事务将被回滚。</remarks>
-        /// <param name="MySqlKey">操作定位器</param>
-        /// <param name="Key">要更改的键</param>
-        /// <param name="NewValue">新键值</param>
-        /// <returns>是否操作成功</returns>
-        public bool ExecuteUpdate((string Table, string Name, object Val) MySqlKey, string Key, object NewValue)
+        /// <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+        /// <param name="Table">目标表</param>
+        /// <param name="SET">被更新键值对</param>
+        /// <param name="WHERE">定位键值对</param>
+        /// <returns></returns>
+        public bool ExecuteUpdate(string Table, (string K, object V) SET, (string K, object V) WHERE)
         {
             return DoInConnection(conn =>
             {
                 return DoInCommand(conn, cmd =>
                 {
-                    cmd.CommandText = $"UPDATE {MySqlKey.Table} SET {Key}=?NewValue WHERE {MySqlKey.Name}=?Val";
-                    cmd.Parameters.AddWithValue("NewValue", NewValue);
-                    cmd.Parameters.AddWithValue("Val", MySqlKey.Val);
+                    cmd.CommandText = $"UPDATE {Table} SET {SET.K}=?SET_V WHERE {WHERE.K}=?WHERE_V";
+                    cmd.Parameters.AddWithValue("SET_V", SET.V);
+                    cmd.Parameters.AddWithValue("WHERE_V", WHERE.V);
 
                     return DoInTransaction(conn, tx =>
                     {
@@ -425,46 +425,23 @@ namespace WaterLibrary.MySQL
         /// <summary>
         /// 更新操作
         /// </summary>
-        /// <remarks>此方法仅允许更新一条记录，若发生多条记录的更新，事务将被回滚。</remarks>
+        /// <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
         /// <param name="Table">目标表</param>
-        /// <param name="Key">键名</param>
-        /// <param name="OldValue">旧值</param>
-        /// <param name="NewValue">新值</param>
+        /// <param name="SET">被更新键值对</param>
+        /// <param name="OldValue">被更新键的旧值</param>
         /// <returns>是否操作成功</returns>
-        public bool ExecuteUpdate(string Table, string Key, object OldValue, object NewValue)
+        public bool ExecuteUpdate(string Table, (string K, object V) SET, object OldValue)
         {
-            return DoInConnection(conn =>
-            {
-                return DoInCommand(conn, cmd =>
-                {
-                    cmd.CommandText = $"UPDATE {Table} SET {Key}=?NewValue WHERE {Key}=?OldValue";
-                    cmd.Parameters.AddWithValue("NewValue", NewValue);
-                    cmd.Parameters.AddWithValue("OldValue", OldValue);
-
-                    return DoInTransaction(conn, tx =>
-                    {
-                        if (cmd.ExecuteNonQuery() == 1)
-                        {
-                            tx.Commit();
-                            return true;
-                        }
-                        else
-                        {
-                            tx.Rollback();
-                            return false;
-                        }
-                    });
-                });
-            });
+            return ExecuteUpdate(Table, SET, new(SET.K, OldValue));
         }
         /// <summary>
         /// 插入操作
         /// </summary>
-        /// <remarks>此方法仅允许更新一条记录，若发生多条记录的更新，事务将被回滚。</remarks>
+        /// <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
         /// <param name="Table">目标表</param>
         /// <param name="Pairs">键值对</param>
         /// <returns>返回插入的成功与否</returns>
-        public bool ExecuteInsert(string Table, params (string Key, object Value)[] Pairs)
+        public bool ExecuteInsert(string Table, params (string K, object V)[] Pairs)
         {
             return DoInConnection(conn =>
             {
@@ -472,12 +449,12 @@ namespace WaterLibrary.MySQL
                 {
                     string part1 = "";/* VALUES语句前半部分 */
                     string part2 = "";/* VALUES语句后半部分 */
-                    foreach (var (Key, Value) in Pairs)
+                    foreach (var (K, V) in Pairs)
                     {
-                        part1 += $"`{Key}`,";
-                        part2 += $"?{Key} ,";
+                        part1 += $"`{K}`,";
+                        part2 += $"?{K} ,";
 
-                        cmd.Parameters.AddWithValue(Key, Value);/* 参数添加 */
+                        cmd.Parameters.AddWithValue(K, V);/* 参数添加 */
                     }
                     part1 = part1[0..^1];/* 末尾逗号去除 */
                     part2 = part2[0..^1];
@@ -502,18 +479,18 @@ namespace WaterLibrary.MySQL
         /// <summary>
         /// 删除操作
         /// </summary>
-        /// <remarks>此方法仅允许删除一条记录，若发生多条记录的删除，事务将被回滚。</remarks>
+        /// <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
         /// <param name="Table">目标表</param>
         /// <param name="Pair">键值对，满足此条件的行将被删除</param>
         /// <returns></returns>
-        public bool ExecuteDelete(string Table, (string Key, object Value) Pair)
+        public bool ExecuteDelete(string Table, (string K, object V) Pair)
         {
             return DoInConnection(conn =>
             {
                 return DoInCommand(conn, cmd =>
                 {
-                    cmd.CommandText = $"DELETE FROM {Table} WHERE `{Pair.Key}`=?Value";
-                    cmd.Parameters.AddWithValue("Value", Pair.Value);/* 参数添加 */
+                    cmd.CommandText = $"DELETE FROM {Table} WHERE `{Pair.K}`=?Value";
+                    cmd.Parameters.AddWithValue("Value", Pair.V);/* 参数添加 */
 
                     return DoInTransaction(conn, tx =>
                     {
@@ -529,6 +506,27 @@ namespace WaterLibrary.MySQL
                         }
                     });
                 });
+            });
+        }
+
+        public static bool ExecuteUpdate(this MySqlCommand SrcCommand, string Table, (string K, object V) SET, (string K, object V) WHERE)
+        {
+            SrcCommand.CommandText = $"UPDATE {Table} SET {SET.K}=?SET_V WHERE {WHERE.K}=?WHERE_V";
+            SrcCommand.Parameters.AddWithValue("SET_V", SET.V);
+            SrcCommand.Parameters.AddWithValue("WHERE_V", WHERE.V);
+
+            return DoInTransaction(SrcCommand.Connection, tx =>
+            {
+                if (SrcCommand.ExecuteNonQuery() == 1)
+                {
+                    tx.Commit();
+                    return true;
+                }
+                else
+                {
+                    tx.Rollback();
+                    return false;
+                }
             });
         }
     }
