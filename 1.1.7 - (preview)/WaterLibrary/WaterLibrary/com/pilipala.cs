@@ -1803,6 +1803,31 @@ namespace WaterLibrary.pilipala
                 return 0;
             }
 
+            /// <summary>
+            /// 设置星星计数
+            /// </summary>
+            /// <param name="PostID">文章ID</param>
+            /// <param name="Value">值</param>
+            /// <returns></returns>
+            public bool SetStarCount(int PostID, int Value)
+            {
+                var SET = ("StarCount", Value);
+                var WHERE = ("PostID", PostID);
+                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+            }
+            /// <summary>
+            /// 设置浏览计数
+            /// </summary>
+            /// <param name="PostID">文章ID</param>
+            /// <param name="Value">值</param>
+            /// <returns></returns>
+            public bool SetUVCount(int PostID, int Value)
+            {
+                var SET = ("UVCount", Value);
+                var WHERE = ("PostID", PostID);
+                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+            }
+
             private int GetPostCountByMode(string REGEXP)
             {
                 object Count = MySqlManager.GetKey($"SELECT Count(*) FROM {IndexTable} WHERE Mode REGEXP '{REGEXP}';");
@@ -1924,8 +1949,7 @@ namespace WaterLibrary.pilipala
             {
                 var SET = ("ArchiveID", ArchiveCache[ArchiveName]);
                 var WHERE = ("PostID", PostID);
-                MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
-                return false;
+                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
             }
             /// <summary>
             /// 将文章设为无归档
@@ -1936,8 +1960,7 @@ namespace WaterLibrary.pilipala
             {
                 var SET = ("ArchiveID", 0);
                 var WHERE = ("PostID", PostID);
-                MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
-                return false;
+                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
             }
 
             /// <summary>

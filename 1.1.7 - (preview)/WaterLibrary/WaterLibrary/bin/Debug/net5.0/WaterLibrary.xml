@@ -585,6 +585,22 @@
             <param name="Value">属性值</param>
             <returns>计数为0、未检索到、异常等情况均返回0</returns>
         </member>
+        <member name="M:WaterLibrary.pilipala.Components.Counter.SetStarCount(System.Int32,System.Int32)">
+            <summary>
+            设置星星计数
+            </summary>
+            <param name="PostID">文章ID</param>
+            <param name="Value">值</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Components.Counter.SetUVCount(System.Int32,System.Int32)">
+            <summary>
+            设置浏览计数
+            </summary>
+            <param name="PostID">文章ID</param>
+            <param name="Value">值</param>
+            <returns></returns>
+        </member>
         <member name="T:WaterLibrary.pilipala.Components.Archiver">
             <summary>
             归档管理组件
