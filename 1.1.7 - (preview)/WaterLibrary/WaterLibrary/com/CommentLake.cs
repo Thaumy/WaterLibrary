@@ -215,7 +215,7 @@ namespace WaterLibrary.pilipala.Components
                     cmd.CommandText = SQL;
                     cmd.Parameters.AddRange(parameters);
 
-                    return MySqlManager.DoInTransaction(conn, tx =>
+                    return MySqlManager.DoInTransaction(cmd, tx =>
                     {
                         if (cmd.ExecuteNonQuery() == 1)
                         {
@@ -245,7 +245,7 @@ namespace WaterLibrary.pilipala.Components
                 {
                     cmd.CommandText = $"DELETE FROM {CommentTable} WHERE CommentID = {CommentID}";
 
-                    return MySqlManager.DoInTransaction(conn, tx =>
+                    return MySqlManager.DoInTransaction(cmd, tx =>
                     {
                         if (cmd.ExecuteNonQuery() == 1)
                         {

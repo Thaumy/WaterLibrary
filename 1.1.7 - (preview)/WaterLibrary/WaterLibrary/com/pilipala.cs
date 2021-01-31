@@ -1382,7 +1382,7 @@ namespace WaterLibrary.pilipala
                         cmd.CommandText = SQL;
                         cmd.Parameters.AddRange(parameters);
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() == 2)
                             {
@@ -1416,7 +1416,7 @@ namespace WaterLibrary.pilipala
                         /* int参数无法用于参数化攻击 */
                         cmd.CommandText = $"DELETE FROM {IndexTable} WHERE PostID={PostID};DELETE FROM {StackTable} WHERE PostID={PostID};";
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() >= 2)
                             {
@@ -1481,7 +1481,7 @@ namespace WaterLibrary.pilipala
                         cmd.CommandText = SQL;
                         cmd.Parameters.AddRange(parameters);
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() == 2)
                             {
@@ -1525,7 +1525,7 @@ namespace WaterLibrary.pilipala
                         cmd.CommandText = SQL;
                         cmd.Parameters.AddRange(parameters);
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() == 1)
                             {
@@ -1569,7 +1569,7 @@ namespace WaterLibrary.pilipala
                         cmd.CommandText = SQL;
                         cmd.Parameters.AddRange(parameters);
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() == 2)
                             {
@@ -1607,7 +1607,7 @@ namespace WaterLibrary.pilipala
                         , IndexTable, StackTable, PostID
                         );
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() == 2)
                             {
@@ -1643,7 +1643,7 @@ namespace WaterLibrary.pilipala
                         , IndexTable, StackTable, PostID
                         );
 
-                        return MySqlManager.DoInTransaction(conn, tx =>
+                        return MySqlManager.DoInTransaction(cmd, tx =>
                         {
                             if (cmd.ExecuteNonQuery() >= 0)
                             {

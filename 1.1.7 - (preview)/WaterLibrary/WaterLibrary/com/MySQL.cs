@@ -111,14 +111,14 @@ namespace WaterLibrary.MySQL
         /// </summary>
         /// <remarks>此托管器提供了一个已经启动的事务，当委托完成时，事务会自动销毁。事务的提交等操作需在委托中完成。</remarks>
         /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="Connection">承载事务的数据库连接</param>
+        /// <param name="Command">承载事务的数据库命令</param>
         /// <param name="todo">委托</param>
         /// <returns></returns>
-        public static T DoInTransaction<T>(MySqlConnection Connection, Func<MySqlTransaction, T> todo)
+        public static T DoInTransaction<T>(MySqlCommand Command, Func<MySqlTransaction, T> todo)
         {
-            MySqlTransaction Transaction = Connection.BeginTransaction();
-            T result = todo(Transaction);
-            Transaction.Dispose();
+            Command.Transaction = Command.Connection.BeginTransaction();
+            T result = todo(Command.Transaction);
+            Command.Transaction.Dispose();
             return result;
         }
 
@@ -351,7 +351,7 @@ namespace WaterLibrary.MySQL
                 {
                     cmd.CommandText = SQL;
 
-                    return DoInTransaction(conn, tx =>
+                    return DoInTransaction(cmd, tx =>
                     {
                         int AffectedRows = cmd.ExecuteNonQuery();
                         tx.Commit();/*提交事务*/
@@ -377,7 +377,7 @@ namespace WaterLibrary.MySQL
                     cmd.CommandText = SQL;
                     cmd.Parameters.AddRange(parameters);/* 添加参数 */
 
-                    return DoInTransaction(conn, tx =>
+                    return DoInTransaction(cmd, tx =>
                     {
                         int AffectedRows = cmd.ExecuteNonQuery();
                         tx.Commit();/*提交事务*/
@@ -406,7 +406,7 @@ namespace WaterLibrary.MySQL
                     cmd.Parameters.AddWithValue("SET_V", SET.V);
                     cmd.Parameters.AddWithValue("WHERE_V", WHERE.V);
 
-                    return DoInTransaction(conn, tx =>
+                    return DoInTransaction(cmd, tx =>
                     {
                         if (cmd.ExecuteNonQuery() == 1)
                         {
@@ -460,7 +460,7 @@ namespace WaterLibrary.MySQL
                     part2 = part2[0..^1];
                     cmd.CommandText = $"INSERT INTO {Table} ({part1})VALUES({part2})";
 
-                    return DoInTransaction(conn, tx =>
+                    return DoInTransaction(cmd, tx =>
                     {
                         if (cmd.ExecuteNonQuery() == 1)
                         {
@@ -492,7 +492,7 @@ namespace WaterLibrary.MySQL
                     cmd.CommandText = $"DELETE FROM {Table} WHERE `{Pair.K}`=?Value";
                     cmd.Parameters.AddWithValue("Value", Pair.V);/* 参数添加 */
 
-                    return DoInTransaction(conn, tx =>
+                    return DoInTransaction(cmd, tx =>
                     {
                         if (cmd.ExecuteNonQuery() == 1)
                         {
@@ -509,27 +509,9 @@ namespace WaterLibrary.MySQL
             });
         }
 
-        public static bool ExecuteUpdate(this MySqlCommand SrcCommand, string Table, (string K, object V) SET, (string K, object V) WHERE)
-        {
-            SrcCommand.CommandText = $"UPDATE {Table} SET {SET.K}=?SET_V WHERE {WHERE.K}=?WHERE_V";
-            SrcCommand.Parameters.AddWithValue("SET_V", SET.V);
-            SrcCommand.Parameters.AddWithValue("WHERE_V", WHERE.V);
 
-            return DoInTransaction(SrcCommand.Connection, tx =>
-            {
-                if (SrcCommand.ExecuteNonQuery() == 1)
-                {
-                    tx.Commit();
-                    return true;
-                }
-                else
-                {
-                    tx.Rollback();
-                    return false;
-                }
-            });
-        }
     }
+
 
     /// <summary>
     /// MySql数据库连接信息
