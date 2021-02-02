@@ -24,22 +24,42 @@ namespace WaterLibrary.MySQL
             get
             {
                 //此处应考虑循环使用连接池
-                if (ConnectionPool.Count > 32)/* 在连接数超出时检查无用连接并进行清理 */
+                if (ConnectionPool.Count >= 32)/* 在连接数超出时检查无用连接并进行清理 */
                 {
-                    for (int i = ConnectionPool.Count - 1; i >= 0; i--)
-                    { /* 如果连接中断或是关闭（这都是不工作的状态） */
-                        if (ConnectionPool[i].State is ConnectionState.Broken or ConnectionState.Closed)
+                    foreach (var el in ConnectionPool)
+                    {
+                        if (el.State is ConnectionState.Broken or ConnectionState.Closed)
                         {
-                            ConnectionPool[i].Dispose();/* 注销并移除连接池 */
-                            ConnectionPool.RemoveAt(i);
+                            return el;
                         }
-                    };
+                    }
+                    ConnectionPool.Add(new(ConnectionString));
+                    ConnectionPool.Last().Open();
+                    return ConnectionPool.Last();
                 }
-
-                ConnectionPool.Add(new(ConnectionString));
-                ConnectionPool.Last().Open();
-                return ConnectionPool.Last();
+                else
+                {
+                    ConnectionPool.Add(new(ConnectionString));
+                    ConnectionPool.Last().Open();
+                    return ConnectionPool.Last();
+                }
             }
+        }
+
+        /// <summary>
+        /// 清理连接池
+        /// </summary>
+        /// <remarks>此方法仅仅会尝试清理连接池，并不是所有连接都会被强制关闭</remarks>
+        public void CleanConnectionPool()
+        {
+            for (int i = ConnectionPool.Count - 1; i >= 0; i--)
+            { /* 如果连接中断或是关闭（这都是不工作的状态） */
+                if (ConnectionPool[i].State is ConnectionState.Broken or ConnectionState.Closed)
+                {
+                    ConnectionPool[i].Dispose();/* 注销并移除连接池 */
+                    ConnectionPool.RemoveAt(i);
+                }
+            };
         }
 
         /// <summary>
