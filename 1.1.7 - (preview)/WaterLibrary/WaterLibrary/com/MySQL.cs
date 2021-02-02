@@ -30,6 +30,7 @@ namespace WaterLibrary.MySQL
                     {
                         if (el.State is ConnectionState.Broken or ConnectionState.Closed)
                         {
+                            el.Open();
                             return el;
                         }
                     }
