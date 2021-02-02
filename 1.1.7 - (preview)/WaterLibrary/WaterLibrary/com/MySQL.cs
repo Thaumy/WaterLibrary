@@ -23,8 +23,17 @@ namespace WaterLibrary.MySQL
         {
             get
             {
-                //此处应考虑循环使用连接池
-                if (ConnectionPool.Count >= 32)/* 在连接数超出时检查无用连接并进行清理 */
+                MySqlConnection New()
+                {
+                    ConnectionPool.Add(new(ConnectionString));
+                    ConnectionPool.Last().Open();
+                    return ConnectionPool.Last();
+                }
+                if (ConnectionPool.Count <= 16)//连接数较少时，考虑新建
+                {
+                    return New();
+                }
+                else if (ConnectionPool.Count <= 32)//连接数较多时，考虑在循环复用的基础上新建
                 {
                     foreach (var el in ConnectionPool)
                     {
@@ -34,15 +43,13 @@ namespace WaterLibrary.MySQL
                             return el;
                         }
                     }
-                    ConnectionPool.Add(new(ConnectionString));
-                    ConnectionPool.Last().Open();
-                    return ConnectionPool.Last();
+                    //找不到可分配连接时，新建
+                    return New();
                 }
                 else
                 {
-                    ConnectionPool.Add(new(ConnectionString));
-                    ConnectionPool.Last().Open();
-                    return ConnectionPool.Last();
+                    CleanConnectionPool();//连接数过多时，清理后新建
+                    return New();
                 }
             }
         }
@@ -50,6 +57,7 @@ namespace WaterLibrary.MySQL
         /// <summary>
         /// 清理连接池
         /// </summary>
+        /// <remarks>由于连接池具有内部复用机制，经常清理连接池可能会造成不良后果。</remarks>
         /// <remarks>此方法仅仅会尝试清理连接池，并不是所有连接都会被强制关闭</remarks>
         public void CleanConnectionPool()
         {
