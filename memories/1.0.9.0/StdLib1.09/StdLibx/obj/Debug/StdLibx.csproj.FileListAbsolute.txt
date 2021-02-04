@@ -1,8 +1,0 @@
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\obj\Debug\StdLibx.csprojResolveAssemblyReference.cache
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\obj\Debug\StdLibx.Resource1.resources
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\obj\Debug\StdLibx.csproj.GenerateResource.Cache
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\bin\Debug\StdLibx.dll
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\bin\Debug\StdLibx.pdb
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\bin\Debug\MySql.Data.dll
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\obj\Debug\StdLibx.dll
-C:\Users\Thaumy\Desktop\StdLib1.09\StdLibx\StdLibx\obj\Debug\StdLibx.pdb
