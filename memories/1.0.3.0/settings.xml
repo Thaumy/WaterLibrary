@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <usersDATA>
+    <NAME>Thaumy</NAME>
+    <MAIL>Example@example.com</MAIL>
+    <PASSWORD>1234567890</PASSWORD>
+  </usersDATA>
+  <runDATA>
+    <RAM>1024</RAM>
+  </runDATA>
+  <ME>1</ME>
+</settings>
