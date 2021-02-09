@@ -23,12 +23,12 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 数据库表集合
         /// 用户表
-        /// 索引表
+        /// 元数据表
         /// 主表
         /// 归档表
         /// 评论表
         /// </summary>
-        public record PLTables(string User, string Index, string Stack, string Archive, string Comment);
+        public record PLTables(string User, string Meta, string Stack, string Archive, string Comment);
         /// <summary>
         /// 数据库视图视图集合
         /// 显性联合视图（不包含备份）
@@ -790,12 +790,12 @@ namespace WaterLibrary.pilipala
             /// 生成写组件
             /// </summary>
             /// <returns></returns>
-            public Writer GenWriter() => new(CORE.Tables.Index, CORE.Tables.Stack, CORE.MySqlManager);
+            public Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成计数组件
             /// </summary>
             /// <returns></returns>
-            public Counter GenCounter() => new(CORE.Tables.Index, CORE.Tables.Stack, CORE.MySqlManager);
+            public Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成归档管理组件
             /// </summary>
@@ -805,7 +805,7 @@ namespace WaterLibrary.pilipala
             /// 生成评论湖组件
             /// </summary>
             /// <returns></returns>
-            public CommentLake GenCommentLake() => new(CORE.Tables.Index, CORE.Tables.Comment, CORE.MySqlManager);
+            public CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
         }
 
         /// <summary>
@@ -1259,7 +1259,7 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Writer : IPLComponent<Writer>
         {
-            private string IndexTable { get; init; }
+            private string MetaTable { get; init; }
             private string StackTable { get; init; }
             private MySqlManager MySqlManager { get; init; }
 
@@ -1270,13 +1270,13 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 工厂构造
             /// </summary>
-            /// <param name="IndexTable">索引表</param>
+            /// <param name="MetaTable">元数据表</param>
             /// <param name="StackTable">主表</param>
             /// <param name="MySqlManager">数据库管理器</param>
             /// <returns></returns>
-            internal Writer(string IndexTable, string StackTable, MySqlManager MySqlManager)
+            internal Writer(string MetaTable, string StackTable, MySqlManager MySqlManager)
             {
-                this.IndexTable = IndexTable;
+                this.MetaTable = MetaTable;
                 this.StackTable = StackTable;
                 this.MySqlManager = MySqlManager;
             }
@@ -1287,7 +1287,7 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             internal int GetMaxPostID()
             {
-                string SQL = $"SELECT MAX(PostID) FROM {IndexTable}";
+                string SQL = $"SELECT MAX(PostID) FROM {MetaTable}";
                 var result = MySqlManager.GetKey(SQL);
                 /* 若取不到最大PostID(没有任何文章时)，返回12000作为初始PostID */
                 return Convert.ToInt32(result == DBNull.Value ? 12000 : result);
@@ -1298,7 +1298,7 @@ namespace WaterLibrary.pilipala
             /// <returns>错误则返回-1</returns>
             internal int GetMinPostID()
             {
-                string SQL = $"SELECT MIN(PostID) FROM {IndexTable}";
+                string SQL = $"SELECT MIN(PostID) FROM {MetaTable}";
                 var result = MySqlManager.GetKey(SQL);
                 /* 若取不到最大PostID(没有任何文章时)，返回12000作为初始PostID */
                 return Convert.ToInt32(result == DBNull.Value ? 12000 : result);
@@ -1310,7 +1310,7 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             internal string GetPositiveUUID(int PostID)
             {
-                return Convert.ToString(MySqlManager.GetKey($"SELECT UUID FROM {IndexTable} WHERE PostID={PostID}"));
+                return Convert.ToString(MySqlManager.GetKey($"SELECT UUID FROM {MetaTable} WHERE PostID={PostID}"));
             }
             /// <summary>
             /// 获取指定文章的消极备份的UUID
@@ -1323,7 +1323,7 @@ namespace WaterLibrary.pilipala
                     string.Format
                     (
                     "SELECT {1}.UUID FROM {0} JOIN {1} ON {0}.PostID={1}.PostID AND {0}.UUID<>{1}.UUID WHERE {0}.PostID={2}"
-                    , IndexTable, StackTable, PostID
+                    , MetaTable, StackTable, PostID
                     )
                     ));
             }
@@ -1343,7 +1343,7 @@ namespace WaterLibrary.pilipala
                     DateTime t = DateTime.Now;
 
                     string SQL =
-                    $@"INSERT INTO {IndexTable}
+                    $@"INSERT INTO {MetaTable}
                        ( PostID, UUID, CT, Mode, Type, User, UVCount, StarCount, ArchiveID) VALUES
                        (?PostID,?UUID,?CT,?Mode,?Type,?User,?UVCount,?StarCount,?ArchiveID);
                        INSERT INTO {StackTable}
@@ -1413,7 +1413,7 @@ namespace WaterLibrary.pilipala
                     return MySqlManager.DoInCommand(conn, cmd =>
                     {
                         /* int参数无法用于参数化攻击 */
-                        cmd.CommandText = $"DELETE FROM {IndexTable} WHERE PostID={PostID};DELETE FROM {StackTable} WHERE PostID={PostID};";
+                        cmd.CommandText = $"DELETE FROM {MetaTable} WHERE PostID={PostID};DELETE FROM {StackTable} WHERE PostID={PostID};";
 
                         return MySqlManager.DoInTransaction(cmd, tx =>
                         {
@@ -1445,7 +1445,7 @@ namespace WaterLibrary.pilipala
                 return MySqlManager.DoInConnection(conn =>
                 {
                     string SQL =
-                    $@"UPDATE {IndexTable} SET UUID=?UUID, Mode=?Mode, Type=?Type, User=?User, UVCount=?UVCount, StarCount=?StarCount, ArchiveID=?ArchiveID WHERE PostID=?PostID;
+                    $@"UPDATE {MetaTable} SET UUID=?UUID, Mode=?Mode, Type=?Type, User=?User, UVCount=?UVCount, StarCount=?StarCount, ArchiveID=?ArchiveID WHERE PostID=?PostID;
                        INSERT INTO {StackTable}
                        ( PostID, UUID, LCT, Title, Summary, Content, Label, Cover) VALUES
                        (?PostID,?UUID,?LCT,?Title,?Summary,?Content,?Label,?Cover);";
@@ -1514,7 +1514,7 @@ namespace WaterLibrary.pilipala
                     string SQL = string.Format
                     (
                     "DELETE {1} FROM {0} INNER JOIN {1} ON {0}.PostID={1}.PostID AND {0}.UUID<>{1}.UUID AND {1}.UUID = ?UUID"
-                    , IndexTable, StackTable
+                    , MetaTable, StackTable
                     );
 
                     MySqlParameter[] parameters = { new("UUID", UUID) };
@@ -1557,7 +1557,7 @@ namespace WaterLibrary.pilipala
                     object PostID = MySqlManager.GetKey($"SELECT PostID FROM {StackTable} WHERE UUID = '{UUID}'");
 
                     string SQL =
-                    $@"DELETE FROM {StackTable} WHERE UUID = (SELECT UUID FROM {IndexTable} WHERE PostID = ?PostID);
+                    $@"DELETE FROM {StackTable} WHERE UUID = (SELECT UUID FROM {MetaTable} WHERE PostID = ?PostID);
                        UPDATE {StackTable} SET UUID = ?UUID WHERE PostID = ?PostID;";
 
                     MySqlParameter[] parameters =
@@ -1603,7 +1603,7 @@ namespace WaterLibrary.pilipala
                         (
                         @"DELETE {1} FROM {0} INNER JOIN {1} ON {0}.UUID={1}.UUID AND {0}.PostID={2};
                         UPDATE {0} SET UUID = (SELECT UUID FROM {1} WHERE PostID={2} ORDER BY LCT DESC LIMIT 0,1) WHERE PostID={2};"
-                        , IndexTable, StackTable, PostID
+                        , MetaTable, StackTable, PostID
                         );
 
                         return MySqlManager.DoInTransaction(cmd, tx =>
@@ -1639,7 +1639,7 @@ namespace WaterLibrary.pilipala
                         cmd.CommandText = string.Format
                         (
                         "DELETE {1} FROM {0} INNER JOIN {1} ON {0}.PostID={1}.PostID AND {0}.UUID<>{1}.UUID AND {0}.PostID={2}"
-                        , IndexTable, StackTable, PostID
+                        , MetaTable, StackTable, PostID
                         );
 
                         return MySqlManager.DoInTransaction(cmd, tx =>
@@ -1672,7 +1672,7 @@ namespace WaterLibrary.pilipala
                 {
                     var SET = ("Type", value);
                     var WHERE = ("PostID", PostID);
-                    return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                    return MySqlManager.ExecuteUpdate(MetaTable, SET, WHERE);
                 }
                 return TypeState switch
                 {
@@ -1693,7 +1693,7 @@ namespace WaterLibrary.pilipala
                 {
                     var SET = ("Mode", value);
                     var WHERE = ("PostID", PostID);
-                    return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                    return MySqlManager.ExecuteUpdate(MetaTable, SET, WHERE);
                 };
 
                 return ModeState switch
@@ -1711,7 +1711,7 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Counter : IPLComponent<Counter>
         {
-            private string IndexTable { get; init; }
+            private string MetaTable { get; init; }
             private string StackTable { get; init; }
             private MySqlManager MySqlManager { get; init; }
 
@@ -1722,13 +1722,13 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 工厂构造
             /// </summary>
-            /// <param name="IndexTable">索引表</param>
+            /// <param name="MetaTable">元数据表</param>
             /// <param name="StackTable">主表</param>
             /// <param name="MySqlManager">数据库管理器</param>
             /// <returns></returns>
-            internal Counter(string IndexTable, string StackTable, MySqlManager MySqlManager)
+            internal Counter(string MetaTable, string StackTable, MySqlManager MySqlManager)
             {
-                this.IndexTable = IndexTable;
+                this.MetaTable = MetaTable;
                 this.StackTable = StackTable;
                 this.MySqlManager = MySqlManager;
             }
@@ -1780,13 +1780,13 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 某属性下的文章计数器
             /// </summary>
-            /// <remarks>此方法采用依次i轮询Index表和Stack表（暂未考虑Archive表），检索方法有待优化</remarks>
+            /// <remarks>此方法采用依次轮询Meta表和Stack表（暂未考虑Archive表），检索方法有待优化</remarks>
             /// <typeparam name="Prop">目标属性</typeparam>
             /// <param name="Value">属性值</param>
             /// <returns>计数为0、未检索到、异常等情况均返回0</returns>
             public int CountOf<Prop>(object Value) where Prop : IPostProp
             {
-                string SQL1 = $"SELECT COUNT(*) FROM {IndexTable} WHERE {typeof(Prop).Name} = ?Value";
+                string SQL1 = $"SELECT COUNT(*) FROM {MetaTable} WHERE {typeof(Prop).Name} = ?Value";
                 var result1 = MySqlManager.GetKey(SQL1, new MySqlParameter[] { new("PostID", Value) });
                 if (result1 != null)
                 {
@@ -1813,7 +1813,7 @@ namespace WaterLibrary.pilipala
             {
                 var SET = ("StarCount", Value);
                 var WHERE = ("PostID", PostID);
-                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                return MySqlManager.ExecuteUpdate(MetaTable, SET, WHERE);
             }
             /// <summary>
             /// 设置浏览计数
@@ -1825,17 +1825,17 @@ namespace WaterLibrary.pilipala
             {
                 var SET = ("UVCount", Value);
                 var WHERE = ("PostID", PostID);
-                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                return MySqlManager.ExecuteUpdate(MetaTable, SET, WHERE);
             }
 
             private int GetPostCountByMode(string REGEXP)
             {
-                object Count = MySqlManager.GetKey($"SELECT Count(*) FROM {IndexTable} WHERE Mode REGEXP '{REGEXP}';");
+                object Count = MySqlManager.GetKey($"SELECT Count(*) FROM {MetaTable} WHERE Mode REGEXP '{REGEXP}';");
                 return Count == DBNull.Value ? 0 : Convert.ToInt32(Count);
             }
             private int GetStackCount()
             {
-                object Count = MySqlManager.GetKey(string.Format("SELECT COUNT(*) FROM {0},{1} WHERE {0}.PostID={1}.PostID AND {0}.UUID<>{1}.UUID;", IndexTable, StackTable));
+                object Count = MySqlManager.GetKey(string.Format("SELECT COUNT(*) FROM {0},{1} WHERE {0}.PostID={1}.PostID AND {0}.UUID<>{1}.UUID;", MetaTable, StackTable));
                 return Count == DBNull.Value ? 0 : Convert.ToInt32(Count);
             }
         }
@@ -1845,7 +1845,7 @@ namespace WaterLibrary.pilipala
         public class Archiver
         {
             private string ArchiveTable { get; set; }
-            private string IndexTable { get; set; }
+            private string MetaTable { get; set; }
             private MySqlManager MySqlManager { get; init; }
             private readonly Dictionary<string, int> ArchiveCache = new();//归档表缓存
             private void RefreshCache()
@@ -1919,7 +1919,7 @@ namespace WaterLibrary.pilipala
                             return MySqlManager.DoInTransaction(cmd, tx =>
                             {
                                 int affectedArchives = cmd.ExecuteDelete(ArchiveTable, ("Name", ArchiveName));//删除归档
-                                int affectedPosts = cmd.ExecuteUpdate(IndexTable, SET, OldValue);//将该归档内的文章设为无归档
+                                int affectedPosts = cmd.ExecuteUpdate(MetaTable, SET, OldValue);//将该归档内的文章设为无归档
                                 if (affectedArchives == 1)
                                 {
                                     tx.Commit();//归档被删除时提交
@@ -1949,7 +1949,7 @@ namespace WaterLibrary.pilipala
             {
                 var SET = ("ArchiveID", ArchiveCache[ArchiveName]);
                 var WHERE = ("PostID", PostID);
-                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                return MySqlManager.ExecuteUpdate(MetaTable, SET, WHERE);
             }
             /// <summary>
             /// 将文章设为无归档
@@ -1960,7 +1960,7 @@ namespace WaterLibrary.pilipala
             {
                 var SET = ("ArchiveID", 0);
                 var WHERE = ("PostID", PostID);
-                return MySqlManager.ExecuteUpdate(IndexTable, SET, WHERE);
+                return MySqlManager.ExecuteUpdate(MetaTable, SET, WHERE);
             }
 
             /// <summary>

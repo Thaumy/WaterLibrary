@@ -182,7 +182,7 @@ namespace WaterLibrary.Utils
         /// <param name="PublicKey">RSA公钥（PEM）</param>
         /// <param name="PlainText">明文</param>
         /// <returns></returns>
-        public static string RSAEncrypt(string PublicKey, string PlainText)
+        public static string RSAEncrypt(string PlainText, string PublicKey)
         {
             var rsa = new RSA(PublicKey);
             return rsa.Encode(PlainText);
@@ -193,7 +193,7 @@ namespace WaterLibrary.Utils
         /// <param name="PrivateKey">RSA公私钥（PEM）</param>
         /// <param name="CipherText">密文</param>
         /// <returns></returns>
-        public static string RSADecrypt(string PrivateKey, string CipherText)
+        public static string RSADecrypt(string CipherText, string PrivateKey)
         {
             var rsa = new RSA(PrivateKey);
             return rsa.DecodeOrNull(CipherText);
@@ -428,7 +428,7 @@ namespace WaterLibrary.Utils
             }
         }
         /// <summary>
-        /// RSA PEM格式密钥对的解析和导出
+        /// RSA_PEM格式密钥对的解析和导出
         /// </summary>
         private class RSA_PEM
         {

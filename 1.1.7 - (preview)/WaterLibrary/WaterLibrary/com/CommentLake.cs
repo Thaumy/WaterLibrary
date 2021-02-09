@@ -19,7 +19,7 @@ namespace WaterLibrary.pilipala.Components
     /// </summary>
     public class CommentLake : IPLComponent<CommentLake>
     {
-        private string IndexTable { get; init; }
+        private string MetaTable { get; init; }
         private string CommentTable { get; init; }
         /// <summary>
         /// MySql数据库管理器
@@ -33,12 +33,12 @@ namespace WaterLibrary.pilipala.Components
         /// <summary>
         /// 工厂构造
         /// </summary>
-        /// <param name="IndexTable">索引表</param>
+        /// <param name="MetaTable">元数据表</param>
         /// <param name="CommentTable">评论表</param>
         /// <param name="MySqlManager">数据库管理器</param>
-        internal CommentLake(string IndexTable, string CommentTable, MySqlManager MySqlManager)
+        internal CommentLake(string MetaTable, string CommentTable, MySqlManager MySqlManager)
         {
-            (this.IndexTable, this.CommentTable, this.MySqlManager) = (IndexTable, CommentTable, MySqlManager);
+            (this.MetaTable, this.CommentTable, this.MySqlManager) = (MetaTable, CommentTable, MySqlManager);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace WaterLibrary.pilipala.Components
         {
             List<int> List = new();
 
-            string SQL = string.Format("SELECT PostID FROM {0} JOIN {1} ON {0}.PostID={1}.PostID GROUP BY {0}.PostID", IndexTable, CommentTable);
+            string SQL = string.Format("SELECT PostID FROM {0} JOIN {1} ON {0}.PostID={1}.PostID GROUP BY {0}.PostID", MetaTable, CommentTable);
 
             foreach (DataRow Row in MySqlManager.GetTable(SQL).Rows)
             {
