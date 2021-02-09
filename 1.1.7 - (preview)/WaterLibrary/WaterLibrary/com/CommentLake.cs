@@ -12,7 +12,7 @@ using WaterLibrary.MySQL;
 using WaterLibrary.pilipala.Entity;
 using WaterLibrary.pilipala.Entity.CommentProp;
 
-namespace WaterLibrary.pilipala.Components
+namespace WaterLibrary.pilipala.Component
 {
     /// <summary>
     /// 评论湖组件

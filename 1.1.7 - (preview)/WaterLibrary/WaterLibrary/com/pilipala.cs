@@ -67,10 +67,6 @@ namespace WaterLibrary.pilipala
     {
 
     }
-    interface IPLComponentFactory
-    {
-        void Ready(ICORE CORE, Components.User User);
-    }
     /// <summary>
     /// 噼里啪啦内核接口
     /// </summary>
@@ -105,7 +101,7 @@ namespace WaterLibrary.pilipala
         /// <param name="UserName">用户名</param>
         /// <param name="UserPWD">用户密码</param>
         /// <returns></returns>
-        public Components.User Run(string UserName, string UserPWD);
+        public Component.User Run(string UserName, string UserPWD);
         /// <summary>
         /// 以初始化用户身份启动内核
         /// </summary>
@@ -119,7 +115,7 @@ namespace WaterLibrary.pilipala
     /// </summary>
     /// <param name="CORE">内核对象</param>
     /// <param name="User">用户对象</param>
-    public delegate void CoreReadyEventHandler(ICORE CORE, Components.User User);
+    public delegate void CoreReadyEventHandler(ICORE CORE, Component.User User);
     /// <summary>
     /// pilipala内核
     /// </summary>
@@ -165,7 +161,7 @@ namespace WaterLibrary.pilipala
         /// <param name="UserAccount">用户账号</param>
         /// <param name="UserPWD">用户密码</param>
         /// <returns></returns>
-        public Components.User Run(string UserAccount, string UserPWD)
+        public Component.User Run(string UserAccount, string UserPWD)
         {
             string SQL = $"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD";
 
@@ -175,7 +171,7 @@ namespace WaterLibrary.pilipala
                 )
             .ToString() == "1")
             {
-                Components.User User = new Components.User(Tables, MySqlManager, UserAccount);
+                Component.User User = new Component.User(Tables, MySqlManager, UserAccount);
 
                 /* 触发内核准备完成事件，并分发数据到工厂 */
                 CoreReady(this, User);
@@ -628,12 +624,12 @@ namespace WaterLibrary.pilipala
 
         }
     }
-    namespace Components
+    namespace Component
     {
         /// <summary>
         /// 组件工厂
         /// </summary>
-        public class ComponentFactory : IPLComponentFactory
+        public class ComponentFactory
         {
             private ICORE CORE;
             private User User;
@@ -1843,7 +1839,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 插件管理组件
         /// </summary>
-        public class Plugin
+        public class Pluginer
         {
             /*private PLTables Tables { get; init; }
             private MySqlManager MySqlManager { get; init; }
