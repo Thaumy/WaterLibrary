@@ -310,10 +310,11 @@ namespace WaterLibrary.pilipala
                     _ => Summary
                 };
             }
+
             /// <summary>
-            /// 内容
+            /// Content字段原始内容
             /// </summary>
-            public string Content { get; set; }
+            public string Content { internal get; set; }
             /// <summary>
             /// 获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记
             /// </summary>
@@ -567,87 +568,13 @@ namespace WaterLibrary.pilipala
             /// </summary>
             StarCount
         }
-        //思路：利用枚举和反射取得枚举名的方式，代替部分PostProp的使用（方法参数，而不是泛型）
         namespace PostProp
         {
-            /// <summary>
-            /// 文章属性接口
-            /// </summary>
-            public interface IPostProp
-            {
-
-            }
-
-            /// <summary>
-            /// 文章索引
-            /// </summary>
-            public struct PostID : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 文章全局标识
-            /// </summary>
-            public struct UUID : IPostProp
-            {
-
-            }
-
-            /// <summary>
-            /// 标题
-            /// </summary>
-            public struct Title : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 摘要
-            /// </summary>
-            public struct Summary : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 内容
-            /// </summary>
-            public struct Content : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 封面
-            /// </summary>
-            public struct Cover : IPostProp
-            {
-
-            }
-
-            /// <summary>
-            /// 归档ID
-            /// </summary>
-            public struct ArchiveID : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 归档名
-            /// </summary>
-            public struct ArchiveName : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 标签
-            /// </summary>
-            public struct Label : IPostProp
-            {
-
-            }
 
             /// <summary>
             /// 模式
             /// </summary>
-            public struct Mode : IPostProp
+            public static class Mode
             {
                 /// <summary>
                 /// 状态枚举
@@ -676,11 +603,10 @@ namespace WaterLibrary.pilipala
                     Archived
                 }
             }
-
             /// <summary>
             /// 类型
             /// </summary>
-            public struct Type : IPostProp
+            public static class Type
             {
                 /// <summary>
                 /// 状态枚举
@@ -699,43 +625,7 @@ namespace WaterLibrary.pilipala
                     Note,
                 }
             }
-            /// <summary>
-            /// 作者
-            /// </summary>
-            public struct User : IPostProp
-            {
 
-            }
-
-            /// <summary>
-            /// 创建时间
-            /// </summary>
-            public struct CT : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 最后修改时间
-            /// </summary>
-            public struct LCT : IPostProp
-            {
-
-            }
-
-            /// <summary>
-            /// 浏览计数
-            /// </summary>
-            public struct UVCount : IPostProp
-            {
-
-            }
-            /// <summary>
-            /// 星星计数
-            /// </summary>
-            public struct StarCount : IPostProp
-            {
-
-            }
         }
     }
     namespace Components
@@ -1054,12 +944,12 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 取得指定文章属性
             /// </summary>
-            /// <typeparam name="Prop">目标属性类型</typeparam>
             /// <param name="PostID">目标文章PostID</param>
+            /// <param name="Prop">目标属性类型</param>
             /// <returns></returns>
-            public object GetPostProp<Prop>(int PostID) where Prop : IPostProp
+            public object GetPostProp(int PostID, PostPropEnum Prop)
             {
-                string SQL = $"SELECT {typeof(Prop).Name} FROM `{UnionView}` WHERE PostID = ?PostID";
+                string SQL = $"SELECT {Prop} FROM `{UnionView}` WHERE PostID = ?PostID";
 
                 return MySqlManager.GetKey(SQL, new MySqlParameter[]
                 {
@@ -1070,12 +960,12 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 获取文章数据
             /// </summary>
-            /// <typeparam name="Prop">正则表达式匹配的属性类型</typeparam>
+            /// <param name="Prop">正则表达式匹配的属性类型</param>
             /// <param name="REGEXP">正则表达式</param>
             /// <returns></returns>
-            public PostSet GetPost<Prop>(string REGEXP) where Prop : IPostProp
+            public PostSet GetPost(PostPropEnum Prop, string REGEXP)
             {
-                string SQL = $"SELECT * FROM `{UnionView}` WHERE {typeof(Prop).Name} REGEXP ?REGEXP ORDER BY CT DESC";
+                string SQL = $"SELECT * FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
                 PostSet PostSet = new PostSet();
 
@@ -1114,15 +1004,15 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 获取文章数据
             /// </summary>
-            /// <typeparam name="Prop">正则表达式匹配的属性类型</typeparam>
+            /// <param name="Prop">正则表达式匹配的属性类型</param>
             /// <param name="REGEXP">正则表达式</param>
             /// <param name="PostProps">所需属性类型</param>
             /// <returns></returns>
-            public PostSet GetPost<Prop>(string REGEXP, params PostPropEnum[] PostProps) where Prop : IPostProp
+            public PostSet GetPost(PostPropEnum Prop, string REGEXP, params PostPropEnum[] PostProps)
             {
                 /* 键名字符串格式化 */
                 string KeysStr = ConvertH.ListToString(PostProps, ',');
-                string SQL = $"SELECT {KeysStr} FROM `{UnionView}` WHERE {typeof(Prop).Name} REGEXP ?REGEXP ORDER BY CT DESC";
+                string SQL = $"SELECT {KeysStr} FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
                 PostSet PostSet = new PostSet();
 
@@ -1147,18 +1037,18 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 取得具有比目标文章的指定属性具有更大的值的文章PostID
             /// </summary>
-            /// <typeparam name="Prop">指定属性</typeparam>
             /// <param name="PostID">目标文章的PostID</param>
+            /// <param name="Prop">指定属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Bigger<Prop>(int PostID)
+            public int Bigger(int PostID, PostPropEnum Prop)
             {
-                string SQL = (typeof(Prop) == typeof(PostID)) switch /* 对查询PostID有优化 */
+                string SQL = (Prop == PostPropEnum.PostID) switch /* 对查询PostID有优化 */
                 {
                     true => $"SELECT PostID FROM `{UnionView}` WHERE PostID=( SELECT min(PostID) FROM `{UnionView}` WHERE PostID > {PostID})",
                     false => string.Format
                     (
                     $"SELECT PostID FROM `{0}` WHERE {1}=( SELECT min({1}) FROM `{0}` WHERE {1} > ( SELECT {1} FROM `{0}` WHERE PostID = {2} ))"
-                    , UnionView, typeof(Prop).Name, PostID
+                    , UnionView, Prop, PostID
                     )
                 };
 
@@ -1170,24 +1060,25 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 取得具有比目标文章的指定属性具有更大的值的文章PostID
             /// </summary>
-            /// <typeparam name="Prop">指定属性</typeparam>
+            /// <remarks>此方法能根据指定正则表达式对某属性进行筛选</remarks>
             /// <param name="PostID">目标文章的PostID</param>
+            /// <param name="Prop">指定属性</param>
             /// <param name="REGEXP">正则表达式</param>
-            /// <param name="PostProp">用于被正则表达式筛选的属性</param>
+            /// <param name="FilterProp">被正则表达式筛选的属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Bigger<Prop>(int PostID, string REGEXP, PostPropEnum PostProp)
+            public int Bigger(int PostID, PostPropEnum Prop, string REGEXP, PostPropEnum FilterProp)
             {
-                string SQL = (typeof(Prop) == typeof(PostID)) switch
+                string SQL = (Prop == PostPropEnum.PostID) switch
                 {
                     true => string.Format
                     (
                     "SELECT PostID FROM `{0}` WHERE {1}=( SELECT min({1}) FROM `{0}` WHERE PostID > {2} AND {3} REGEXP ?REGEXP )"
-                    , UnionView, typeof(Prop).Name, PostID, PostProp
+                    , UnionView, Prop, PostID, FilterProp
                     ),
                     false => string.Format
                     (
                     "SELECT PostID FROM `{0}` WHERE {1}=( SELECT min({1}) FROM `{0}` WHERE {1} > ( SELECT {1} FROM `{0}` WHERE PostID = ?PostID ) AND {2} REGEXP ?REGEXP )"
-                    , UnionView, typeof(Prop).Name, PostProp
+                    , UnionView, Prop, FilterProp
                     )
                 };
 
@@ -1202,18 +1093,18 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 取得具有比目标文章的指定属性具有更小的值的文章PostID
             /// </summary>
-            /// <typeparam name="Prop">指定属性</typeparam>
             /// <param name="PostID">目标文章的PostID</param>
+            /// <param name="Prop">指定属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Smaller<Prop>(int PostID)
+            public int Smaller(int PostID, PostPropEnum Prop)
             {
-                string SQL = (typeof(Prop) == typeof(PostID)) switch /* 对查询PostID有优化 */
+                string SQL = (Prop == PostPropEnum.PostID) switch /* 对查询PostID有优化 */
                 {
                     true => $"SELECT PostID FROM `{UnionView}` WHERE PostID=( SELECT max(PostID) FROM `{UnionView}` WHERE PostID < {PostID})",
                     false => string.Format
                     (
                     "SELECT PostID FROM `{0}` WHERE {1}=( SELECT max({1}) FROM `{0}` WHERE {1} < ( SELECT {1} FROM `{0}` WHERE PostID = {2} ))"
-                    , UnionView, typeof(Prop).Name, PostID
+                    , UnionView, Prop, PostID
                     )
                 };
 
@@ -1224,24 +1115,24 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 取得具有比目标文章的指定属性具有更小的值的文章PostID
             /// </summary>
-            /// <typeparam name="Prop">指定属性</typeparam>
             /// <param name="PostID">目标文章的PostID</param>
+            /// <param name="Prop">指定属性</param>
             /// <param name="REGEXP">正则表达式</param>
-            /// <param name="PostProp">用于被正则表达式筛选的属性</param>
+            /// <param name="FilterProp">用于被正则表达式筛选的属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Smaller<Prop>(int PostID, string REGEXP, PostPropEnum PostProp)
+            public int Smaller(int PostID, PostPropEnum Prop, string REGEXP, PostPropEnum FilterProp)
             {
-                string SQL = (typeof(Prop) == typeof(PostID)) switch
+                string SQL = (Prop == PostPropEnum.PostID) switch
                 {
                     true => string.Format
                     (
                     "SELECT PostID FROM `{0}` WHERE {1}=( SELECT max({1}) FROM `{0}` WHERE PostID < {2} AND {3} REGEXP ?REGEXP )"
-                    , UnionView, typeof(Prop).Name, PostID, PostProp
+                    , UnionView, Prop, PostID, FilterProp
                     ),
                     false => string.Format
                     (
                     "SELECT PostID FROM `{0}` WHERE {1}=( SELECT max({1}) FROM `{0}` WHERE {1} < ( SELECT {1} FROM `{0}` WHERE PostID = ?PostID ) AND {2} REGEXP ?REGEXP )"
-                    , UnionView, typeof(Prop).Name, PostProp
+                    , UnionView, Prop, FilterProp
                     )
                 };
 
@@ -1775,32 +1666,6 @@ namespace WaterLibrary.pilipala
             public int ScheduledCount
             {
                 get => GetPostCountByMode("^scheduled$");
-            }
-
-            /// <summary>
-            /// 某属性下的文章计数器
-            /// </summary>
-            /// <remarks>此方法采用依次轮询Meta表和Stack表（暂未考虑Archive表），检索方法有待优化</remarks>
-            /// <typeparam name="Prop">目标属性</typeparam>
-            /// <param name="Value">属性值</param>
-            /// <returns>计数为0、未检索到、异常等情况均返回0</returns>
-            public int CountOf<Prop>(object Value) where Prop : IPostProp
-            {
-                string SQL1 = $"SELECT COUNT(*) FROM {MetaTable} WHERE {typeof(Prop).Name} = ?Value";
-                var result1 = MySqlManager.GetKey(SQL1, new MySqlParameter[] { new("PostID", Value) });
-                if (result1 != null)
-                {
-                    return Convert.ToInt32(result1);
-                }
-
-                string SQL2 = $"SELECT COUNT(*) FROM {StackTable} WHERE {typeof(Prop).Name} = ?Value";
-                var result2 = MySqlManager.GetKey(SQL2, new MySqlParameter[] { new("PostID", Value) });
-                if (result2 != null)
-                {
-                    return Convert.ToInt32(result2);
-                }
-
-                return 0;
             }
 
             /// <summary>
