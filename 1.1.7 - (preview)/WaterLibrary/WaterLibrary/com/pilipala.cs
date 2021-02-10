@@ -12,8 +12,6 @@ using WaterLibrary.MySQL;
 using WaterLibrary.Utils;
 using WaterLibrary.pilipala.Database;
 using WaterLibrary.pilipala.Entity;
-using WaterLibrary.pilipala.Entity.PostProp;
-using Type = WaterLibrary.pilipala.Entity.PostProp.Type;
 
 
 namespace WaterLibrary.pilipala
@@ -163,13 +161,10 @@ namespace WaterLibrary.pilipala
         /// <returns></returns>
         public Component.User Run(string UserAccount, string UserPWD)
         {
-            string SQL = $"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD";
-
-            if (MySqlManager.GetKey(
-                SQL,
-                new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD))
-                )
-            .ToString() == "1")
+            if (MySqlManager.ExecuteAny
+                ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
+                new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
+                == 1)
             {
                 Component.User User = new Component.User(Tables, MySqlManager, UserAccount);
 
@@ -501,7 +496,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 文章属性枚举
         /// </summary>
-        public enum PostPropEnum
+        public enum PostProp
         {
             /// <summary>
             /// 文章索引
@@ -563,65 +558,6 @@ namespace WaterLibrary.pilipala
             /// 星星计数
             /// </summary>
             StarCount
-        }
-        namespace PostProp
-        {
-
-            /// <summary>
-            /// 模式
-            /// </summary>
-            public static class Mode
-            {
-                /// <summary>
-                /// 状态枚举
-                /// </summary>
-                public enum States
-                {
-                    /// <summary>
-                    /// 未设置
-                    /// </summary>
-                    /// <remarks>默认的文章模式，不带有任何模式特性</remarks>
-                    Unset,
-                    /// <summary>
-                    /// 隐藏
-                    /// </summary>
-                    /// <remarks>文章被隐藏，此状态下的文章不会被展示</remarks>
-                    Hidden,
-                    /// <summary>
-                    /// 计划
-                    /// </summary>
-                    /// <remarks>表示文章处于计划状态</remarks>
-                    Scheduled,
-                    /// <summary>
-                    /// 归档
-                    /// </summary>
-                    /// <remarks>表示文章处于归档状态</remarks>
-                    Archived
-                }
-            }
-            /// <summary>
-            /// 类型
-            /// </summary>
-            public static class Type
-            {
-                /// <summary>
-                /// 状态枚举
-                /// </summary>
-                public enum States
-                {
-                    /// <summary>
-                    /// 未设置
-                    /// </summary>
-                    /// <remarks>默认的文章类型，不带有任何类型特性</remarks>
-                    Unset,
-                    /// <summary>
-                    /// 便签
-                    /// </summary>
-                    /// <remarks>表示文章以便签形式展示</remarks>
-                    Note,
-                }
-            }
-
         }
     }
     namespace Component
@@ -943,7 +879,7 @@ namespace WaterLibrary.pilipala
             /// <param name="PostID">目标文章PostID</param>
             /// <param name="Prop">目标属性类型</param>
             /// <returns></returns>
-            public object GetPostProp(int PostID, PostPropEnum Prop)
+            public object GetPostProp(int PostID, PostProp Prop)
             {
                 string SQL = $"SELECT {Prop} FROM `{UnionView}` WHERE PostID = ?PostID";
 
@@ -959,7 +895,7 @@ namespace WaterLibrary.pilipala
             /// <param name="Prop">正则表达式匹配的属性类型</param>
             /// <param name="REGEXP">正则表达式</param>
             /// <returns></returns>
-            public PostSet GetPost(PostPropEnum Prop, string REGEXP)
+            public PostSet GetPost(PostProp Prop, string REGEXP)
             {
                 string SQL = $"SELECT * FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
@@ -1004,7 +940,7 @@ namespace WaterLibrary.pilipala
             /// <param name="REGEXP">正则表达式</param>
             /// <param name="PostProps">所需属性类型</param>
             /// <returns></returns>
-            public PostSet GetPost(PostPropEnum Prop, string REGEXP, params PostPropEnum[] PostProps)
+            public PostSet GetPost(PostProp Prop, string REGEXP, params PostProp[] PostProps)
             {
                 /* 键名字符串格式化 */
                 string KeysStr = ConvertH.ListToString(PostProps, ',');
@@ -1036,9 +972,9 @@ namespace WaterLibrary.pilipala
             /// <param name="PostID">目标文章的PostID</param>
             /// <param name="Prop">指定属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Bigger(int PostID, PostPropEnum Prop)
+            public int Bigger(int PostID, PostProp Prop)
             {
-                string SQL = (Prop == PostPropEnum.PostID) switch /* 对查询PostID有优化 */
+                string SQL = (Prop == PostProp.PostID) switch /* 对查询PostID有优化 */
                 {
                     true => $"SELECT PostID FROM `{UnionView}` WHERE PostID=( SELECT min(PostID) FROM `{UnionView}` WHERE PostID > {PostID})",
                     false => string.Format
@@ -1062,9 +998,9 @@ namespace WaterLibrary.pilipala
             /// <param name="REGEXP">正则表达式</param>
             /// <param name="FilterProp">被正则表达式筛选的属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Bigger(int PostID, PostPropEnum Prop, string REGEXP, PostPropEnum FilterProp)
+            public int Bigger(int PostID, PostProp Prop, string REGEXP, PostProp FilterProp)
             {
-                string SQL = (Prop == PostPropEnum.PostID) switch
+                string SQL = (Prop == PostProp.PostID) switch
                 {
                     true => string.Format
                     (
@@ -1092,9 +1028,9 @@ namespace WaterLibrary.pilipala
             /// <param name="PostID">目标文章的PostID</param>
             /// <param name="Prop">指定属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Smaller(int PostID, PostPropEnum Prop)
+            public int Smaller(int PostID, PostProp Prop)
             {
-                string SQL = (Prop == PostPropEnum.PostID) switch /* 对查询PostID有优化 */
+                string SQL = (Prop == PostProp.PostID) switch /* 对查询PostID有优化 */
                 {
                     true => $"SELECT PostID FROM `{UnionView}` WHERE PostID=( SELECT max(PostID) FROM `{UnionView}` WHERE PostID < {PostID})",
                     false => string.Format
@@ -1116,9 +1052,9 @@ namespace WaterLibrary.pilipala
             /// <param name="REGEXP">正则表达式</param>
             /// <param name="FilterProp">用于被正则表达式筛选的属性</param>
             /// <returns>不存在符合要求的PostID时，返回-1</returns>
-            public int Smaller(int PostID, PostPropEnum Prop, string REGEXP, PostPropEnum FilterProp)
+            public int Smaller(int PostID, PostProp Prop, string REGEXP, PostProp FilterProp)
             {
-                string SQL = (Prop == PostPropEnum.PostID) switch
+                string SQL = (Prop == PostProp.PostID) switch
                 {
                     true => string.Format
                     (
@@ -1548,12 +1484,54 @@ namespace WaterLibrary.pilipala
             }
 
             /// <summary>
+            /// 状态枚举
+            /// </summary>
+            public enum ModeStates
+            {
+                /// <summary>
+                /// 未设置
+                /// </summary>
+                /// <remarks>默认的文章模式，不带有任何模式特性</remarks>
+                Unset,
+                /// <summary>
+                /// 隐藏
+                /// </summary>
+                /// <remarks>文章被隐藏，此状态下的文章不会被展示</remarks>
+                Hidden,
+                /// <summary>
+                /// 计划
+                /// </summary>
+                /// <remarks>表示文章处于计划状态</remarks>
+                Scheduled,
+                /// <summary>
+                /// 归档
+                /// </summary>
+                /// <remarks>表示文章处于归档状态</remarks>
+                Archived
+            }
+            /// <summary>
+            /// 状态枚举
+            /// </summary>
+            public enum TypeStates
+            {
+                /// <summary>
+                /// 未设置
+                /// </summary>
+                /// <remarks>默认的文章类型，不带有任何类型特性</remarks>
+                Unset,
+                /// <summary>
+                /// 便签
+                /// </summary>
+                /// <remarks>表示文章以便签形式展示</remarks>
+                Note,
+            }
+            /// <summary>
             /// 设置文章类型
             /// </summary>
             /// <param name="PostID">文章索引</param>
             /// <param name="TypeState">目标类型</param>
             /// <returns></returns>
-            public bool UpdateType(int PostID, Type.States TypeState)
+            public bool UpdateType(int PostID, TypeStates TypeState)
             {
                 bool fun(string value)
                 {
@@ -1563,8 +1541,8 @@ namespace WaterLibrary.pilipala
                 }
                 return TypeState switch
                 {
-                    Type.States.Unset => fun(""),
-                    Type.States.Note => fun("note"),
+                    TypeStates.Unset => fun(""),
+                    TypeStates.Note => fun("note"),
                     _ => throw new NotImplementedException("模式匹配失败")
                 };
             }
@@ -1574,7 +1552,7 @@ namespace WaterLibrary.pilipala
             /// <param name="PostID">文章索引</param>
             /// <param name="ModeState">目标模式</param>
             /// <returns></returns>
-            public bool UpdateMode(int PostID, Mode.States ModeState)
+            public bool UpdateMode(int PostID, ModeStates ModeState)
             {
                 bool fun(string value)
                 {
@@ -1585,10 +1563,10 @@ namespace WaterLibrary.pilipala
 
                 return ModeState switch
                 {
-                    Mode.States.Unset => fun(""),
-                    Mode.States.Hidden => fun("hidden"),
-                    Mode.States.Scheduled => fun("scheduled"),
-                    Mode.States.Archived => fun("archived"),
+                    ModeStates.Unset => fun(""),
+                    ModeStates.Hidden => fun("hidden"),
+                    ModeStates.Scheduled => fun("scheduled"),
+                    ModeStates.Archived => fun("archived"),
                     _ => throw new NotImplementedException("模式匹配失败")
                 };
             }
@@ -1703,7 +1681,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 归档管理组件
         /// </summary>
-        public class Archiver
+        public class Archiver : IPLComponent<Archiver>
         {
             private string ArchiveTable { get; set; }
             private string MetaTable { get; set; }
@@ -1839,7 +1817,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 插件管理组件
         /// </summary>
-        public class Pluginer
+        public class Pluginer : IPLComponent<Pluginer>
         {
             /*private PLTables Tables { get; init; }
             private MySqlManager MySqlManager { get; init; }

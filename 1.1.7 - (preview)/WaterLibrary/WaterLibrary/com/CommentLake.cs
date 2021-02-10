@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 
 using WaterLibrary.MySQL;
 using WaterLibrary.pilipala.Entity;
-using WaterLibrary.pilipala.Entity.CommentProp;
+
 
 namespace WaterLibrary.pilipala.Component
 {
@@ -89,13 +89,13 @@ namespace WaterLibrary.pilipala.Component
         /// <summary>
         /// 获得评论属性
         /// </summary>
-        /// <typeparam name="T">属性类型</typeparam>
         /// <param name="CommentID">目标评论CommentID</param>
+        /// <param name="Prop">属性类型</param>
         /// <returns></returns>
-        public string GetComment<T>(int CommentID) where T : ICommentProp
+        public string GetComment(int CommentID, CommentProp Prop)
         {
             /* int类型传入，SQL注入无效 */
-            string SQL = $"SELECT {typeof(T).Name} FROM {CommentTable} WHERE CommentID = {CommentID}";
+            string SQL = $"SELECT {Prop} FROM {CommentTable} WHERE CommentID = {CommentID}";
             return MySqlManager.GetKey(SQL).ToString();
         }
 
@@ -266,73 +266,43 @@ namespace WaterLibrary.pilipala.Component
 }
 namespace WaterLibrary.pilipala.Entity
 {
-    namespace CommentProp
+    /// <summary>
+    /// 评论属性枚举
+    /// </summary>
+    public enum CommentProp
     {
-        /// <summary>
-        /// 表键值接口
-        /// </summary>
-        public interface ICommentProp
-        {
-
-        }
-
         /// <summary>
         /// 被评论的文章PostID
         /// </summary>
-        public struct PostID : ICommentProp
-        {
-
-        }
+        PostID,
         /// <summary>
         /// 评论用户
         /// </summary>
-        public struct User : ICommentProp
-        {
-
-        }
+        User,
         /// <summary>
         /// 用户邮箱
         /// </summary>
-        public struct Email : ICommentProp
-        {
-
-        }
+        Email,
         /// <summary>
         /// 评论内容
         /// </summary>
-        public struct Content : ICommentProp
-        {
-
-        }
+        Content,
         /// <summary>
         /// 用户站点
         /// </summary>
-        public struct WebSite : ICommentProp
-        {
-
-        }
+        WebSite,
         /// <summary>
         /// 回复到的评论CommentID
         /// </summary>
-        public struct HEAD : ICommentProp
-        {
-
-        }
+        HEAD,
         /// <summary>
         /// 评论创建时间
         /// </summary>
-        public struct Time : ICommentProp
-        {
-
-        }
-
+        Time,
         /// <summary>
         /// 所在楼层
         /// </summary>
-        public struct Floor : ICommentProp
-        {
-
-        }
+        Floor,
     }
     /// <summary>
     /// 评论
