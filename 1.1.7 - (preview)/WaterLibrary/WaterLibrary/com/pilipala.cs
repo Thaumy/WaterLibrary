@@ -87,21 +87,6 @@ namespace WaterLibrary.pilipala
         /// 登录到内核的用户UUID
         /// </summary>
         string UserAccount { get; }
-
-        /// <summary>
-        /// 以有效用户身份启动内核
-        /// </summary>
-        /// <param name="UserAccount">用户账号</param>
-        /// <param name="UserPWD">用户密码</param>
-        /// <param name="CORE">返回的内核实例</param>
-        /// <param name="User">返回的用户实例</param>
-        /// <returns>验证状态，通过用户验证为true</returns>
-        public bool Run(string UserAccount, string UserPWD, out CORE CORE, out Component.User User);
-        /// <summary>
-        /// 以来宾身份启动内核
-        /// </summary>
-        /// <returns>验证状态，通过用户验证为true</returns>
-        public bool Run(out CORE CORE);
     }
 
 
@@ -137,44 +122,6 @@ namespace WaterLibrary.pilipala
             MySqlManager = PLDatabase.MySqlManager;
             Tables = PLDatabase.Tables;
             ViewsSet = PLDatabase.ViewsSet;
-        }
-
-        /// <summary>
-        /// 以有效用户身份启动内核
-        /// </summary>
-        /// <param name="UserAccount">用户账号</param>
-        /// <param name="UserPWD">用户密码</param>
-        /// <param name="CORE">返回的内核实例</param>
-        /// <param name="User">返回的用户实例</param>
-        /// <returns>验证状态，通过用户验证为true</returns>
-        public bool Run(string UserAccount, string UserPWD, out CORE CORE, out Component.User User)
-        {
-            if (MySqlManager.ExecuteAny
-                ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
-                new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
-                == 1)
-            {
-                /* 验证成功，赋值内核UserAccount */
-                this.UserAccount = UserAccount;
-
-                CORE = this;
-                User = new Component.User(Tables, MySqlManager, UserAccount);
-
-                return true;
-            }
-            else
-            {
-                throw new Exception("非法的用户签名");
-            }
-        }
-        /// <summary>
-        /// 以来宾身份启动内核
-        /// </summary>
-        /// <returns>验证状态，通过用户验证为true</returns>
-        public bool Run(out CORE CORE)
-        {
-            CORE = this;
-            return false;
         }
     }
 
@@ -596,6 +543,32 @@ namespace WaterLibrary.pilipala
             private ComponentFactory(ICORE CORE, User User) { (ComponentFactory.CORE, ComponentFactory.User) = (CORE, User); }
 
             /// <summary>
+            /// 生成用户组件
+            /// </summary>
+            /// <returns></returns>
+            public User GenUser(string UserPWD)
+            {
+                var Tables = CORE.Tables;
+                var MySqlManager = CORE.MySqlManager;
+                var UserAccount = CORE.UserAccount;
+
+                User check()
+                {
+                    if (MySqlManager.ExecuteAny
+                        ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
+                        new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
+                        == 1)
+                    {
+                        return new User(Tables, MySqlManager, UserAccount); ;
+                    }
+                    else
+                    {
+                        throw new Exception("构造失败，非法的用户信息。");
+                    }
+                }
+                return check();
+            }
+            /// <summary>
             /// 生成权限管理组件
             /// </summary>
             /// <returns></returns>
@@ -737,7 +710,7 @@ namespace WaterLibrary.pilipala
             /// </summary>
             private User() { }
             /// <summary>
-            /// 内核构造
+            /// 工厂构造
             /// </summary>
             /// <param name="Tables">数据库表</param>
             /// <param name="MySqlManager">数据库管理器</param>

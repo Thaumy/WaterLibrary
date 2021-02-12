@@ -160,6 +160,12 @@
             单例模式
             </summary>
         </member>
+        <member name="M:WaterLibrary.pilipala.Component.ComponentFactory.GenUser(System.String)">
+            <summary>
+            生成用户组件
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:WaterLibrary.pilipala.Component.ComponentFactory.GenAuthentication">
             <summary>
             生成权限管理组件
@@ -260,7 +266,7 @@
         </member>
         <member name="M:WaterLibrary.pilipala.Component.User.#ctor(WaterLibrary.pilipala.Database.PLTables,WaterLibrary.MySQL.MySqlManager,System.String)">
             <summary>
-            内核构造
+            工厂构造
             </summary>
             <param name="Tables">数据库表</param>
             <param name="MySqlManager">数据库管理器</param>
@@ -1299,22 +1305,6 @@
             登录到内核的用户UUID
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.ICORE.Run(System.String,System.String,WaterLibrary.pilipala.CORE@,WaterLibrary.pilipala.Component.User@)">
-            <summary>
-            以有效用户身份启动内核
-            </summary>
-            <param name="UserAccount">用户账号</param>
-            <param name="UserPWD">用户密码</param>
-            <param name="CORE">返回的内核实例</param>
-            <param name="User">返回的用户实例</param>
-            <returns>验证状态，通过用户验证为true</returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.ICORE.Run(WaterLibrary.pilipala.CORE@)">
-            <summary>
-            以来宾身份启动内核
-            </summary>
-            <returns>验证状态，通过用户验证为true</returns>
-        </member>
         <member name="T:WaterLibrary.pilipala.CORE">
             <summary>
             pilipala内核
@@ -1345,22 +1335,6 @@
             初始化pilipala内核
             </summary>
             <param name="PLDatabase">pilipala数据库信息</param>
-        </member>
-        <member name="M:WaterLibrary.pilipala.CORE.Run(System.String,System.String,WaterLibrary.pilipala.CORE@,WaterLibrary.pilipala.Component.User@)">
-            <summary>
-            以有效用户身份启动内核
-            </summary>
-            <param name="UserAccount">用户账号</param>
-            <param name="UserPWD">用户密码</param>
-            <param name="CORE">返回的内核实例</param>
-            <param name="User">返回的用户实例</param>
-            <returns>验证状态，通过用户验证为true</returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.CORE.Run(WaterLibrary.pilipala.CORE@)">
-            <summary>
-            以来宾身份启动内核
-            </summary>
-            <returns>验证状态，通过用户验证为true</returns>
         </member>
         <member name="T:WaterLibrary.MySQL.MySqlManager">
             <summary>
