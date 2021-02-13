@@ -12,6 +12,7 @@ using WaterLibrary.MySQL;
 using WaterLibrary.Utils;
 using WaterLibrary.pilipala.Database;
 using WaterLibrary.pilipala.Entity;
+using WaterLibrary.pilipala.Component;
 
 
 namespace WaterLibrary.pilipala
@@ -65,59 +66,49 @@ namespace WaterLibrary.pilipala
     {
 
     }
-    /// <summary>
-    /// 噼里啪啦内核接口
-    /// </summary>
-    public interface ICORE
-    {
-        /// <summary>
-        /// 内核表访问器
-        /// </summary>
-        PLTables Tables { get; }
-        /// <summary>
-        /// 内核视图访问器
-        /// </summary>
-        (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; }
-        /// <summary>
-        /// 内核MySql数据库控制器
-        /// </summary>
-        MySqlManager MySqlManager { get; }
-
-        /// <summary>
-        /// 登录到内核的用户UUID
-        /// </summary>
-        string UserAccount { get; }
-    }
-
 
     /// <summary>
     /// pilipala内核
     /// </summary>
-    public class CORE : ICORE
+    public class CORE
     {
+        private static CORE Singleton = null;/* 单例 */
+
         /// <summary>
         /// 核心表结构
         /// </summary>
-        public PLTables Tables { get; private set; }
+        public static PLTables Tables { get; private set; }
         /// <summary>
         /// 核心视图结构
         /// </summary>
-        public (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; private set; }
+        public static (PLViews CleanViews, PLViews DirtyViews) ViewsSet { get; private set; }
         /// <summary>
         /// MySql控制器
         /// </summary>
-        public MySqlManager MySqlManager { get; init; }
+        public static MySqlManager MySqlManager { get; private set; }
 
         /// <summary>
-        /// 登录内核的用户UUID
+        /// 登录内核的用户账号
         /// </summary>
-        public string UserAccount { get; private set; }
+        public static string UserAccount { get; private set; }
+
+        /// <summary>
+        /// 初始化内核
+        /// </summary>
+        /// <param name="PLDatabase">噼里啪啦数据库操作盒</param>
+        public static void INIT(PLDatabase PLDatabase)
+        {
+            if (Singleton == null)
+            {
+                Singleton = new(PLDatabase);
+            }
+        }
 
         /// <summary>
         /// 初始化pilipala内核
         /// </summary>
         /// <param name="PLDatabase">pilipala数据库信息</param>
-        public CORE(PLDatabase PLDatabase)
+        private CORE(PLDatabase PLDatabase)
         {
             MySqlManager = PLDatabase.MySqlManager;
             Tables = PLDatabase.Tables;
@@ -502,9 +493,8 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class ComponentFactory
         {
-            private static ICORE CORE;
-            private static User User;
-            private static ComponentFactory Singleton;/* 单例 */
+            private static ComponentFactory Singleton = null;/* 单例 */
+            private static User UserCache = null;
 
             /// <summary>
             /// 数据库管理器引用
@@ -523,24 +513,14 @@ namespace WaterLibrary.pilipala
             {
                 get
                 {
-                    return Singleton;
+                    return Singleton ??= new();
                 }
-            }
-            /// <summary>
-            /// 初始化工厂
-            /// </summary>
-            /// <param name="CORE">内核对象</param>
-            /// <param name="User">用户对象</param>
-            public static void INIT(ICORE CORE, User User)
-            {
-                if (Singleton != null)
-                    Singleton = new(CORE, User);
             }
 
             /// <summary>
-            /// 单例模式
+            /// 单例构造
             /// </summary>
-            private ComponentFactory(ICORE CORE, User User) { (ComponentFactory.CORE, ComponentFactory.User) = (CORE, User); }
+            private ComponentFactory() { }
 
             /// <summary>
             /// 生成用户组件
@@ -552,27 +532,28 @@ namespace WaterLibrary.pilipala
                 var MySqlManager = CORE.MySqlManager;
                 var UserAccount = CORE.UserAccount;
 
-                User check()
+                User GetUser()
                 {
                     if (MySqlManager.ExecuteAny
                         ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
                         new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
                         == 1)
                     {
-                        return new User(Tables, MySqlManager, UserAccount); ;
+                        return new User(Tables, MySqlManager, UserAccount);
                     }
                     else
                     {
                         throw new Exception("构造失败，非法的用户信息。");
                     }
                 }
-                return check();
+
+                return UserCache ??= GetUser();/* 初次调用写缓存后返回，之后返回缓存 */
             }
             /// <summary>
             /// 生成权限管理组件
             /// </summary>
             /// <returns></returns>
-            public Authentication GenAuthentication() => new(ComponentFactory.CORE.Tables, ComponentFactory.CORE.MySqlManager, ComponentFactory.User);
+            public Authentication GenAuthentication() => new(CORE.Tables, CORE.MySqlManager, UserCache);
             /// <summary>
             /// 生成读组件
             /// </summary>
@@ -600,22 +581,22 @@ namespace WaterLibrary.pilipala
             /// 生成写组件
             /// </summary>
             /// <returns></returns>
-            public Writer GenWriter() => new(ComponentFactory.CORE.Tables.Meta, ComponentFactory.CORE.Tables.Stack, ComponentFactory.CORE.MySqlManager);
+            public Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成计数组件
             /// </summary>
             /// <returns></returns>
-            public Counter GenCounter() => new(ComponentFactory.CORE.Tables.Meta, ComponentFactory.CORE.Tables.Stack, ComponentFactory.CORE.MySqlManager);
+            public Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成归档管理组件
             /// </summary>
             /// <returns></returns>
-            public Archiver GenArchiver() => new(ComponentFactory.CORE.Tables.Archive, ComponentFactory.CORE.MySqlManager);
+            public Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
             /// <summary>
             /// 生成评论湖组件
             /// </summary>
             /// <returns></returns>
-            public CommentLake GenCommentLake() => new(ComponentFactory.CORE.Tables.Meta, ComponentFactory.CORE.Tables.Comment, ComponentFactory.CORE.MySqlManager);
+            public CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
         }
 
         /// <summary>
