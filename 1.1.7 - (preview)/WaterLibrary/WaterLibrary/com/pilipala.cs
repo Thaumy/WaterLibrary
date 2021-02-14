@@ -12,7 +12,6 @@ using WaterLibrary.MySQL;
 using WaterLibrary.Utils;
 using WaterLibrary.pilipala.Database;
 using WaterLibrary.pilipala.Entity;
-using WaterLibrary.pilipala.Component;
 
 
 namespace WaterLibrary.pilipala
@@ -88,6 +87,15 @@ namespace WaterLibrary.pilipala
         public static MySqlManager MySqlManager { get; private set; }
 
         /// <summary>
+        /// 插件表名键值对
+        /// </summary>
+        public static Dictionary<string, string> TableCache;
+        /// <summary>
+        /// 插件表名键值对
+        /// </summary>
+        public static Dictionary<string, string> ViewCache;
+
+        /// <summary>
         /// 登录内核的用户账号
         /// </summary>
         public static string UserAccount { get; private set; }
@@ -103,7 +111,6 @@ namespace WaterLibrary.pilipala
                 Singleton = new(PLDatabase);
             }
         }
-
         /// <summary>
         /// 初始化pilipala内核
         /// </summary>
@@ -493,32 +500,10 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class ComponentFactory
         {
-            private static ComponentFactory Singleton = null;/* 单例 */
             private static User UserCache = null;
 
             /// <summary>
-            /// 数据库管理器引用
-            /// </summary>
-            public MySqlManager MySqlManager;
-            /// <summary>
-            /// 插件表名键值对
-            /// </summary>
-            public Dictionary<string, string> PluginTables;
-
-
-            /// <summary>
-            /// 工厂实例
-            /// </summary>
-            public static ComponentFactory Instance
-            {
-                get
-                {
-                    return Singleton ??= new();
-                }
-            }
-
-            /// <summary>
-            /// 单例构造
+            /// 私有构造
             /// </summary>
             private ComponentFactory() { }
 
@@ -526,7 +511,7 @@ namespace WaterLibrary.pilipala
             /// 生成用户组件
             /// </summary>
             /// <returns></returns>
-            public User GenUser(string UserPWD)
+            public static User GenUser(string UserPWD)
             {
                 var Tables = CORE.Tables;
                 var MySqlManager = CORE.MySqlManager;
@@ -553,14 +538,14 @@ namespace WaterLibrary.pilipala
             /// 生成权限管理组件
             /// </summary>
             /// <returns></returns>
-            public Authentication GenAuthentication() => new(CORE.Tables, CORE.MySqlManager, UserCache);
+            public static Authentication GenAuthentication() => new(CORE.Tables, CORE.MySqlManager, UserCache);
             /// <summary>
             /// 生成读组件
             /// </summary>
             /// <param name="ReadMode">读取模式枚举</param>
             /// <param name="WithRawMode">以原始数据读取模式初始化(读取到的数据包含隐性文章)</param>
             /// <returns></returns>
-            public Reader GenReader(Reader.ReadMode ReadMode, bool WithRawMode = false)
+            public static Reader GenReader(Reader.ReadMode ReadMode, bool WithRawMode = false)
             {
                 return ReadMode switch
                 {
@@ -581,22 +566,22 @@ namespace WaterLibrary.pilipala
             /// 生成写组件
             /// </summary>
             /// <returns></returns>
-            public Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
+            public static Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成计数组件
             /// </summary>
             /// <returns></returns>
-            public Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
+            public static Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成归档管理组件
             /// </summary>
             /// <returns></returns>
-            public Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
+            public static Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
             /// <summary>
             /// 生成评论湖组件
             /// </summary>
             /// <returns></returns>
-            public CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
+            public static CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
         }
 
         /// <summary>
@@ -1793,6 +1778,13 @@ namespace WaterLibrary.pilipala
 
             private List<string> PluginPool;
             此组件是为未来而保留的 */
+        }
+
+        /// <summary>
+        /// 组件拓展
+        /// </summary>
+        public static class ComponentExtensions
+        {
         }
     }
 }
