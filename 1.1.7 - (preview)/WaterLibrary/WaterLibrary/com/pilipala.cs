@@ -1685,13 +1685,33 @@ namespace WaterLibrary.pilipala
             /// </summary>
             /// <param name="ArchiveName">归档名</param>
             /// <returns></returns>
-            public bool CreateArchive(string ArchiveName)
+            public bool NewArchive(string ArchiveName)
             {
-                bool result = MySqlManager.ExecuteInsert(ArchiveTable,
-                    new("ArchiveID", GetMaxArchiveID() + 1),
-                    new("Name", ArchiveName));
-                RefreshCache();
-                return result;
+                int ArchiveID = GetMaxArchiveID() + 1;
+
+                return MySqlManager.DoInConnection(conn =>
+                {
+                    return MySqlManager.DoInCommand(conn, cmd =>
+                    {
+                        return MySqlManager.DoInTransaction(cmd, tx =>
+                        {
+                            int affectedArchives = cmd.ExecuteInsert(ArchiveTable,
+                                new("ArchiveID", ArchiveID),
+                                new("Name", ArchiveName));
+                            if (affectedArchives == 1)
+                            {
+                                tx.Commit();//归档被删除时提交
+                                ArchiveCache.Add(ArchiveName, ArchiveID);//同步到缓存
+                                return true;
+                            }
+                            else
+                            {
+                                tx.Rollback();
+                                return false;
+                            }
+                        });
+                    });
+                });
             }
             /// <summary>
             /// 注销归档
@@ -1699,7 +1719,7 @@ namespace WaterLibrary.pilipala
             /// <remarks>不可注销归档"无"，否则将返回false</remarks>
             /// <param name="ArchiveName">归档名</param>
             /// <returns>受影响的文章数</returns>
-            public int DisposeArchive(string ArchiveName)
+            public int DelArchive(string ArchiveName)
             {
                 if (ArchiveName != "无")
                 {
@@ -1716,6 +1736,7 @@ namespace WaterLibrary.pilipala
                                 if (affectedArchives == 1)
                                 {
                                     tx.Commit();//归档被删除时提交
+                                    ArchiveCache.Remove(ArchiveName);//同步到缓存
                                     return affectedPosts;
                                 }
                                 else
@@ -1726,7 +1747,6 @@ namespace WaterLibrary.pilipala
                             });
                         });
                     });
-                    RefreshCache();
                     return result;
                 }
                 else return 0;

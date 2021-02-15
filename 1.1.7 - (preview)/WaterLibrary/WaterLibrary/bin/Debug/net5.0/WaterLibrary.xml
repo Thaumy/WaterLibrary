@@ -667,14 +667,14 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.Archiver.CreateArchive(System.String)">
+        <member name="M:WaterLibrary.pilipala.Component.Archiver.NewArchive(System.String)">
             <summary>
             创建归档
             </summary>
             <param name="ArchiveName">归档名</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.Archiver.DisposeArchive(System.String)">
+        <member name="M:WaterLibrary.pilipala.Component.Archiver.DelArchive(System.String)">
             <summary>
             注销归档
             </summary>
