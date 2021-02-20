@@ -188,7 +188,7 @@ namespace WaterLibrary.pilipala.Component
         /// </summary>
         /// <param name="Comment">评论内容</param>
         /// <returns></returns>
-        public bool AddComment(Comment Comment)
+        public bool NewComment(Comment Comment)
         {
             string SQL = $"INSERT INTO {CommentTable} " +
                         "( CommentID, HEAD, PostID, Floor, User, Email, Content, WebSite, Time) VALUES " +
@@ -237,7 +237,7 @@ namespace WaterLibrary.pilipala.Component
         /// </summary>
         /// <param name="CommentID"></param>
         /// <returns></returns>
-        public bool DeleteComment(int CommentID)
+        public bool DelComment(int CommentID)
         {
             return MySqlManager.DoInConnection(conn =>
             {
