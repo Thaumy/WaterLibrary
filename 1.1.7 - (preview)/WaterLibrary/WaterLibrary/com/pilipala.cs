@@ -96,11 +96,6 @@ namespace WaterLibrary.pilipala
         public static Dictionary<string, string> ViewCache;
 
         /// <summary>
-        /// 登录内核的用户账号
-        /// </summary>
-        public static string UserAccount { get; private set; }
-
-        /// <summary>
         /// 初始化内核
         /// </summary>
         /// <param name="PLDatabase">噼里啪啦数据库操作盒</param>
@@ -500,52 +495,39 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class ComponentFactory
         {
-            private static User UserCache = null;
-
-            /// <summary>
-            /// 私有构造
-            /// </summary>
-            private ComponentFactory() { }
-
             /// <summary>
             /// 生成用户组件
             /// </summary>
             /// <returns></returns>
-            public static User GenUser(string UserPWD)
+            public User GenUser(string UserAccount, string UserPWD)
             {
                 var Tables = CORE.Tables;
                 var MySqlManager = CORE.MySqlManager;
-                var UserAccount = CORE.UserAccount;
 
-                User GetUser()
+                if (MySqlManager.ExecuteAny
+                    ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
+                    new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
+                    == 1)
                 {
-                    if (MySqlManager.ExecuteAny
-                        ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
-                        new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
-                        == 1)
-                    {
-                        return new User(Tables, MySqlManager, UserAccount);
-                    }
-                    else
-                    {
-                        throw new Exception("构造失败，非法的用户信息。");
-                    }
+                    return new User(Tables, MySqlManager, UserAccount);
                 }
-
-                return UserCache ??= GetUser();/* 初次调用写缓存后返回，之后返回缓存 */
+                else
+                {
+                    throw new Exception("构造失败，非法的用户信息。");
+                }
             }
             /// <summary>
             /// 生成权限管理组件
             /// </summary>
             /// <returns></returns>
-            public static Authentication GenAuthentication() => new(CORE.Tables, CORE.MySqlManager, UserCache);
+            public Authentication GenAuthentication(User User) => new(CORE.Tables, CORE.MySqlManager, User);
             /// <summary>
             /// 生成读组件
             /// </summary>
             /// <param name="ReadMode">读取模式枚举</param>
             /// <param name="WithRawMode">以原始数据读取模式初始化(读取到的数据包含隐性文章)</param>
             /// <returns></returns>
-            public static Reader GenReader(Reader.ReadMode ReadMode, bool WithRawMode = false)
+            public Reader GenReader(Reader.ReadMode ReadMode, bool WithRawMode = false)
             {
                 return ReadMode switch
                 {
@@ -566,22 +548,22 @@ namespace WaterLibrary.pilipala
             /// 生成写组件
             /// </summary>
             /// <returns></returns>
-            public static Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
+            public Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成计数组件
             /// </summary>
             /// <returns></returns>
-            public static Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
+            public Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
             /// 生成归档管理组件
             /// </summary>
             /// <returns></returns>
-            public static Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
+            public Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
             /// <summary>
             /// 生成评论湖组件
             /// </summary>
             /// <returns></returns>
-            public static CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
+            public CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
         }
 
         /// <summary>

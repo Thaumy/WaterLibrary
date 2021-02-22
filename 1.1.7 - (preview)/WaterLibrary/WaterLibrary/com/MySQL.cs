@@ -1,9 +1,8 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
-
-using System.Linq;
 using System.Data;
-using MySql.Data.MySqlClient;
+using System.Linq;
 
 
 namespace WaterLibrary.MySQL
@@ -542,7 +541,7 @@ namespace WaterLibrary.MySQL
     /// <summary>
     /// 扩展方法
     /// </summary>
-    public static class Extension
+    public static class MySqlManager_Extension
     {
         /// <summary>
         /// 执行任意SQL语句
