@@ -233,7 +233,7 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// Content字段原始内容
             /// </summary>
-            public string Content { internal get; set; }
+            public string Content { get; set; }
             /// <summary>
             /// 获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记
             /// </summary>
