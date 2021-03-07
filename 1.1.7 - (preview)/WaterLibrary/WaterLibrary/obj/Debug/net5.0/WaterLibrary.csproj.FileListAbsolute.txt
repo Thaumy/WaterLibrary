@@ -75,3 +75,16 @@ H:\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\Wat
 H:\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.dll
 H:\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\ref\WaterLibrary.dll
 H:\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.pdb
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.deps.json
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.dll
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\ref\WaterLibrary.dll
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.pdb
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.xml
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.csprojAssemblyReference.cache
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.GeneratedMSBuildEditorConfig.editorconfig
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.AssemblyInfoInputs.cache
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.AssemblyInfo.cs
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.csproj.CoreCompileInputs.cache
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.dll
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\ref\WaterLibrary.dll
+H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\obj\Debug\net5.0\WaterLibrary.pdb

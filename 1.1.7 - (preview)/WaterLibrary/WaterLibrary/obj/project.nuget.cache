@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "yRwId56oJBbBJ0VnzeAx5/EDq4rbI8u5SpedaJ5hAxeK8fDIFnbtLXYEE83HnbBEyX3IiCLnpspUh1fk42Wbmw==",
+  "dgSpecHash": "MO4YFEaJcEi3vbfXtuo1L92mgjkLSvLqZ7GkhanXb/zDyClRk1yJwiGLoLGrEAvqWapnpass/Mb4+t50FRfYDA==",
   "success": true,
-  "projectFilePath": "H:\\WaterLibrary\\1.1.7 - (preview)\\WaterLibrary\\WaterLibrary\\WaterLibrary.csproj",
+  "projectFilePath": "H:\\GitHub\\WaterLibrary\\1.1.7 - (preview)\\WaterLibrary\\WaterLibrary\\WaterLibrary.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Thaumy\\.nuget\\packages\\bouncycastle.netcore\\1.8.3\\bouncycastle.netcore.1.8.3.nupkg.sha512",
     "C:\\Users\\Thaumy\\.nuget\\packages\\google.protobuf\\3.11.4\\google.protobuf.3.11.4.nupkg.sha512",

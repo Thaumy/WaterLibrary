@@ -20,7 +20,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="H:\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.dll" target="lib\net5.0\WaterLibrary.dll" />
-    <file src="H:\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.xml" target="lib\net5.0\WaterLibrary.xml" />
+    <file src="H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.dll" target="lib\net5.0\WaterLibrary.dll" />
+    <file src="H:\GitHub\WaterLibrary\1.1.7 - (preview)\WaterLibrary\WaterLibrary\bin\Debug\net5.0\WaterLibrary.xml" target="lib\net5.0\WaterLibrary.xml" />
   </files>
 </package>

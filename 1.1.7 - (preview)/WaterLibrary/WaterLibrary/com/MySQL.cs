@@ -509,16 +509,16 @@ namespace WaterLibrary.MySQL
         /// </summary>
         /// <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
         /// <param name="Table">目标表</param>
-        /// <param name="Pair">键值对，满足此条件的行将被删除</param>
+        /// <param name="WHERE">定位键值对，满足此条件的行将被删除</param>
         /// <returns></returns>
-        public bool ExecuteDelete(string Table, (string K, object V) Pair)
+        public bool ExecuteDelete(string Table, (string K, object V) WHERE)
         {
             return DoInConnection(conn =>
             {
                 return DoInCommand(conn, cmd =>
                 {
-                    cmd.CommandText = $"DELETE FROM {Table} WHERE `{Pair.K}`=?Value";
-                    cmd.Parameters.AddWithValue("Value", Pair.V);/* 参数添加 */
+                    cmd.CommandText = $"DELETE FROM {Table} WHERE `{WHERE.K}`=?Value";
+                    cmd.Parameters.AddWithValue("Value", WHERE.V);/* 参数添加 */
 
                     return DoInTransaction(cmd, tx =>
                     {
