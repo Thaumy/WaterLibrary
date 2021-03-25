@@ -1136,6 +1136,7 @@ namespace WaterLibrary.Utils
             var builder = new MarkdownPipelineBuilder();//添加对表格的解析支持
             builder.Extensions.Add(new Markdig.Extensions.Tables.PipeTableExtension());
             builder.Extensions.Add(new Markdig.Extensions.EmphasisExtras.EmphasisExtraExtension());
+            builder.Extensions.Add(new Markdig.Extensions.Mathematics.MathExtension());
 
             var pipeline = builder.Build();
 
