@@ -77,6 +77,20 @@ namespace WaterLibrary.Utils
         }
 
         /// <summary>
+        /// UUID类型枚举
+        /// </summary>
+        public enum UUIDFormat { N, D, B, P, X }
+        /// <summary>
+        /// 生成UUID
+        /// </summary>
+        /// <param name="format">生成格式，可选值有N、D、B、P、X</param>
+        /// <returns></returns>
+        public static string GenerateUUID(UUIDFormat format)
+        {
+            return Guid.NewGuid().ToString(format.ToString());
+        }
+
+        /// <summary>
         /// 生成UUID
         /// </summary>
         /// <param name="format">生成格式，可选值有N、D、B、P、X</param>

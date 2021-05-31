@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Collections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -520,7 +521,7 @@ namespace WaterLibrary.pilipala
             /// 生成权限管理组件
             /// </summary>
             /// <returns></returns>
-            public Authentication GenAuthentication(User User) => new(CORE.Tables, CORE.MySqlManager, User);
+            public Auth GenAuthentication(User User) => new(CORE.Tables, CORE.MySqlManager, User);
             /// <summary>
             /// 生成读组件
             /// </summary>
@@ -555,6 +556,11 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             public Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
             /// <summary>
+            /// 生成插件组件
+            /// </summary>
+            /// <returns></returns>
+            public Pluginer GenPluginer() => new();
+            /// <summary>
             /// 生成归档管理组件
             /// </summary>
             /// <returns></returns>
@@ -569,7 +575,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 权限管理组件
         /// </summary>
-        public class Authentication : IPLComponent<Authentication>
+        public class Auth : IPLComponent<Auth>
         {
             private PLTables Tables { get; init; }
             private MySqlManager MySqlManager { get; init; }
@@ -579,14 +585,14 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 默认构造
             /// </summary>
-            private Authentication() { }
+            private Auth() { }
             /// <summary>
             /// 工厂构造
             /// </summary>
             /// <param name="Tables">数据库表</param>
             /// <param name="MySqlManager">数据库管理器</param>
             /// <param name="User">用户对象</param>
-            internal Authentication(PLTables Tables, MySqlManager MySqlManager, User User)
+            internal Auth(PLTables Tables, MySqlManager MySqlManager, User User)
             {
                 this.Tables = Tables;
                 this.MySqlManager = MySqlManager;
@@ -599,7 +605,7 @@ namespace WaterLibrary.pilipala
             /// <param name="Token">Token</param>
             /// <param name="todo">行为委托</param>
             /// <returns></returns>
-            public T Auth<T>(string Token, Func<T> todo)
+            public T CheckAuth<T>(string Token, Func<T> todo)
             {
                 return (DateTime.Now - Convert.ToDateTime(MathH.RSADecrypt(GetPrivateKey(), Token))).TotalSeconds switch
                 {
@@ -1775,18 +1781,57 @@ namespace WaterLibrary.pilipala
         /// </summary>
         public class Pluginer : IPLComponent<Pluginer>
         {
-            /*private PLTables Tables { get; init; }
-            private MySqlManager MySqlManager { get; init; }
+            /// <summary>
+            /// 工厂构造
+            /// </summary>
+            /// <param name="pluginList">预加载插件信息列表</param>
+            /// <returns></returns>
+            internal Pluginer()
+            {
 
-            private List<string> PluginPool;
-            此组件是为未来而保留的 */
+            }
+
+
+            private readonly Dictionary<string, (Type type, object obj)> PluginPool = new();//插件池
+
+            /// <summary>
+            /// 加载插件
+            /// </summary>
+            /// <param name="path">插件dll所在目录</param>
+            /// <param name="pluginName">插件名(格式如namesapace.pluginName)</param>
+            /// <param name="args">构造参数表</param>
+            /// <returns>返回插件UUID</returns>
+            public string LoadPlugin(string path, string pluginName, params object[] args)
+            {
+                System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFrom(path);
+                var type = assembly.GetType(pluginName);
+                var inst = Activator.CreateInstance(type, args);
+                string pluginUUID = MathH.GenerateUUID("N");
+                PluginPool.Add(pluginUUID, (type, inst));
+                return pluginUUID;//返回生成的插件UUID作为插件池键值
+            }
+            /// <summary>
+            /// 卸载插件
+            /// </summary>
+            /// <param name="pluginUUID">插件UUID</param>
+            public void UnloadPlugin(string pluginUUID)
+            {
+                PluginPool.Remove(pluginUUID);
+            }
+            /// <summary>
+            /// 执行插件方法
+            /// </summary>
+            /// <param name="pluginUUID">插件UUID</param>
+            /// <param name="methodName">方法名</param>
+            /// <param name="args">方法参数表</param>
+            /// <returns></returns>
+            public object Invoke(string pluginUUID, string methodName, params object[] args)
+            {
+                var (inst, obj) = PluginPool[pluginUUID];
+                MethodInfo method = inst.GetMethod(methodName);
+                return method.Invoke(obj, args);
+            }
         }
 
-        /// <summary>
-        /// 组件拓展
-        /// </summary>
-        public static class ComponentExtensions
-        {
-        }
     }
 }
