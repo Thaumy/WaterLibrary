@@ -9,14 +9,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using MySql.Data.MySqlClient;
 
-using WaterLibrary.MySQL;
-using WaterLibrary.Utils;
-using WaterLibrary.pilipala.Database;
-using WaterLibrary.pilipala.Entity;
-
-
 namespace WaterLibrary.pilipala
 {
+    using WaterLibrary.MySQL;
+    using WaterLibrary.Utils;
+    using WaterLibrary.pilipala.Database;
+    using WaterLibrary.pilipala.Entity;
+
     namespace Database
     {
         /// <summary>
@@ -1806,7 +1805,7 @@ namespace WaterLibrary.pilipala
                 System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFrom(path);
                 var type = assembly.GetType(pluginName);
                 var inst = Activator.CreateInstance(type, args);
-                string pluginUUID = MathH.GenerateUUID("N");
+                var pluginUUID = MathH.GenerateUUID("N");
                 PluginPool.Add(pluginUUID, (type, inst));
                 return pluginUUID;//返回生成的插件UUID作为插件池键值
             }
@@ -1832,6 +1831,5 @@ namespace WaterLibrary.pilipala
                 return method.Invoke(obj, args);
             }
         }
-
     }
 }

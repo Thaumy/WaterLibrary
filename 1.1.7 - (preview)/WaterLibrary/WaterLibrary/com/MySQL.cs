@@ -541,7 +541,7 @@ namespace WaterLibrary.MySQL
     /// <summary>
     /// 扩展方法
     /// </summary>
-    public static class MySqlManager_Extension
+    public static class MySqlManagerExtension
     {
         /// <summary>
         /// 执行任意SQL语句
