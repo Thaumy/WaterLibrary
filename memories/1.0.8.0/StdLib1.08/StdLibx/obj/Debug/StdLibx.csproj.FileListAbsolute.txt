@@ -1,8 +1,0 @@
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\bin\Debug\StdLibx.dll
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\bin\Debug\StdLibx.pdb
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\obj\Debug\StdLibx.csprojResolveAssemblyReference.cache
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\obj\Debug\StdLibx.Resource1.resources
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\obj\Debug\StdLibx.csproj.GenerateResource.Cache
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\obj\Debug\StdLibx.dll
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\obj\Debug\StdLibx.pdb
-L:\C#项目开发\StdLib1.08\StdLibx\StdLibx\bin\Debug\StdLibx.XML
