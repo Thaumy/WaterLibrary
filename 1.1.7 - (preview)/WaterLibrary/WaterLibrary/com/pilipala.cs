@@ -120,10 +120,15 @@ namespace WaterLibrary.pilipala
 
     namespace Entity
     {
+        public class PostSSK
+        {
+
+        }
+
         /// <summary>
         /// 文章
         /// </summary>
-        public class Post
+        public class PostRecord : PostSSK
         {
             /// <summary>
             /// 属性索引器
@@ -151,35 +156,54 @@ namespace WaterLibrary.pilipala
                 return JsonConvert.SerializeObject
                     (this, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
             }
+
+
             /// <summary>
-            /// 初始化
+            /// 内置读取器引用
             /// </summary>
-            public Post()
+            private readonly Component.Reader reader;
+            /// <summary>
+            /// 字段读取器
+            /// </summary>
+            /// <param name="table">目标表</param>
+            /// <param name="field">目标字段</param>
+            /// <returns></returns>
+            private object GetField(string table, string field)
             {
-                /* -1表示未被赋值，同时也于数据库的非负冲突 */
-                PostID = -1;
-                UUID = "";
+                var SQL = $"SELECT {field} FROM `{table}` WHERE UUID = ?UUID";
+                var para = new MySqlParameter("UUID", UUID);
 
-                Title = "";
-                Summary = "";
-                Content = "";
-                Cover = "";
+                var result = reader.MySqlManager.GetRow(SQL, para)[field];
+                return Convert.ToString(result);
+            }
+            /// <summary>
+            /// 字段设置器
+            /// </summary>
+            /// <param name="table">目标表</param>
+            /// <param name="field">目标字段</param>
+            /// <param name="newValue">新值</param>
+            private void SetField(string table, string field, object newValue)
+            {
+                (string, object) SET = (field, newValue);
+                (string, object) WHERE = ("UUID", UUID);
 
-                ArchiveName = "";
-                Label = "";
+                reader.MySqlManager.ExecuteUpdate(table, SET, WHERE);
+            }
 
-                Mode = "";
-                Type = "";
-                User = "";
+            /// <summary>
+            /// 默认构造方式（建议使用Reader构造）
+            /// </summary>
+            /// <param name="UUID">文章记录的UUID</param>
+            /// <param name="reader">读取器引用</param>
+            public PostRecord(string UUID, Component.Reader reader)
+            {
+                this.reader = reader;
 
-                CT = new();
-                LCT = new();
-
-                UVCount = -1;
-                StarCount = -1;
+                this.UUID = UUID;
 
                 PropertyContainer = new();
             }
+            
 
             /// <summary>
             /// 计算由标题、概要、内容签名的MD5
@@ -192,30 +216,39 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 计算由标题、概要、内容签名的MD5，并从首位限定取用长度
             /// </summary>
-            /// <param name="Length">取用长度</param>
+            /// <param name="length">取用长度</param>
             /// <returns></returns>
-            public string MD5(int Length)
+            public string MD5(int length)
             {
-                return MD5().Substring(0, Length);
+                return MD5().Substring(0, length);
             }
 
             /// <summary>
-            /// 索引
+            /// 索引（ID字段不允许更改）
             /// </summary>
-            public int PostID { get; set; }
+            public int ID {
+                get => Convert.ToInt32(GetField(reader.StackTable, "PostID"));
+            }
             /// <summary>
             /// 全局标识
             /// </summary>
-            public string UUID { get; set; }
+            public string UUID { get; init; }
 
             /// <summary>
             /// 标题
             /// </summary>
-            public string Title { get; set; }
+            public string Title
+            {
+                get => Convert.ToString(GetField(reader.StackTable,"Title"));
+                set => SetField(reader.StackTable, "Title", value);
+            }
             /// <summary>
             /// 概要
             /// </summary>
-            public string Summary { get; set; }
+            public string Summary {
+                get => Convert.ToString(GetField(reader.StackTable, "Summary"));
+                set => SetField(reader.StackTable, "Summary", value);
+            }
             /// <summary>
             /// 尝试概要
             /// </summary>
@@ -233,7 +266,11 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// Content字段原始内容
             /// </summary>
-            public string Content { get; set; }
+            public string Content
+            {
+                get => Convert.ToString(GetField(reader.StackTable, "Content"));
+                set => SetField(reader.StackTable, "Content", value);
+            }
             /// <summary>
             /// 获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记
             /// </summary>
@@ -263,17 +300,31 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 封面
             /// </summary>
-            public string Cover { get; set; }
+            public string Cover {
+                get => Convert.ToString(GetField(reader.StackTable, "Cover"));
+                set => SetField(reader.StackTable, "Cover", value);
+            }
 
             /// <summary>
-            /// 归档名
+            /// 归档ID（请使用Archiver设置）
             /// </summary>
-            public string ArchiveName { get; set; }
+            public string ArchiveID {
+                get => Convert.ToString(GetField(reader.MetaTable, "ArchiveID"));
+            }
+            /// <summary>
+            /// 归档名（请使用Archiver设置）
+            /// </summary>
+            public string ArchiveName {
+                get => Convert.ToString(GetField(reader.UnionView, "ArchiveName"));
+            }
 
             /// <summary>
             /// 标签
             /// </summary>
-            public string Label { get; set; }
+            public string Label {
+                get => Convert.ToString(GetField(reader.StackTable, "Label"));
+                set => SetField(reader.StackTable, "Label", value);
+            }
             /// <summary>
             /// 获得标签集合
             /// </summary>
@@ -283,33 +334,55 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 文章模式
             /// </summary>
-            public string Mode { get; set; }
+            public string Mode {
+                get => Convert.ToString(GetField(reader.MetaTable, "Mode"));
+                set => SetField(reader.StackTable, "Mode", value);
+            }
             /// <summary>
             /// 文章类型
             /// </summary>
-            public string Type { get; set; }
+            public string Type {
+                get => Convert.ToString(GetField(reader.MetaTable, "Type"));
+                set => SetField(reader.StackTable, "Type", value);
+            }
             /// <summary>
             /// 归属用户
             /// </summary>
-            public string User { get; set; }
+            public string User {
+                get => Convert.ToString(GetField(reader.MetaTable, "User"));
+                set => SetField(reader.StackTable, "User", value);
+            }
 
             /// <summary>
             /// 创建时间
             /// </summary>
-            public DateTime CT { get; set; }
+            public DateTime CT {
+                get => Convert.ToDateTime(GetField(reader.MetaTable, "CT"));
+                set => SetField(reader.MetaTable, "CT", value);
+            }
             /// <summary>
             /// 最后修改时间
             /// </summary>
-            public DateTime LCT { get; set; }
+            public DateTime LCT {
+                get => Convert.ToDateTime(GetField(reader.StackTable, "LCT"));
+                set => SetField(reader.StackTable, "LCT", value);
+            }
 
             /// <summary>
             /// 访问计数
             /// </summary>
-            public int UVCount { get; set; }
+            public int UVCount {
+                get => Convert.ToInt32(GetField(reader.MetaTable, "UVCount"));
+                set => SetField(reader.StackTable, "UVCount", value);
+            }
             /// <summary>
             /// 星星计数
             /// </summary>
-            public int StarCount { get; set; }
+            public int StarCount {
+                get => Convert.ToInt32(GetField(reader.MetaTable, "StarCount"));
+                set => SetField(reader.StackTable, "StarCount", value);
+            }
+
 
             /// <summary>
             /// 属性容器
@@ -317,21 +390,21 @@ namespace WaterLibrary.pilipala
             public Hashtable PropertyContainer { get; set; }
         }
         /// <summary>
-        /// 文章数据集
+        /// 文章栈集
         /// </summary>
-        public class PostSet : IEnumerable
+        public class PostRecordSet : IEnumerable
         {
             /// <summary>
             /// 文章索引器
             /// </summary>
             /// <param name="UUID">文章UUID</param>
             /// <returns>索引无果返回null</returns>
-            public Post this[string UUID]
+            public PostRecord this[string UUID]
             {
                 /* 通过反射获取属性 */
                 get
                 {
-                    foreach (Post el in PostList)
+                    foreach (PostRecord el in PostList)
                     {
                         if (el.UUID == UUID)
                             return el;
@@ -348,7 +421,7 @@ namespace WaterLibrary.pilipala
                 return PostList.GetEnumerator();
             }
 
-            private readonly List<Post> PostList = new List<Post>();
+            private readonly List<PostRecord> PostList = new();
             /// <summary>
             /// 将当前对象序列化到JSON
             /// </summary>
@@ -369,18 +442,18 @@ namespace WaterLibrary.pilipala
             /// 取得数据集中的最后一个评论对象
             /// </summary>
             /// <returns></returns>
-            public Post Last() => PostList.Last();
+            public PostRecord Last() => PostList.Last();
             /// <summary>
             /// 添加文章
             /// </summary>
-            /// <param name="Post">文章对象</param>
-            public void Add(Post Post) => PostList.Add(Post);
+            /// <param name="postRecord">文章对象</param>
+            public void Add(PostRecord postRecord) => PostList.Add(postRecord);
             /// <summary>
             /// 对数据集内的每一个对象应用Action
             /// </summary>
             /// <param name="action">Action委托</param>
             /// <returns>返回操作后的数据集</returns>
-            public PostSet ForEach(Action<Post> action)
+            public PostRecordSet ForEach(Action<PostRecord> action)
             {
                 PostList.ForEach(action);
                 return this;
@@ -421,6 +494,45 @@ namespace WaterLibrary.pilipala
             public int WithinDayUpdateCount() => UpdateCounter(-1);
             private int UpdateCounter(int Days) => (from el in PostList where el.CT > DateTime.Now.AddDays(Days) select el).Count();
         }
+
+
+        /// <summary>
+        /// 文章树
+        /// </summary>
+        public class PostTree : PostSSK
+        {
+            private List<PostSSK> list = new();
+            public int ID = -1;
+
+            public PostTree(int ID)
+            {
+                this.ID = ID;
+            }
+
+            public List<PostSSK> GetNodes()
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 文章栈
+        /// </summary>
+        public class PostStack : PostSSK
+        {
+            private List<PostSSK> list = new();
+            public int ID = -1;
+
+            public PostStack(int ID)
+            {
+                this.ID = ID;
+            }
+
+            public List<PostSSK> GetNodes()
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// 文章属性枚举
         /// </summary>
@@ -504,10 +616,13 @@ namespace WaterLibrary.pilipala
                 var Tables = CORE.Tables;
                 var MySqlManager = CORE.MySqlManager;
 
-                if (MySqlManager.ExecuteAny
-                    ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD",
-                    new("UserAccount", UserAccount), new("UserPWD", MathH.MD5(UserPWD)))
-                    == 1)
+                var PWD_MD5 = MathH.MD5(UserPWD).ToLower();
+                var para = new MySqlParameter[] { new("UserAccount", UserAccount), new("UserPWD", PWD_MD5) };
+
+                var count = Convert.ToInt32(MySqlManager.GetRow
+                    ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD", para)[0]);
+
+                if (count == 1)
                 {
                     return new User(Tables, MySqlManager, UserAccount);
                 }
@@ -533,13 +648,13 @@ namespace WaterLibrary.pilipala
                 {
                     Reader.ReadMode.CleanRead => WithRawMode switch
                     {
-                        false => new(CORE.ViewsSet.CleanViews.PosUnion, CORE.MySqlManager),
-                        true => new(CORE.ViewsSet.CleanViews.NegUnion, CORE.MySqlManager),
+                        false => new(CORE.ViewsSet.CleanViews.PosUnion, CORE.Tables.Meta, CORE.Tables.Stack,  CORE.MySqlManager),
+                        true => new(CORE.ViewsSet.CleanViews.NegUnion, CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager),
                     },
                     Reader.ReadMode.DirtyRead => WithRawMode switch
                     {
-                        false => new(CORE.ViewsSet.DirtyViews.PosUnion, CORE.MySqlManager),
-                        true => new(CORE.ViewsSet.DirtyViews.NegUnion, CORE.MySqlManager),
+                        false => new(CORE.ViewsSet.DirtyViews.PosUnion, CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager),
+                        true => new(CORE.ViewsSet.DirtyViews.NegUnion, CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager),
                     },
                     _ => throw new NotImplementedException(),
                 };
@@ -756,14 +871,16 @@ namespace WaterLibrary.pilipala
                 /// </summary>
                 CleanRead = 0,
                 /// <summary>
-                /// 净读，表示读取隐藏文章。适用于面向管理员的渲染
+                /// 脏读，表示读取隐藏文章。适用于面向管理员的渲染
                 /// </summary>
                 DirtyRead = 1
             }
 
-            private string UnionView { get; init; }
-
-            private MySqlManager MySqlManager { get; init; }
+            internal string UnionView { get; init; }
+            internal string MetaTable { get; init; }
+            internal string StackTable { get; init; }
+            
+            internal MySqlManager MySqlManager { get; init; }
 
             /// <summary>
             /// 默认构造
@@ -773,29 +890,30 @@ namespace WaterLibrary.pilipala
             /// 工厂构造
             /// </summary>
             /// <param name="UnionView">联合视图</param>
+            /// <param name="MetaTable">元信息表</param>
+            /// <param name="StackTable">栈表</param>
             /// <param name="MySqlManager">数据库管理器</param>
             /// <returns></returns>
-            internal Reader(string UnionView, MySqlManager MySqlManager)
+            internal Reader(string UnionView,string MetaTable, string StackTable, MySqlManager MySqlManager)
             {
                 this.UnionView = UnionView;
+                this.MetaTable = MetaTable;
+                this.StackTable = StackTable;
                 this.MySqlManager = MySqlManager;
             }
 
-            /// <summary>
+            /*/// <summary>
             /// 获取指定文章数据
             /// </summary>
             /// <param name="PostID">目标文章PostID</param>
             /// <returns></returns>
-            public Post GetPost(int PostID)
+            public PostRecord GetPost(int PostID)
             {
                 string SQL = $"SELECT * FROM `{UnionView}` WHERE PostID={PostID}";
                 DataRow Row = MySqlManager.GetRow(SQL);
 
-                return new Post
+                return new PostRecord(Convert.ToString(Row["UUID"]), this)
                 {
-                    PostID = Convert.ToInt32(Row["PostID"]),
-                    UUID = Convert.ToString(Row["UUID"]),
-
                     CT = Convert.ToDateTime(Row["CT"]),
                     LCT = Convert.ToDateTime(Row["LCT"]),
                     Title = Convert.ToString(Row["Title"]),
@@ -813,7 +931,7 @@ namespace WaterLibrary.pilipala
                     UVCount = Convert.ToInt32(Row["UVCount"]),
                     StarCount = Convert.ToInt32(Row["StarCount"])
                 };
-            }
+            }*/
             /// <summary>
             /// 取得指定文章属性
             /// </summary>
@@ -830,27 +948,26 @@ namespace WaterLibrary.pilipala
                 });
             }
 
-            /// <summary>
+            /*/// <summary>
             /// 获取文章数据
             /// </summary>
             /// <param name="Prop">正则表达式匹配的属性类型</param>
             /// <param name="REGEXP">正则表达式</param>
             /// <returns></returns>
-            public PostSet GetPost(PostProp Prop, string REGEXP)
+            public PostRecordSet GetPost(PostProp Prop, string REGEXP)
             {
                 string SQL = $"SELECT * FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
-                PostSet PostSet = new PostSet();
+                PostRecordSet PostRecordSet = new();
 
                 foreach (DataRow Row in MySqlManager.GetTable(SQL, new MySqlParameter[]
                 {
                     new("REGEXP", REGEXP)
                 }).Rows)
                 {
-                    PostSet.Add(new Post
+                    PostRecordSet.Add(new PostRecord(Convert.ToString(Row["UUID"]), this)
                     {
-                        PostID = Convert.ToInt32(Row["PostID"]),
-                        UUID = Convert.ToString(Row["UUID"]),
+                        ID = Convert.ToInt32(Row["PostID"]),
 
                         CT = Convert.ToDateTime(Row["CT"]),
                         LCT = Convert.ToDateTime(Row["LCT"]),
@@ -872,8 +989,8 @@ namespace WaterLibrary.pilipala
                 }
 
 
-                return PostSet;
-            }
+                return PostRecordSet;
+            }*/
             /// <summary>
             /// 获取文章数据
             /// </summary>
@@ -881,30 +998,30 @@ namespace WaterLibrary.pilipala
             /// <param name="REGEXP">正则表达式</param>
             /// <param name="PostProps">所需属性类型</param>
             /// <returns></returns>
-            public PostSet GetPost(PostProp Prop, string REGEXP, params PostProp[] PostProps)
+            public PostRecordSet GetPost(PostProp Prop, string REGEXP, params PostProp[] PostProps)
             {
                 /* 键名字符串格式化 */
                 string KeysStr = ConvertH.ListToString(PostProps, ',');
                 string SQL = $"SELECT {KeysStr} FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
-                PostSet PostSet = new PostSet();
+                PostRecordSet PostRecordSet = new();
 
                 foreach (DataRow Row in MySqlManager.GetTable(SQL, new MySqlParameter[]
                 {
                     new("REGEXP", REGEXP)
                 }).Rows)
                 {
-                    Post Post = new Post();
+                    PostRecord PostRecord = new("", this);//TODO，构造时必须使用UUID
 
                     for (int i = 0; i < PostProps.Length; i++)
                     {
-                        Post[PostProps[i].ToString()] = Row.ItemArray[i];
+                        PostRecord[PostProps[i].ToString()] = Row.ItemArray[i];
                     }
 
-                    PostSet.Add(Post);
+                    PostRecordSet.Add(PostRecord);
                 }
 
-                return PostSet;
+                return PostRecordSet;
             }
 
             /// <summary>
@@ -1100,7 +1217,7 @@ namespace WaterLibrary.pilipala
             /// </remarks>
             /// <param name="Post">文章数据（其中的PostID、UUID、CT、LCT、User由系统生成）</param>
             /// <returns>返回受影响的行数</returns>
-            public bool Reg(Post Post)
+            public bool Reg(PostRecord Post)
             {
                 return MySqlManager.DoInConnection(conn =>
                 {
@@ -1204,7 +1321,7 @@ namespace WaterLibrary.pilipala
             /// </remarks>
             /// <param name="Post">文章数据</param>
             /// <returns></returns>
-            public bool Update(Post Post)
+            public bool Update(PostRecord Post)
             {
                 return MySqlManager.DoInConnection(conn =>
                 {
@@ -1222,7 +1339,7 @@ namespace WaterLibrary.pilipala
                     new("User", Post.User),/* 指定用户账号 */
 
                     /* 可传参数 */
-                    new("PostID", Post.PostID),
+                    new("PostID", Post.ID),
 
                     new("Mode", Post.Mode),
                     new("Type", Post.Type),

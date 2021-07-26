@@ -318,7 +318,7 @@
         </member>
         <member name="F:WaterLibrary.pilipala.Component.Reader.ReadMode.DirtyRead">
             <summary>
-            净读，表示读取隐藏文章。适用于面向管理员的渲染
+            脏读，表示读取隐藏文章。适用于面向管理员的渲染
             </summary>
         </member>
         <member name="M:WaterLibrary.pilipala.Component.Reader.#ctor">
@@ -326,19 +326,14 @@
             默认构造
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.Reader.#ctor(System.String,WaterLibrary.MySQL.MySqlManager)">
+        <member name="M:WaterLibrary.pilipala.Component.Reader.#ctor(System.String,System.String,System.String,WaterLibrary.MySQL.MySqlManager)">
             <summary>
             工厂构造
             </summary>
             <param name="UnionView">联合视图</param>
+            <param name="MetaTable">元信息表</param>
+            <param name="StackTable">栈表</param>
             <param name="MySqlManager">数据库管理器</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Component.Reader.GetPost(System.Int32)">
-            <summary>
-            获取指定文章数据
-            </summary>
-            <param name="PostID">目标文章PostID</param>
             <returns></returns>
         </member>
         <member name="M:WaterLibrary.pilipala.Component.Reader.GetPostProp(System.Int32,WaterLibrary.pilipala.Entity.PostProp)">
@@ -347,14 +342,6 @@
             </summary>
             <param name="PostID">目标文章PostID</param>
             <param name="Prop">目标属性类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Component.Reader.GetPost(WaterLibrary.pilipala.Entity.PostProp,System.String)">
-            <summary>
-            获取文章数据
-            </summary>
-            <param name="Prop">正则表达式匹配的属性类型</param>
-            <param name="REGEXP">正则表达式</param>
             <returns></returns>
         </member>
         <member name="M:WaterLibrary.pilipala.Component.Reader.GetPost(WaterLibrary.pilipala.Entity.PostProp,System.String,WaterLibrary.pilipala.Entity.PostProp[])">
@@ -448,7 +435,7 @@
             <param name="PostID">目标文章PostID</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.Writer.Reg(WaterLibrary.pilipala.Entity.Post)">
+        <member name="M:WaterLibrary.pilipala.Component.Writer.Reg(WaterLibrary.pilipala.Entity.PostRecord)">
             <summary>
             注册文章
             </summary>
@@ -468,7 +455,7 @@
             <param name="PostID">目标文章PostID</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.Writer.Update(WaterLibrary.pilipala.Entity.Post)">
+        <member name="M:WaterLibrary.pilipala.Component.Writer.Update(WaterLibrary.pilipala.Entity.PostRecord)">
             <summary>
             更新文章
             </summary>
@@ -907,244 +894,266 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:WaterLibrary.pilipala.Entity.Post">
+        <member name="T:WaterLibrary.pilipala.Entity.PostRecord">
             <summary>
             文章
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Item(System.String)">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Item(System.String)">
             <summary>
             属性索引器
             </summary>
             <param name="Prop">属性</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.ToJSON">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.ToJSON">
             <summary>
             将当前对象序列化到JSON
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.#ctor">
+        <member name="F:WaterLibrary.pilipala.Entity.PostRecord.reader">
             <summary>
-            初始化
+            内置读取器引用
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.MD5">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.#ctor(System.String,WaterLibrary.pilipala.Component.Reader)">
+            <summary>
+            默认构造方式（建议使用Reader构造）
+            </summary>
+            <param name="UUID">文章记录的UUID</param>
+            <param name="reader">读取器引用</param>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.MD5">
             <summary>
             计算由标题、概要、内容签名的MD5
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.MD5(System.Int32)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.MD5(System.Int32)">
             <summary>
             计算由标题、概要、内容签名的MD5，并从首位限定取用长度
             </summary>
             <param name="Length">取用长度</param>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.PostID">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.ID">
             <summary>
             索引
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.UUID">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.UUID">
             <summary>
             全局标识
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Title">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Title">
             <summary>
             标题
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Summary">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Summary">
             <summary>
             概要
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.TrySummary(System.Func{System.String})">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.TrySummary(System.Func{System.String})">
             <summary>
             尝试概要
             </summary>
             <param name="todo">概要为空时的操作</param>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Content">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Content">
             <summary>
             Content字段原始内容
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.HtmlContent">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.HtmlContent">
             <summary>
             获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.HtmlContent(System.Int32)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.HtmlContent(System.Int32)">
             <summary>
             获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记，并从首位置限定取用长度
             </summary>
             <param name="Length">取用长度</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.TextContent">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.TextContent">
             <summary>
             获得纯文本格式的文章内容，过滤掉任何Markdown和Html标记
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.TextContent(System.Int32)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.TextContent(System.Int32)">
             <summary>
             获得纯文本格式的文章内容，过滤掉任何Markdown和Html标记，并从首位置限定取用长度
             </summary>
             <param name="Length">取用长度</param>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Cover">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Cover">
             <summary>
             封面
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.ArchiveName">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.ArchiveID">
             <summary>
-            归档名
+            归档ID（请使用Archiver设置）
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Label">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.ArchiveName">
+            <summary>
+            归档名（请使用Archiver设置）
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Label">
             <summary>
             标签
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Post.LabelList">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.LabelList">
             <summary>
             获得标签集合
             </summary>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Mode">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Mode">
             <summary>
             文章模式
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.Type">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Type">
             <summary>
             文章类型
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.User">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.User">
             <summary>
             归属用户
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.CT">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.CT">
             <summary>
             创建时间
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.LCT">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.LCT">
             <summary>
             最后修改时间
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.UVCount">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.UVCount">
             <summary>
             访问计数
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.StarCount">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.StarCount">
             <summary>
             星星计数
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Post.PropertyContainer">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.PropertyContainer">
             <summary>
             属性容器
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.Entity.PostSet">
+        <member name="T:WaterLibrary.pilipala.Entity.PostRecordSet">
             <summary>
-            文章数据集
+            文章栈集
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostSet.Item(System.String)">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecordSet.Item(System.String)">
             <summary>
             文章索引器
             </summary>
             <param name="UUID">文章UUID</param>
             <returns>索引无果返回null</returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.System#Collections#IEnumerable#GetEnumerator">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.System#Collections#IEnumerable#GetEnumerator">
             <summary>
             迭代器
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.ToJSON">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.ToJSON">
             <summary>
             将当前对象序列化到JSON
             </summary>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostSet.Count">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecordSet.Count">
             <summary>
             当前数据集的文章对象数
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.Last">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.Last">
             <summary>
             取得数据集中的最后一个评论对象
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.Add(WaterLibrary.pilipala.Entity.Post)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.Add(WaterLibrary.pilipala.Entity.PostRecord)">
             <summary>
             添加文章
             </summary>
-            <param name="Post">文章对象</param>
+            <param name="postRecord">文章对象</param>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.ForEach(System.Action{WaterLibrary.pilipala.Entity.Post})">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.ForEach(System.Action{WaterLibrary.pilipala.Entity.PostRecord})">
             <summary>
             对数据集内的每一个对象应用Action
             </summary>
             <param name="action">Action委托</param>
             <returns>返回操作后的数据集</returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.WithinMonthCreateCount">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.WithinMonthCreateCount">
             <summary>
             数据集内最近一月(30天内)的文章创建数
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.WithinWeekCreateCount">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.WithinWeekCreateCount">
             <summary>
             数据集内最近一周(7天内)的文章创建数
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.WithinDayCreateCount">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.WithinDayCreateCount">
             <summary>
             数据集内最近一天(24小时内)的文章创建数
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.WithinMonthUpdateCount">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.WithinMonthUpdateCount">
             <summary>
             数据集内最近一月(30天内)的文章修改数
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.WithinWeekUpdateCount">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.WithinWeekUpdateCount">
             <summary>
             数据集内最近一周(7天内)的文章修改数
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostSet.WithinDayUpdateCount">
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecordSet.WithinDayUpdateCount">
             <summary>
             数据集内最近一天(24小时内)的文章修改数
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Entity.PostTree">
+            <summary>
+            文章树
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Entity.PostStack">
+            <summary>
+            文章栈
+            </summary>
         </member>
         <member name="T:WaterLibrary.pilipala.Entity.PostProp">
             <summary>
@@ -1567,12 +1576,12 @@
             <param name="WHERE">定位键值对，满足此条件的行将被删除</param>
             <returns></returns>
         </member>
-        <member name="T:WaterLibrary.MySQL.MySqlManager_Extension">
+        <member name="T:WaterLibrary.MySQL.MySqlManagerExtension">
             <summary>
             扩展方法
             </summary>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager_Extension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String)">
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String)">
             <summary>
             执行任意SQL语句
             </summary>
@@ -1581,7 +1590,7 @@
             <param name="SQL">SQL语句</param>
             <returns>返回受影响的行数</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager_Extension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
             <summary>
             执行任意SQL语句
             </summary>
@@ -1591,7 +1600,7 @@
             <param name="parameters">查询参数列表</param>
             <returns>返回受影响的行数</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager_Extension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
             <summary>
             更新操作
             </summary>
@@ -1602,7 +1611,7 @@
             <param name="WHERE">定位键值对</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager_Extension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.Object)">
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.Object)">
             <summary>
             更新操作
             </summary>
@@ -1613,7 +1622,7 @@
             <param name="OldValue">被更新键的旧值</param>
             <returns>是否操作成功</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager_Extension.ExecuteInsert(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object}[])">
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteInsert(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object}[])">
             <summary>
             插入操作
             </summary>
@@ -1623,7 +1632,7 @@
             <param name="Pairs">键值对</param>
             <returns>返回插入的成功与否</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager_Extension.ExecuteDelete(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object})">
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteDelete(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object})">
             <summary>
             删除操作
             </summary>
