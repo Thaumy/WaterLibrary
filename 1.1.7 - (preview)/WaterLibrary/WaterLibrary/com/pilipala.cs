@@ -15,6 +15,7 @@ namespace WaterLibrary.pilipala
     using WaterLibrary.Utils;
     using WaterLibrary.pilipala.Database;
     using WaterLibrary.pilipala.Entity;
+    using WaterLibrary.pilipala.Component;
 
     namespace Database
     {
@@ -126,7 +127,7 @@ namespace WaterLibrary.pilipala
         }
 
         /// <summary>
-        /// 文章
+        /// 文章记录
         /// </summary>
         public class PostRecord : PostSSK
         {
@@ -159,22 +160,64 @@ namespace WaterLibrary.pilipala
 
 
             /// <summary>
+            /// 数据结构只读
+            /// </summary>
+            private bool readOnly { get; init; }
+            /// <summary>
+            /// 字段缓存
+            /// </summary>
+            private Dictionary<string, object> fieldCache = new();
+
+            /// <summary>
             /// 内置读取器引用
             /// </summary>
             private readonly Component.Reader reader;
+
             /// <summary>
             /// 字段读取器
             /// </summary>
             /// <param name="table">目标表</param>
             /// <param name="field">目标字段</param>
             /// <returns></returns>
-            private object GetField(string table, string field)
+            private object GetFieldByID(string table, string field)
             {
-                var SQL = $"SELECT {field} FROM `{table}` WHERE UUID = ?UUID";
-                var para = new MySqlParameter("UUID", UUID);
+                if (fieldCache.ContainsKey(field))
+                {
+                    return fieldCache[field];
+                }
+                else
+                {
+                    var SQL = $"SELECT {field} FROM `{table}` WHERE PostID = ?ID";
+                    var para = new MySqlParameter("ID", ID);
 
-                var result = reader.MySqlManager.GetRow(SQL, para)[field];
-                return Convert.ToString(result);
+                    var result = reader.MySqlManager.GetRow(SQL, para)[field];
+
+                    fieldCache[field] = result;//写入缓存并返回
+                    return result;
+                }
+            }
+            /// <summary>
+            /// 字段读取器
+            /// </summary>
+            /// <param name="table">目标表</param>
+            /// <param name="field">目标字段</param>
+            /// <returns></returns>
+            private object GetFieldByUUID(string table, string field)
+            {
+                if (fieldCache.ContainsKey(field))
+                {
+                    return fieldCache[field];
+                }
+                else
+                {
+                    var SQL = $"SELECT {field} FROM `{table}` WHERE UUID = ?UUID";
+                    var para = new MySqlParameter("UUID", UUID);
+
+                    var result = reader.MySqlManager.GetRow(SQL, para)[field];
+
+                    fieldCache[field] = result;//写入缓存并返回
+                    return result;
+                }
             }
             /// <summary>
             /// 字段设置器
@@ -182,28 +225,61 @@ namespace WaterLibrary.pilipala
             /// <param name="table">目标表</param>
             /// <param name="field">目标字段</param>
             /// <param name="newValue">新值</param>
-            private void SetField(string table, string field, object newValue)
+            private void SetFieldByID(string table, string field, object newValue)
+            {
+                (string, object) SET = (field, newValue);
+                (string, object) WHERE = ("ID", ID);
+
+                if (readOnly)
+                {
+                    throw new Exception("该记录只读");
+                }
+                else
+                {
+                    reader.MySqlManager.ExecuteUpdate(table, SET, WHERE);
+                    fieldCache[field] = newValue;
+                }
+            }
+            /// <summary>
+            /// 字段设置器
+            /// </summary>
+            /// <param name="table">目标表</param>
+            /// <param name="field">目标字段</param>
+            /// <param name="newValue">新值</param>
+            private void SetFieldByUUID(string table, string field, object newValue)
             {
                 (string, object) SET = (field, newValue);
                 (string, object) WHERE = ("UUID", UUID);
 
-                reader.MySqlManager.ExecuteUpdate(table, SET, WHERE);
+                if (readOnly)
+                {
+                    throw new Exception("该记录只读");
+                }
+                else
+                {
+                    reader.MySqlManager.ExecuteUpdate(table, SET, WHERE);
+                    fieldCache[field] = newValue;
+                }
             }
+
+
 
             /// <summary>
             /// 默认构造方式（建议使用Reader构造）
             /// </summary>
             /// <param name="UUID">文章记录的UUID</param>
             /// <param name="reader">读取器引用</param>
-            public PostRecord(string UUID, Component.Reader reader)
+            public PostRecord(string UUID, Component.Reader reader, bool readOnly = true)
             {
                 this.reader = reader;
 
                 this.UUID = UUID;
 
                 PropertyContainer = new();
+
+                this.readOnly = readOnly;
             }
-            
+
 
             /// <summary>
             /// 计算由标题、概要、内容签名的MD5
@@ -226,8 +302,9 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 索引（ID字段不允许更改）
             /// </summary>
-            public int ID {
-                get => Convert.ToInt32(GetField(reader.StackTable, "PostID"));
+            public int ID
+            {
+                get => Convert.ToInt32(GetFieldByUUID(reader.StackTable, "PostID"));
             }
             /// <summary>
             /// 全局标识
@@ -239,15 +316,16 @@ namespace WaterLibrary.pilipala
             /// </summary>
             public string Title
             {
-                get => Convert.ToString(GetField(reader.StackTable,"Title"));
-                set => SetField(reader.StackTable, "Title", value);
+                get => Convert.ToString(GetFieldByUUID(reader.StackTable, "Title"));
+                set => SetFieldByUUID(reader.StackTable, "Title", value);
             }
             /// <summary>
             /// 概要
             /// </summary>
-            public string Summary {
-                get => Convert.ToString(GetField(reader.StackTable, "Summary"));
-                set => SetField(reader.StackTable, "Summary", value);
+            public string Summary
+            {
+                get => Convert.ToString(GetFieldByUUID(reader.StackTable, "Summary"));
+                set => SetFieldByUUID(reader.StackTable, "Summary", value);
             }
             /// <summary>
             /// 尝试概要
@@ -268,8 +346,8 @@ namespace WaterLibrary.pilipala
             /// </summary>
             public string Content
             {
-                get => Convert.ToString(GetField(reader.StackTable, "Content"));
-                set => SetField(reader.StackTable, "Content", value);
+                get => Convert.ToString(GetFieldByUUID(reader.StackTable, "Content"));
+                set => SetFieldByUUID(reader.StackTable, "Content", value);
             }
             /// <summary>
             /// 获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记
@@ -300,30 +378,34 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 封面
             /// </summary>
-            public string Cover {
-                get => Convert.ToString(GetField(reader.StackTable, "Cover"));
-                set => SetField(reader.StackTable, "Cover", value);
+            public string Cover
+            {
+                get => Convert.ToString(GetFieldByUUID(reader.StackTable, "Cover"));
+                set => SetFieldByUUID(reader.StackTable, "Cover", value);
             }
 
             /// <summary>
             /// 归档ID（请使用Archiver设置）
             /// </summary>
-            public string ArchiveID {
-                get => Convert.ToString(GetField(reader.MetaTable, "ArchiveID"));
+            public int ArchiveID
+            {
+                get => Convert.ToInt32(GetFieldByID(reader.MetaTable, "ArchiveID"));
             }
             /// <summary>
             /// 归档名（请使用Archiver设置）
             /// </summary>
-            public string ArchiveName {
-                get => Convert.ToString(GetField(reader.UnionView, "ArchiveName"));
+            public string ArchiveName
+            {
+                get => Convert.ToString(GetFieldByID(reader.UnionView, "ArchiveName"));
             }
 
             /// <summary>
             /// 标签
             /// </summary>
-            public string Label {
-                get => Convert.ToString(GetField(reader.StackTable, "Label"));
-                set => SetField(reader.StackTable, "Label", value);
+            public string Label
+            {
+                get => Convert.ToString(GetFieldByUUID(reader.StackTable, "Label"));
+                set => SetFieldByUUID(reader.StackTable, "Label", value);
             }
             /// <summary>
             /// 获得标签集合
@@ -334,53 +416,60 @@ namespace WaterLibrary.pilipala
             /// <summary>
             /// 文章模式
             /// </summary>
-            public string Mode {
-                get => Convert.ToString(GetField(reader.MetaTable, "Mode"));
-                set => SetField(reader.StackTable, "Mode", value);
+            public string Mode
+            {
+                get => Convert.ToString(GetFieldByID(reader.MetaTable, "Mode"));
+                set => SetFieldByID(reader.StackTable, "Mode", value);
             }
             /// <summary>
             /// 文章类型
             /// </summary>
-            public string Type {
-                get => Convert.ToString(GetField(reader.MetaTable, "Type"));
-                set => SetField(reader.StackTable, "Type", value);
+            public string Type
+            {
+                get => Convert.ToString(GetFieldByID(reader.MetaTable, "Type"));
+                set => SetFieldByID(reader.StackTable, "Type", value);
             }
             /// <summary>
             /// 归属用户
             /// </summary>
-            public string User {
-                get => Convert.ToString(GetField(reader.MetaTable, "User"));
-                set => SetField(reader.StackTable, "User", value);
+            public string User
+            {
+                get => Convert.ToString(GetFieldByID(reader.MetaTable, "User"));
+                set => SetFieldByID(reader.StackTable, "User", value);
             }
 
             /// <summary>
             /// 创建时间
             /// </summary>
-            public DateTime CT {
-                get => Convert.ToDateTime(GetField(reader.MetaTable, "CT"));
-                set => SetField(reader.MetaTable, "CT", value);
+            public DateTime CT
+            {
+                get => Convert.ToDateTime(GetFieldByID(reader.MetaTable, "CT"));
+                set => SetFieldByID(reader.MetaTable, "CT", value);
             }
             /// <summary>
             /// 最后修改时间
             /// </summary>
-            public DateTime LCT {
-                get => Convert.ToDateTime(GetField(reader.StackTable, "LCT"));
-                set => SetField(reader.StackTable, "LCT", value);
+            public DateTime LCT
+            {
+                get => Convert.ToDateTime(GetFieldByUUID(reader.StackTable, "LCT"));
+                set => SetFieldByUUID(reader.StackTable, "LCT", value);
             }
 
             /// <summary>
             /// 访问计数
             /// </summary>
-            public int UVCount {
-                get => Convert.ToInt32(GetField(reader.MetaTable, "UVCount"));
-                set => SetField(reader.StackTable, "UVCount", value);
+            public int UVCount
+            {
+                get => Convert.ToInt32(GetFieldByID(reader.MetaTable, "UVCount"));
+                set => SetFieldByID(reader.MetaTable, "UVCount", value);
             }
             /// <summary>
             /// 星星计数
             /// </summary>
-            public int StarCount {
-                get => Convert.ToInt32(GetField(reader.MetaTable, "StarCount"));
-                set => SetField(reader.StackTable, "StarCount", value);
+            public int StarCount
+            {
+                get => Convert.ToInt32(GetFieldByID(reader.MetaTable, "StarCount"));
+                set => SetFieldByID(reader.MetaTable, "StarCount", value);
             }
 
 
@@ -390,23 +479,144 @@ namespace WaterLibrary.pilipala
             public Hashtable PropertyContainer { get; set; }
         }
         /// <summary>
+        /// 文章栈
+        /// </summary>
+        public class PostStack : PostSSK, IEnumerable
+        {
+            /// <summary>
+            /// 取得迭代器
+            /// </summary>
+            /// <returns></returns>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return new PostStackEnumerator(UuidList.Value.GetEnumerator(), reader);
+            }
+            /// <summary>
+            /// 内部迭代器
+            /// </summary>
+            protected class PostStackEnumerator : IEnumerator
+            {
+                private List<string>.Enumerator enumerator;
+                private Reader reader;
+
+                /// <summary>
+                /// 默认构造
+                /// </summary>
+                /// <param name="enumerator">List<string>的迭代器</param>
+                /// <param name="reader">读取器</param>
+                public PostStackEnumerator(List<string>.Enumerator enumerator, Reader reader)
+                {
+                    this.enumerator = enumerator;
+                    this.reader = reader;
+                }
+
+                object IEnumerator.Current => new PostRecord(enumerator.Current, reader);
+                bool IEnumerator.MoveNext() => enumerator.MoveNext();
+                void IEnumerator.Reset() => throw new NotSupportedException();
+            }
+
+            private Lazy<List<string>> UuidList;
+
+            private Reader reader;
+            private Writer writer;
+            /// <summary>
+            /// 文章栈ID
+            /// </summary>
+            public int ID { get; init; }
+
+            /// <summary>
+            /// 默认构造方式（建议使用___构造）
+            /// </summary>
+            /// <param name="ID"></param>
+            public PostStack(int ID, Reader reader, Writer writer)
+            {
+                this.ID = ID;
+                this.reader = reader;
+                this.writer = writer;
+
+                UuidList = new(() =>
+                {
+                    var list = new List<string>();
+
+                    var SQL = $"SELECT UUID FROM {reader.StackTable} WHERE PostID = ?ID";
+                    var para = new MySqlParameter("ID", ID);
+
+                    var result = reader.MySqlManager.GetTable(SQL, para);
+                    foreach (DataRow Row in result.Rows)
+                    {
+                        list.Add(Row["UUID"].ToString());
+                    }
+
+                    return list;
+                },
+                 (List<string> value) => { return value; });
+            }
+
+            /// <summary>
+            /// 栈计数
+            /// </summary>
+            public int Count
+            {
+                get { return UuidList.Value.Count; }
+            }
+
+            /// <summary>
+            /// 取栈顶
+            /// </summary>
+            public PostRecord Peek
+            {
+                get { return new PostRecord(UuidList.Value.Last(), reader, false); }
+            }
+
+            /// <summary>
+            /// 弹出PostRecord
+            /// </summary>
+            /// <returns></returns>
+            public PostRecord Pop()
+            {
+                var lastestItem = new PostRecord(UuidList.Value.Last(), reader, false);//TODO，此处应完全求值
+                var lastestIndex = UuidList.Value.Count - 1;
+
+                if (lastestIndex > 0)
+                {
+                    writer.Rollback(ID);
+                    UuidList.Value.RemoveAt(lastestIndex);
+                    return lastestItem;
+                }
+                else
+                {
+                    throw new Exception("试图删除0处的文章记录，文章栈至少保留一条文章记录");
+                }
+            }
+
+            /// <summary>
+            /// 压入PostRecord
+            /// </summary>
+            /// <param name="postRecord"></param>
+            public void Push(PostRecord postRecord)
+            {
+                writer.Update(postRecord);//TODO，应考虑UUID合法性
+                UuidList.Value.Add(postRecord.UUID);
+            }
+        }
+        /// <summary>
         /// 文章栈集
         /// </summary>
-        public class PostRecordSet : IEnumerable
+        public class PostStackSet : IEnumerable
         {
             /// <summary>
             /// 文章索引器
             /// </summary>
             /// <param name="UUID">文章UUID</param>
             /// <returns>索引无果返回null</returns>
-            public PostRecord this[string UUID]
+            public PostStack this[int ID]
             {
                 /* 通过反射获取属性 */
                 get
                 {
-                    foreach (PostRecord el in PostList)
+                    foreach (PostStack el in PostStackList)
                     {
-                        if (el.UUID == UUID)
+                        if (el.ID == ID)
                             return el;
                     }
                     return null;
@@ -418,10 +628,10 @@ namespace WaterLibrary.pilipala
             /// <returns></returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return PostList.GetEnumerator();
+                return PostStackList.GetEnumerator();
             }
 
-            private readonly List<PostRecord> PostList = new();
+            private readonly List<PostStack> PostStackList = new();
             /// <summary>
             /// 将当前对象序列化到JSON
             /// </summary>
@@ -436,26 +646,26 @@ namespace WaterLibrary.pilipala
             /// </summary>
             public int Count
             {
-                get { return PostList.Count; }
+                get { return PostStackList.Count; }
             }
             /// <summary>
             /// 取得数据集中的最后一个评论对象
             /// </summary>
             /// <returns></returns>
-            public PostRecord Last() => PostList.Last();
+            public PostStack Last() => PostStackList.Last();
             /// <summary>
-            /// 添加文章
+            /// 添加文章栈
             /// </summary>
-            /// <param name="postRecord">文章对象</param>
-            public void Add(PostRecord postRecord) => PostList.Add(postRecord);
+            /// <param name="postStack">文章栈对象</param>
+            public void Add(PostStack postStack) => PostStackList.Add(postStack);
             /// <summary>
             /// 对数据集内的每一个对象应用Action
             /// </summary>
             /// <param name="action">Action委托</param>
             /// <returns>返回操作后的数据集</returns>
-            public PostRecordSet ForEach(Action<PostRecord> action)
+            public PostStackSet ForEach(Action<PostStack> action)
             {
-                PostList.ForEach(action);
+                PostStackList.ForEach(action);
                 return this;
             }
 
@@ -475,7 +685,7 @@ namespace WaterLibrary.pilipala
             /// </summary>
             /// <returns></returns>
             public int WithinDayCreateCount() => CreateCounter(-1);
-            private int CreateCounter(int Days) => (from el in PostList where el.CT > DateTime.Now.AddDays(Days) select el).Count();
+            private int CreateCounter(int Days) => (from el in PostStackList where el.Peek.CT > DateTime.Now.AddDays(Days) select el).Count();
 
             /// <summary>
             /// 数据集内最近一月(30天内)的文章修改数
@@ -492,7 +702,7 @@ namespace WaterLibrary.pilipala
             /// </summary>
             /// <returns></returns>
             public int WithinDayUpdateCount() => UpdateCounter(-1);
-            private int UpdateCounter(int Days) => (from el in PostList where el.CT > DateTime.Now.AddDays(Days) select el).Count();
+            private int UpdateCounter(int Days) => (from el in PostStackList where el.Peek.CT > DateTime.Now.AddDays(Days) select el).Count();
         }
 
 
@@ -514,24 +724,7 @@ namespace WaterLibrary.pilipala
                 return null;
             }
         }
-        /// <summary>
-        /// 文章栈
-        /// </summary>
-        public class PostStack : PostSSK
-        {
-            private List<PostSSK> list = new();
-            public int ID = -1;
 
-            public PostStack(int ID)
-            {
-                this.ID = ID;
-            }
-
-            public List<PostSSK> GetNodes()
-            {
-                return null;
-            }
-        }
 
         /// <summary>
         /// 文章属性枚举
@@ -648,7 +841,7 @@ namespace WaterLibrary.pilipala
                 {
                     Reader.ReadMode.CleanRead => WithRawMode switch
                     {
-                        false => new(CORE.ViewsSet.CleanViews.PosUnion, CORE.Tables.Meta, CORE.Tables.Stack,  CORE.MySqlManager),
+                        false => new(CORE.ViewsSet.CleanViews.PosUnion, CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager),
                         true => new(CORE.ViewsSet.CleanViews.NegUnion, CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager),
                     },
                     Reader.ReadMode.DirtyRead => WithRawMode switch
@@ -879,7 +1072,7 @@ namespace WaterLibrary.pilipala
             internal string UnionView { get; init; }
             internal string MetaTable { get; init; }
             internal string StackTable { get; init; }
-            
+
             internal MySqlManager MySqlManager { get; init; }
 
             /// <summary>
@@ -894,7 +1087,7 @@ namespace WaterLibrary.pilipala
             /// <param name="StackTable">栈表</param>
             /// <param name="MySqlManager">数据库管理器</param>
             /// <returns></returns>
-            internal Reader(string UnionView,string MetaTable, string StackTable, MySqlManager MySqlManager)
+            internal Reader(string UnionView, string MetaTable, string StackTable, MySqlManager MySqlManager)
             {
                 this.UnionView = UnionView;
                 this.MetaTable = MetaTable;
@@ -991,38 +1184,38 @@ namespace WaterLibrary.pilipala
 
                 return PostRecordSet;
             }*/
-            /// <summary>
-            /// 获取文章数据
+            /*/// <summary>
+            /// 获取文章栈数据
             /// </summary>
             /// <param name="Prop">正则表达式匹配的属性类型</param>
             /// <param name="REGEXP">正则表达式</param>
             /// <param name="PostProps">所需属性类型</param>
             /// <returns></returns>
-            public PostRecordSet GetPost(PostProp Prop, string REGEXP, params PostProp[] PostProps)
+            public PostStackSet GetPost(PostProp Prop, string REGEXP, params PostProp[] PostProps)
             {
-                /* 键名字符串格式化 */
+                *//* 键名字符串格式化 *//*
                 string KeysStr = ConvertH.ListToString(PostProps, ',');
                 string SQL = $"SELECT {KeysStr} FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
-                PostRecordSet PostRecordSet = new();
+                PostStackSet PostStackSet = new();
 
                 foreach (DataRow Row in MySqlManager.GetTable(SQL, new MySqlParameter[]
                 {
                     new("REGEXP", REGEXP)
                 }).Rows)
                 {
-                    PostRecord PostRecord = new("", this);//TODO，构造时必须使用UUID
+                    PostRecord PostStack = new("", this);//TODO，构造时必须使用UUID
 
                     for (int i = 0; i < PostProps.Length; i++)
                     {
                         PostRecord[PostProps[i].ToString()] = Row.ItemArray[i];
                     }
 
-                    PostRecordSet.Add(PostRecord);
+                    PostStackSet.Add(PostStack);
                 }
 
-                return PostRecordSet;
-            }
+                return PostStackSet;
+            }*/
 
             /// <summary>
             /// 取得具有比目标文章的指定属性具有更大的值的文章PostID
