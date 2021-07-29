@@ -33,6 +33,10 @@ Thumbs.db
 /dist_electron
 node_modules
 
+# VisualStudio
+bin
+obj
+
 # Editor directories and files
 .idea
 .vscode
