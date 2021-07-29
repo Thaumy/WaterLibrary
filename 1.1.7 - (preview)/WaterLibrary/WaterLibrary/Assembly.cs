@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.Reflection;
-
-namespace WaterLibrary
+﻿namespace WaterLibrary
 {
+    using System.Reflection;
+
+
     /// <summary>
     /// 程序集信息访问器
     /// </summary>

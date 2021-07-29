@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-
-using System.Data;
-using System.Linq;
-using System.Collections;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using MySql.Data.MySqlClient;
-
-using WaterLibrary.MySQL;
-using WaterLibrary.pilipala.Entity;
-
-
-namespace WaterLibrary.pilipala.Component
+﻿namespace WaterLibrary.pilipala.Component
 {
+    using System;
+    using System.Data;
+    using System.Collections.Generic;
+
+    using MySql.Data.MySqlClient;
+
+    using WaterLibrary.MySQL;
+    using WaterLibrary.pilipala.Entity;
+
+
     /// <summary>
     /// 评论湖组件
     /// </summary>
@@ -266,6 +262,14 @@ namespace WaterLibrary.pilipala.Component
 }
 namespace WaterLibrary.pilipala.Entity
 {
+    using System;
+    using System.Linq;
+    using System.Collections;
+    using System.Collections.Generic;
+
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
     /// <summary>
     /// 评论属性枚举
     /// </summary>

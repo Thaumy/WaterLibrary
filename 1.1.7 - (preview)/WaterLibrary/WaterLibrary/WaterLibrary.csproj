@@ -7,9 +7,9 @@
     <Company>H2OMELON'SOCIE</Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>An advanced library for web development</Description>
+    <Description>Default core of pilipala</Description>
     <Copyright>Copyright 2019-2021 H2OMELON'SOCIE All Rights Reserved</Copyright>
-    <PackageReleaseNotes>WaterLibrary 1.17 (preview)</PackageReleaseNotes>
+    <PackageReleaseNotes>WaterLibrary 1.17</PackageReleaseNotes>
     <AssemblyVersion>1.1.7.0</AssemblyVersion>
     <FileVersion>1.1.7.0</FileVersion>
     <PackageProjectUrl>https://github.com/Thaumy/WaterLibrary</PackageProjectUrl>

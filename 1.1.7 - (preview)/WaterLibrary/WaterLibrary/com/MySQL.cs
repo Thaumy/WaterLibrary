@@ -1,12 +1,13 @@
-﻿using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-
-
-namespace WaterLibrary.MySQL
+﻿namespace WaterLibrary.MySQL
 {
+    using System;
+    using System.Data;
+    using System.Linq;
+    using System.Collections.Generic;
+
+    using MySql.Data.MySqlClient;
+
+
     /// <summary>
     /// MySql数据库管理器
     /// </summary>

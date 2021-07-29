@@ -6,8 +6,8 @@
     <authors>Thaumy</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectUrl>https://github.com/Thaumy/WaterLibrary</projectUrl>
-    <description>An advanced library for web development</description>
-    <releaseNotes>WaterLibrary 1.17 (preview)</releaseNotes>
+    <description>Default core of pilipala</description>
+    <releaseNotes>WaterLibrary 1.17</releaseNotes>
     <copyright>Copyright 2019-2021 H2OMELON'SOCIE All Rights Reserved</copyright>
     <repository type="git" url="https://github.com/Thaumy/WaterLibrary" />
     <dependencies>
