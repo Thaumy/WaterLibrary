@@ -367,14 +367,14 @@
         {
             PostStackSet PostStackSet = new();
 
-            var SQL = $"SELECT ID FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
+            var SQL = $"SELECT PostID FROM `{UnionView}` WHERE {Prop} REGEXP ?REGEXP ORDER BY CT DESC";
 
             var para = new MySqlParameter("REGEXP", REGEXP);
             var Rows = MySqlManager.GetTable(SQL, para).Rows;
 
             foreach (DataRow Row in Rows)
             {
-                PostStackSet.Add(new PostStack(Convert.ToInt32(Row["PostID"])));
+                PostStackSet.Add(new PostStack(Convert.ToUInt32(Row["PostID"])));
             }
 
             return PostStackSet;
@@ -399,7 +399,7 @@
 
             foreach (DataRow Row in Rows)
             {
-                PostStack PostStack = new(Convert.ToInt32(Row["ID"]));
+                PostStack PostStack = new(Convert.ToUInt32(Row["ID"]));
 
                 /*for (int i = 0; i < PostProps.Length; i++)
                 {

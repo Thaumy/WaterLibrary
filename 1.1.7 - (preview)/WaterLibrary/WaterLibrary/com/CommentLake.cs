@@ -393,7 +393,6 @@ namespace WaterLibrary.pilipala.Entity
         /// 评论创建时间
         /// </summary>
         public DateTime Time { get; set; }
-
     }
     /// <summary>
     /// 评论数据集
@@ -433,13 +432,16 @@ namespace WaterLibrary.pilipala.Entity
         /// <returns></returns>
         public Comment Last() => CommentList.Last();
         /// <summary>
-        /// 对数据集内的每一个对象应用Action
+        /// 将function应用到本数据集的所有元素
         /// </summary>
-        /// <param name="todo">Action委托</param>
+        /// <remarks>
+        /// 函数式API
+        /// </remarks>
+        /// <param name="function"></param>
         /// <returns>返回操作后的数据集</returns>
-        public CommentSet ForEach(Action<Comment> todo)
+        public CommentSet Map(Action<Comment> function)
         {
-            CommentList.ForEach(todo);
+            CommentList.ForEach(function);
             return this;
         }
 

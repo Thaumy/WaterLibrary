@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Collections;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
 
     using MySql.Data.MySqlClient;
     using Newtonsoft.Json;
@@ -50,11 +51,11 @@
         /// <summary>
         /// 数据结构只读
         /// </summary>
-        internal bool readOnly { get; init; }
+        internal bool ReadOnly { get; init; }
         /// <summary>
         /// 字段缓存
         /// </summary>
-        private Dictionary<string, object> fieldCache = new();
+        private readonly Dictionary<string, object> fieldCache = new();
 
         /// <summary>
         /// 字段读取器
@@ -111,9 +112,9 @@
         private void SetFieldByID(string table, string field, object newValue)
         {
             (string, object) SET = (field, newValue);
-            (string, object) WHERE = ("ID", ID);
+            (string, object) WHERE = ("PostID", ID);
 
-            if (readOnly)
+            if (ReadOnly)
             {
                 throw new Exception("该记录只读");
             }
@@ -134,7 +135,7 @@
             (string, object) SET = (field, newValue);
             (string, object) WHERE = ("UUID", UUID);
 
-            if (readOnly)
+            if (ReadOnly)
             {
                 throw new Exception("该记录只读");
             }
@@ -146,12 +147,96 @@
         }
 
 
-        private string metaTable = CORE.Tables.Meta;
-        private string stackTable = CORE.Tables.Stack;
-        private string unionView = CORE.ViewsSet.DirtyViews.NegUnion;
-        private MySqlManager manager = CORE.MySqlManager;
+        private readonly string metaTable = CORE.Tables.Meta;
+        private readonly string stackTable = CORE.Tables.Stack;
+        private readonly string unionView = CORE.ViewsSet.DirtyViews.NegUnion;
+        private readonly MySqlManager manager = CORE.MySqlManager;
 
+        /// <summary>
+        /// 新建模式
+        /// </summary>
+        /// <param name="ID">隶属于文章栈的ID</param>
+        public PostRecord(uint ID)
+        {
+            var SQL =
+                    $@"INSERT INTO {stackTable}
+                       ( PostID, UUID, LCT, Title, Summary, Content, Label, Cover) VALUES
+                       (?ID,    ?UUID,?LCT,?Title,?Summary,?Content,?Label,?Cover);";
 
+            var UUID = MathH.GenerateUUID(MathH.UUIDFormat.N);
+            var LCT = DateTime.Now;
+            var Mode = ModeState.unset;
+            var Type = TypeState.unset;
+
+            MySqlParameter[] parameters =
+            {
+                new("ID", ID),
+                new("UUID", UUID),
+                new("LCT", LCT),
+
+                new("Mode", Mode),
+                new("Type", Type),
+                new("User", ""),
+                new("ArchiveID", ""),
+
+                new("UVCount", ""),
+                new("StarCount", ""),
+
+                new("Title", ""),
+                new("Summary", ""),
+                new("Content", ""),
+
+                new("Label", ""),
+                new("Cover", "")
+            };
+
+            manager.DoInConnection(conn =>
+            {
+                return MySqlManager.DoInCommand(conn, cmd =>
+                {
+                    cmd.CommandText = SQL;
+                    cmd.Parameters.AddRange(parameters);
+
+                    return MySqlManager.DoInTransaction(cmd, tx =>
+                    {
+                        if (cmd.ExecuteNonQuery() == 1)
+                        {
+                            /* stack表添加1行数据 */
+                            tx.Commit();
+
+                            {//写缓存
+                                fieldCache["ID"] = ID;
+                                fieldCache["UUID"] = UUID;
+                                fieldCache["LCT"] = LCT;
+
+                                fieldCache["Mode"] = Mode;
+                                fieldCache["Type"] = Type;
+
+                                fieldCache["User"] = "";
+                                fieldCache["ArchiveID"] = "";
+
+                                fieldCache["UVCount"] = "";
+                                fieldCache["StarCount"] = "";
+
+                                fieldCache["Title"] = "";
+                                fieldCache["Summary"] = "";
+                                fieldCache["Content"] = "";
+
+                                fieldCache["Label"] = "";
+                                fieldCache["Cover"] = "";
+                            }
+
+                            return true;
+                        }
+                        else
+                        {
+                            tx.Rollback();
+                            return false;
+                        }
+                    });
+                });
+            });
+        }
         /// <summary>
         /// 编辑模式
         /// </summary>
@@ -160,10 +245,10 @@
         /// <param name="readOnly">只读模式（默认为true，不允许修改文章栈字段）</param>
         public PostRecord(string UUID, bool lazy = true, bool readOnly = true)
         {
-            PropertyContainer = new();
             this.UUID = UUID;
 
-            this.readOnly = readOnly;
+            ReadOnly = readOnly;
+
             if (!lazy)
             {
                 //TODO
@@ -192,13 +277,15 @@
         /// <summary>
         /// 索引（ID字段不允许更改）
         /// </summary>
-        public int ID
+        public uint ID
         {
-            get => Convert.ToInt32(GetFieldByUUID(CORE.Tables.Stack, "PostID"));
+            get => Convert.ToUInt32(GetFieldByUUID(CORE.Tables.Stack, "PostID"));
         }
         /// <summary>
         /// 全局标识
         /// </summary>
+        [MinLength(32, ErrorMessage = "长度不符")]
+        [MaxLength(32, ErrorMessage = "长度不符")]
         public string UUID { get; init; }
 
         /// <summary>
@@ -277,9 +364,9 @@
         /// <summary>
         /// 归档ID（请使用Archiver设置）
         /// </summary>
-        public int ArchiveID
+        public uint ArchiveID
         {
-            get => Convert.ToInt32(GetFieldByID(metaTable, "ArchiveID"));
+            get => Convert.ToUInt32(GetFieldByID(metaTable, "ArchiveID"));
         }
         /// <summary>
         /// 归档名（请使用Archiver设置）
@@ -365,7 +452,7 @@
             get
             {
                 var str = Convert.ToString(GetFieldByID(metaTable, "Type"));
-                return (TypeState)Enum.Parse(typeof(ModeState), str);
+                return (TypeState)Enum.Parse(typeof(TypeState), str);
             }
             set => SetFieldByID(metaTable, "Type", value);
         }
@@ -398,17 +485,17 @@
         /// <summary>
         /// 访问计数
         /// </summary>
-        public int UVCount
+        public uint UVCount
         {
-            get => Convert.ToInt32(GetFieldByID(metaTable, "UVCount"));
+            get => Convert.ToUInt32(GetFieldByID(metaTable, "UVCount"));
             set => SetFieldByID(metaTable, "UVCount", value);
         }
         /// <summary>
         /// 星星计数
         /// </summary>
-        public int StarCount
+        public uint StarCount
         {
-            get => Convert.ToInt32(GetFieldByID(metaTable, "StarCount"));
+            get => Convert.ToUInt32(GetFieldByID(metaTable, "StarCount"));
             set => SetFieldByID(metaTable, "StarCount", value);
         }
 
@@ -416,7 +503,7 @@
         /// <summary>
         /// 属性容器
         /// </summary>
-        public Hashtable PropertyContainer { get; init; }
+        public readonly Hashtable PropertyContainer = new();
     }
     /// <summary>
     /// 文章栈
@@ -436,7 +523,7 @@
         /// </summary>
         protected class PostStackEnumerator : IEnumerator
         {
-            private List<string>.Enumerator enumerator;
+            private readonly List<string>.Enumerator enumerator;
 
             /// <summary>
             /// 默认构造
@@ -452,38 +539,38 @@
             void IEnumerator.Reset() => throw new NotSupportedException();
         }
 
-        private System.Lazy<List<string>> UuidList;
-        private string metaTable = CORE.Tables.Meta;
-        private string stackTable = CORE.Tables.Stack;
-        private string unionView = CORE.ViewsSet.DirtyViews.NegUnion;
-        private MySqlManager manager = CORE.MySqlManager;
+        private readonly System.Lazy<List<string>> UuidList;
+        private readonly string metaTable = CORE.Tables.Meta;
+        private readonly string stackTable = CORE.Tables.Stack;
+        private readonly string unionView = CORE.ViewsSet.DirtyViews.NegUnion;
+        private readonly MySqlManager manager = CORE.MySqlManager;
 
         /// <summary>
         /// 文章栈ID
         /// </summary>
-        public int ID { get; init; }
+        public uint ID { get; init; }
 
         /// <summary>
         /// 得到最大ID
         /// </summary>
         /// <returns></returns>
-        internal int GetMaxID()
+        internal uint GetMaxID()
         {
             var SQL = $"SELECT MAX(PostID) FROM {metaTable}";
             var result = manager.GetKey(SQL);
             /* 若取不到ID(没有任何文章时)，返回12000作为初始ID */
-            return Convert.ToInt32(result == DBNull.Value ? 12000 : result);
+            return Convert.ToUInt32(result == DBNull.Value ? 12000 : result);
         }
         /// <summary>
         /// 得到最小ID
         /// </summary>
         /// <returns></returns>
-        internal int GetMinID()
+        internal uint GetMinID()
         {
             var SQL = $"SELECT MIN(PostID) FROM {metaTable}";
             var result = manager.GetKey(SQL);
             /* 若取不到ID(没有任何文章时)，返回12000作为初始ID */
-            return Convert.ToInt32(result == DBNull.Value ? 12000 : result);
+            return Convert.ToUInt32(result == DBNull.Value ? 12000 : result);
         }
 
         /// <summary>
@@ -523,27 +610,27 @@
 
                 MySqlParameter[] paras =
                 {
-                        new("PostID", ID),
-                        new("UUID", MathH.GenerateUUID(MathH.UUIDFormat.N)),
+                    new("PostID", ID),
+                    new("UUID", MathH.GenerateUUID(MathH.UUIDFormat.N)),
 
-                        new("CT", t),
-                        new("LCT", t),
+                    new("CT", t),
+                    new("LCT", t),
 
-                        new("User", ""),
-                        new("Mode", ""),
-                        new("Type", ""),
-                        new("ArchiveID", 0),
+                    new("User", ""),
+                    new("Mode", ""),
+                    new("Type", ""),
+                    new("ArchiveID", 0),
 
-                        new("UVCount", 0),
-                        new("StarCount", 0),
+                    new("UVCount", 0),
+                    new("StarCount", 0),
 
-                        new("Title", ""),
-                        new("Summary", ""),
-                        new("Content", ""),
+                    new("Title", ""),
+                    new("Summary", ""),
+                    new("Content", ""),
 
-                        new("Label", ""),
-                        new("Cover", "")
-                    };
+                    new("Label", ""),
+                    new("Cover", "")
+                };
 
                 return MySqlManager.DoInCommand(conn, cmd =>
                 {
@@ -571,7 +658,7 @@
         /// 编辑模式
         /// </summary>
         /// <param name="ID"></param>
-        public PostStack(int ID)
+        public PostStack(uint ID)
         {
             this.ID = ID;
 
@@ -605,7 +692,12 @@
         /// </summary>
         public PostRecord Peek
         {
-            get { return new PostRecord(UuidList.Value.Last(), false); }
+            get
+            {
+                var peekUUID = UuidList.Value.Last();
+                var peek = new PostRecord(peekUUID, true, false);
+                return peek;
+            }
         }
 
         /// <summary>
@@ -629,28 +721,28 @@
         /// <summary>
         /// 压入PostRecord
         /// </summary>
-        /// <param name="postRecord"></param>
-        public void Push(PostRecord postRecord)
+        /// <param name="item"></param>
+        public void Push(PostRecord item)
         {
-            if (postRecord.ID == ID)
+            if (item.ID == ID)
             {
                 var SQL =
                     $@"UPDATE {metaTable} SET 
                        UUID=?UUID, Mode=?Mode, Type=?Type, User=?User, UVCount=?UVCount, StarCount=?StarCount, ArchiveID=?ArchiveID 
                        WHERE PostID=?ID;";
 
-                MySqlParameter[] parameters =
+                MySqlParameter[] paras =
                 {
-                    new("ID", postRecord.ID),
-                    new("UUID", postRecord.UUID ),
+                    new("ID", item.ID),
+                    new("UUID", item.UUID ),
 
-                    new("Mode", postRecord.Mode),
-                    new("Type", postRecord.Type),
-                    new("User", postRecord.User),
-                    new("ArchiveID", postRecord.ArchiveID),
+                    new("Mode", item.Mode),
+                    new("Type", item.Type),
+                    new("User", item.User),
+                    new("ArchiveID", item.ArchiveID),
 
-                    new("UVCount", postRecord.UVCount),
-                    new("StarCount", postRecord.StarCount),
+                    new("UVCount", item.UVCount),
+                    new("StarCount", item.StarCount),
                 };
 
                 manager.DoInConnection(conn =>
@@ -658,7 +750,7 @@
                     return MySqlManager.DoInCommand(conn, cmd =>
                     {
                         cmd.CommandText = SQL;
-                        cmd.Parameters.AddRange(parameters);
+                        cmd.Parameters.AddRange(paras);
 
                         return MySqlManager.DoInTransaction(cmd, tx =>
                         {
@@ -666,7 +758,7 @@
                             {
                                 /* meta表修改1行数据 */
                                 tx.Commit();
-                                UuidList.Value.Add(postRecord.UUID);
+                                UuidList.Value.Add(item.UUID);
                                 return true;
                             }
                             else
@@ -738,12 +830,12 @@
                     , metaTable, stackTable
                     );
 
-                    MySqlParameter[] parameters = { new("UUID", UUID) };
+                    var para = new MySqlParameter("UUID", UUID);
 
                     return MySqlManager.DoInCommand(conn, cmd =>
                     {
                         cmd.CommandText = SQL;
-                        cmd.Parameters.AddRange(parameters);
+                        cmd.Parameters.Add(para);
 
                         return MySqlManager.DoInTransaction(cmd, tx =>
                         {
@@ -772,38 +864,57 @@
         /// 替换文章记录
         /// </summary>
         /// <remarks>
-        /// 将现有index指向删除（顶出），然后将index指向设置为指定文章拷贝
+        /// 将现有index指向删除（顶出），然后将index指向设置为指定文章记录
         /// </remarks>
-        /// <param name="UUID">目标拷贝的UUID</param>
+        /// <param name="UUID">目标记录的UUID</param>
         /// <returns></returns>
-        public bool Replace(string UUID)
+        public bool RePeek(string UUID)
         {
             if (UuidList.Value.Contains(UUID))
             {
                 return manager.DoInConnection(conn =>
                 {
                     /* 此处，即使SQL注入造成了PostID错误，由于第二步参数化查询的作用，UUID也会造成错误无法成功攻击 */
-                    object ID = manager.GetKey($"SELECT PostID FROM {stackTable} WHERE UUID = '{UUID}'");
+                    var ID = manager.GetKey($"SELECT PostID FROM {stackTable} WHERE UUID = '{UUID}'");
 
+                    //DELETE FROM {stackTable} WHERE UUID = (SELECT UUID FROM {metaTable} WHERE PostID = ?ID);
                     var SQL =
-                    $@"DELETE FROM {stackTable} WHERE UUID = (SELECT UUID FROM {metaTable} WHERE PostID = ?ID);
-                       UPDATE {stackTable} SET UUID = ?UUID WHERE PostID = ?PostID;";
+                    $@"UPDATE {stackTable} SET UUID = ?UUID WHERE PostID = ?ID;";
 
-                    MySqlParameter[] parameters =
-                    { new("ID", ID), new("UUID", UUID) };
+                    MySqlParameter[] paras =
+                    {
+                        new("ID", ID),
+                        new("UUID", UUID)
+                    };
 
                     return MySqlManager.DoInCommand(conn, cmd =>
                     {
                         cmd.CommandText = SQL;
-                        cmd.Parameters.AddRange(parameters);
+                        cmd.Parameters.AddRange(paras);
 
                         return MySqlManager.DoInTransaction(cmd, tx =>
                         {
-                            if (cmd.ExecuteNonQuery() == 2)
+                            if (cmd.ExecuteNonQuery() == 1)
                             {
-                                /* meta表修改1行数据，stack表删除1行数据 */
+                                /* meta表修改1行数据 */
                                 tx.Commit();
-                                UuidList.Value.Remove(UUID);
+
+                                //交换Peek
+                                var newPeekIndex = UuidList.Value.FindIndex(
+                                    (x) =>
+                                    {
+                                        if (x == UUID)
+                                            return true;
+                                        else
+                                            return false;
+                                    });
+                                var newPeekValue = UUID;
+                                var nowPeekIndex = UuidList.Value.Count - 1;
+                                var nowPeekValue = UuidList.Value.Last();
+
+                                UuidList.Value[newPeekIndex] = nowPeekValue;
+                                UuidList.Value[nowPeekIndex] = newPeekValue;
+
                                 return true;
                             }
                             else
@@ -820,7 +931,43 @@
                 throw new Exception("无法将不属于本栈的文章记录替换到本栈");
             }
         }
+        /// <summary>
+        /// 释放冗余记录
+        /// </summary>
+        /// <remarks>
+        /// 删除非Peek的所有记录
+        /// </remarks>
+        /// <returns></returns>
+        public bool Clean()
+        {
+            return manager.DoInConnection(conn =>
+            {
+                return MySqlManager.DoInCommand(conn, cmd =>
+                {
+                    cmd.CommandText = string.Format
+                    (
+                    "DELETE {1} FROM {0} INNER JOIN {1} ON {0}.PostID={1}.PostID AND {0}.UUID<>{1}.UUID AND {0}.PostID={2}"
+                    , metaTable, stackTable, ID
+                    );
 
+                    return MySqlManager.DoInTransaction(cmd, tx =>
+                    {
+                        if (cmd.ExecuteNonQuery() >= 0)
+                        {
+                            /* 删除stack表的所有冗余，不存在冗余时影响行数为0 */
+                            tx.Commit();
+                            UuidList.Value.RemoveRange(1, UuidList.Value.Count - 1);
+                            return true;
+                        }
+                        else
+                        {
+                            tx.Rollback();
+                            return false;
+                        }
+                    });
+                });
+            });
+        }
         /// <summary>
         /// 回滚文章记录
         /// </summary>
@@ -848,6 +995,7 @@
                         {
                             /* meta表修改1行数据，stack表删除1行数据 */
                             tx.Commit();
+
                             return true;
                         }
                         else
@@ -877,9 +1025,9 @@
                 )
             };
 
-            object NextID = manager.GetKey(SQL);
+            var NextID = manager.GetKey(SQL);
 
-            return NextID == null ? null : new PostStack(Convert.ToInt32(NextID));
+            return NextID == null ? null : new PostStack(Convert.ToUInt32(NextID));
         }
         /// <summary>
         /// 取得具有比当前文章栈文章的指定属性具有更大的值的文章栈
@@ -913,7 +1061,7 @@
             };
             object NextID = manager.GetKey(SQL, paras);
 
-            return NextID == null ? null : new PostStack(Convert.ToInt32(NextID));
+            return NextID == null ? null : new PostStack(Convert.ToUInt32(NextID));
         }
         /// <summary>
         /// 取得具有比当前文章栈的指定属性具有更小的值的文章栈
@@ -934,7 +1082,7 @@
 
             object PrevID = manager.GetKey(SQL);
 
-            return PrevID == null ? null : new PostStack(Convert.ToInt32(PrevID));
+            return PrevID == null ? null : new PostStack(Convert.ToUInt32(PrevID));
         }
         /// <summary>
         /// 取得具有比当前文章栈的指定属性具有更小的值的文章栈
@@ -966,7 +1114,7 @@
             };
             object PrevID = manager.GetKey(SQL, paras);
 
-            return PrevID == null ? null : new PostStack(Convert.ToInt32(PrevID));
+            return PrevID == null ? null : new PostStack(Convert.ToUInt32(PrevID));
         }
     }
     /// <summary>
@@ -1031,6 +1179,7 @@
         /// </summary>
         /// <returns></returns>
         public PostStack Last() => PostStackList.Last();
+
         /// <summary>
         /// 添加文章栈
         /// </summary>
@@ -1041,9 +1190,16 @@
         /// </summary>
         /// <param name="postStacks">多个文章栈对象</param>
         public void AddRange(IEnumerable<PostStack> postStacks) => PostStackList.AddRange(postStacks);
+        /// <summary>
+        /// 清空数据集
+        /// </summary>
+        public void Clear()
+        {
+            PostStackList.Clear();
+        }
 
         /// <summary>
-        /// 将function应用到本PostStackSet的所有PostStack
+        /// 将function应用到本数据集的所有元素
         /// </summary>
         /// <remarks>
         /// 函数式API

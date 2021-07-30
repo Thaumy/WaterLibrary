@@ -710,11 +710,14 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.ForEach(System.Action{WaterLibrary.pilipala.Entity.Comment})">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.Map(System.Action{WaterLibrary.pilipala.Entity.Comment})">
             <summary>
-            对数据集内的每一个对象应用Action
+            将function应用到本数据集的所有元素
             </summary>
-            <param name="todo">Action委托</param>
+            <remarks>
+            函数式API
+            </remarks>
+            <param name="function"></param>
             <returns>返回操作后的数据集</returns>
         </member>
         <member name="M:WaterLibrary.pilipala.Entity.CommentSet.WithinMonthCount">
@@ -753,7 +756,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.readOnly">
+        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.ReadOnly">
             <summary>
             数据结构只读
             </summary>
@@ -794,6 +797,12 @@
             <param name="table">目标表</param>
             <param name="field">目标字段</param>
             <param name="newValue">新值</param>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.#ctor(System.UInt32)">
+            <summary>
+            新建模式
+            </summary>
+            <param name="ID">隶属于文章栈的ID</param>
         </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostRecord.#ctor(System.String,System.Boolean,System.Boolean)">
             <summary>
@@ -981,7 +990,7 @@
             星星计数
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.PropertyContainer">
+        <member name="F:WaterLibrary.pilipala.Entity.PostRecord.PropertyContainer">
             <summary>
             属性容器
             </summary>
@@ -1030,7 +1039,7 @@
             新建模式
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostStack.#ctor(System.Int32)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostStack.#ctor(System.UInt32)">
             <summary>
             编辑模式
             </summary>
@@ -1056,7 +1065,7 @@
             <summary>
             压入PostRecord
             </summary>
-            <param name="postRecord"></param>
+            <param name="item"></param>
         </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostStack.Dispose">
             <summary>
@@ -1077,14 +1086,23 @@
             <param name="UUID">目标文章的UUID</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostStack.Replace(System.String)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostStack.RePeek(System.String)">
             <summary>
             替换文章记录
             </summary>
             <remarks>
-            将现有index指向删除（顶出），然后将index指向设置为指定文章拷贝
+            将现有index指向删除（顶出），然后将index指向设置为指定文章记录
             </remarks>
-            <param name="UUID">目标拷贝的UUID</param>
+            <param name="UUID">目标记录的UUID</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostStack.Clean">
+            <summary>
+            释放冗余记录
+            </summary>
+            <remarks>
+            删除非Peek的所有记录
+            </remarks>
             <returns></returns>
         </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostStack.Rollback">
@@ -1181,9 +1199,14 @@
             </summary>
             <param name="postStacks">多个文章栈对象</param>
         </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostStackSet.Clear">
+            <summary>
+            清空数据集
+            </summary>
+        </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostStackSet.Map(System.Action{WaterLibrary.pilipala.Entity.PostStack})">
             <summary>
-            将function应用到本PostStackSet的所有PostStack
+            将function应用到本数据集的所有元素
             </summary>
             <remarks>
             函数式API

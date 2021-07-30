@@ -201,7 +201,7 @@
                 {
                     cmd.CommandText = SQL;
                     /* 如果结果集为空，该方法返回null */
-                    return cmd.ExecuteScalar(); ;
+                    return cmd.ExecuteScalar(); 
                 });
             });
         }
@@ -221,7 +221,7 @@
                     cmd.Parameters.AddRange(parameters);
 
                     /* 如果结果集为空，该方法返回null */
-                    return cmd.ExecuteScalar(); ;
+                    return cmd.ExecuteScalar(); 
                 });
             });
         }
