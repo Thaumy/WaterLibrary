@@ -23,43 +23,48 @@
         {
             get
             {
+                Console.WriteLine($"当前连接数：{ConnectionPool.Count}");
                 MySqlConnection New()
                 {
                     ConnectionPool.Add(new(ConnectionString));
                     ConnectionPool.Last().Open();
                     return ConnectionPool.Last();
                 }
-                if (ConnectionPool.Count <= 16)//连接数较少时，考虑新建
+                if (ConnectionPool.Count <= ConnPoolSize / 2)//连接数较少时，考虑新建
                 {
+                    Console.WriteLine("新建连接");
                     return New();
                 }
-                else if (ConnectionPool.Count <= 32)//连接数较多时，考虑在循环复用的基础上新建
+                else if (ConnectionPool.Count <= ConnPoolSize)//连接数较多时，考虑在循环复用的基础上新建
                 {
                     foreach (var el in ConnectionPool)
                     {
                         if (el.State is ConnectionState.Broken or ConnectionState.Closed)
                         {
                             el.Open();
+                            Console.WriteLine("连接复用");
                             return el;
                         }
                     }
                     //找不到可分配连接时，新建
+                    Console.WriteLine("新建连接");
                     return New();
                 }
                 else
                 {
-                    CleanConnectionPool();//连接数过多时，清理后新建
+                    TryCleanConnPool();//连接数过多时，清理后新建
+                    Console.WriteLine("清理后新建");
                     return New();
                 }
             }
         }
 
         /// <summary>
-        /// 清理连接池
+        /// 尝试清理连接池
         /// </summary>
         /// <remarks>由于连接池具有内部复用机制，经常清理连接池可能会造成不良后果。</remarks>
         /// <remarks>此方法仅仅会尝试清理连接池，并不是所有连接都会被强制关闭</remarks>
-        public void CleanConnectionPool()
+        public void TryCleanConnPool()
         {
             for (int i = ConnectionPool.Count - 1; i >= 0; i--)
             { /* 如果连接中断或是关闭（这都是不工作的状态） */
@@ -72,37 +77,43 @@
         }
 
         /// <summary>
-        /// 默认构造
+        /// 连接池容量
         /// </summary>
-        private MySqlManager() { }
+        public uint ConnPoolSize { get; init; }
+
+
         /// <summary>
         /// 连接信息构造
         /// </summary>
-        /// <param name="MySqlConnMsg">MySQL数据库连接信息</param>
-        public MySqlManager(MySqlConnMsg MySqlConnMsg)
+        /// <param name="msg">MySQL数据库连接信息</param>
+        /// <param name="connPoolSize">连接池最大容量</param>
+        public MySqlManager(MySqlConnMsg msg, uint connPoolSize = 32)
         {
+            ConnPoolSize = connPoolSize;
             ConnectionPool = new();
             ConnectionString =
-            $@";DataSource={MySqlConnMsg.DataSource}
-               ;Port={MySqlConnMsg.Port }
-               ;UserID={MySqlConnMsg.User}
-               ;Password={MySqlConnMsg.PWD}
+            $@";DataSource={msg.DataSource}
+               ;Port={msg.Port }
+               ;UserID={msg.User}
+               ;Password={msg.PWD}
                ;UseAffectedRows=TRUE;";/* UPDATE语句返回受影响的行数而不是符合查询条件的行数 */
         }
         /// <summary>
         /// 带有目标数据库的连接信息构造
         /// </summary>
-        /// <param name="MySqlConnMsg">MySQL数据库连接信息</param>
+        /// <param name="msg">MySQL数据库连接信息</param>
         /// <param name="Database">目标数据库</param>
-        public MySqlManager(MySqlConnMsg MySqlConnMsg, string Database)
+        /// <param name="connPoolSize">连接池最大容量</param>
+        public MySqlManager(MySqlConnMsg msg, string Database, uint connPoolSize = 32)
         {
+            ConnPoolSize = connPoolSize;
             ConnectionPool = new();
             ConnectionString = /* USING目标数据库 */
-            $@";DataSource={MySqlConnMsg.DataSource}
+            $@";DataSource={msg.DataSource}
                ;DataBase={Database}
-               ;Port={MySqlConnMsg.Port }
-               ;UserID={MySqlConnMsg.User}
-               ;Password={MySqlConnMsg.PWD}
+               ;Port={msg.Port }
+               ;UserID={msg.User}
+               ;Password={msg.PWD}
                ;UseAffectedRows=TRUE;";
         }
 
@@ -201,7 +212,7 @@
                 {
                     cmd.CommandText = SQL;
                     /* 如果结果集为空，该方法返回null */
-                    return cmd.ExecuteScalar(); 
+                    return cmd.ExecuteScalar();
                 });
             });
         }
@@ -221,7 +232,7 @@
                     cmd.Parameters.AddRange(parameters);
 
                     /* 如果结果集为空，该方法返回null */
-                    return cmd.ExecuteScalar(); 
+                    return cmd.ExecuteScalar();
                 });
             });
         }

@@ -59,11 +59,11 @@ namespace WaterLibrary.pilipala
     }
 
     /// <summary>
-    /// pilipala内核
+    /// 内核
     /// </summary>
-    public class CORE
+    public class PiliPala
     {
-        private static CORE Singleton = null;/* 单例 */
+        private static PiliPala Singleton = null;/* 单例 */
 
         /// <summary>
         /// 核心表结构
@@ -102,7 +102,7 @@ namespace WaterLibrary.pilipala
         /// 初始化pilipala内核
         /// </summary>
         /// <param name="PLDatabase">pilipala数据库信息</param>
-        private CORE(PLDatabase PLDatabase)
+        private PiliPala(PLDatabase PLDatabase)
         {
             MySqlManager = PLDatabase.MySqlManager;
             Tables = PLDatabase.Tables;

@@ -14,7 +14,7 @@
     using WaterLibrary.Utils;
     using WaterLibrary.pilipala.Entity;
     using WaterLibrary.pilipala.Database;
-    
+
 
     /// <summary>
     /// 组件工厂
@@ -27,18 +27,17 @@
         /// <returns></returns>
         public User GenUser(string UserAccount, string UserPWD)
         {
-            var Tables = CORE.Tables;
-            var MySqlManager = CORE.MySqlManager;
+            var manager = PiliPala.MySqlManager;
 
             var PWD_MD5 = MathH.MD5(UserPWD).ToLower();
             var para = new MySqlParameter[] { new("UserAccount", UserAccount), new("UserPWD", PWD_MD5) };
 
-            var count = Convert.ToInt32(MySqlManager.GetRow
-                ($"SELECT COUNT(*) FROM {Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD", para)[0]);
+            var count = Convert.ToInt32(manager.GetRow
+                ($"SELECT COUNT(*) FROM {PiliPala.Tables.User} WHERE Account = ?UserAccount AND PWD = ?UserPWD", para)[0]);
 
             if (count == 1)
             {
-                return new User(Tables, MySqlManager, UserAccount);
+                return new User(PiliPala.Tables, manager, UserAccount);
             }
             else
             {
@@ -49,7 +48,7 @@
         /// 生成权限管理组件
         /// </summary>
         /// <returns></returns>
-        public Auth GenAuthentication(User User) => new(CORE.Tables, CORE.MySqlManager, User);
+        public Auth GenAuthentication(User User) => new(PiliPala.Tables, PiliPala.MySqlManager, User);
         /// <summary>
         /// 生成读组件
         /// </summary>
@@ -62,13 +61,13 @@
             {
                 Reader.ReadMode.CleanRead => WithRawMode switch
                 {
-                    false => new(CORE.ViewsSet.CleanViews.PosUnion, CORE.MySqlManager),
-                    true => new(CORE.ViewsSet.CleanViews.NegUnion, CORE.MySqlManager),
+                    false => new(PiliPala.ViewsSet.CleanViews.PosUnion, PiliPala.MySqlManager),
+                    true => new(PiliPala.ViewsSet.CleanViews.NegUnion, PiliPala.MySqlManager),
                 },
                 Reader.ReadMode.DirtyRead => WithRawMode switch
                 {
-                    false => new(CORE.ViewsSet.DirtyViews.PosUnion, CORE.MySqlManager),
-                    true => new(CORE.ViewsSet.DirtyViews.NegUnion, CORE.MySqlManager),
+                    false => new(PiliPala.ViewsSet.DirtyViews.PosUnion, PiliPala.MySqlManager),
+                    true => new(PiliPala.ViewsSet.DirtyViews.NegUnion, PiliPala.MySqlManager),
                 },
                 _ => throw new NotImplementedException(),
             };
@@ -78,12 +77,12 @@
         /// </summary>
         /// <returns></returns>
         [Obsolete("请使用PostRecord属性访问器以完成对属性的修改")]
-        public Writer GenWriter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
+        public Writer GenWriter() => new(PiliPala.Tables.Meta, PiliPala.Tables.Stack, PiliPala.MySqlManager);
         /// <summary>
         /// 生成计数组件
         /// </summary>
         /// <returns></returns>
-        public Counter GenCounter() => new(CORE.Tables.Meta, CORE.Tables.Stack, CORE.MySqlManager);
+        public Counter GenCounter() => new(PiliPala.Tables.Meta, PiliPala.Tables.Stack, PiliPala.MySqlManager);
         /// <summary>
         /// 生成插件组件
         /// </summary>
@@ -93,12 +92,12 @@
         /// 生成归档管理组件
         /// </summary>
         /// <returns></returns>
-        public Archiver GenArchiver() => new(CORE.Tables.Archive, CORE.MySqlManager);
+        public Archiver GenArchiver() => new(PiliPala.Tables.Archive, PiliPala.MySqlManager);
         /// <summary>
         /// 生成评论湖组件
         /// </summary>
         /// <returns></returns>
-        public CommentLake GenCommentLake() => new(CORE.Tables.Meta, CORE.Tables.Comment, CORE.MySqlManager);
+        public CommentLake GenCommentLake() => new(PiliPala.Tables.Meta, PiliPala.Tables.Comment, PiliPala.MySqlManager);
     }
 
     /// <summary>
@@ -836,6 +835,256 @@
             var (inst, obj) = PluginPool[pluginUUID];
             MethodInfo method = inst.GetMethod(methodName);
             return method.Invoke(obj, args);
+        }
+    }
+
+    /// <summary>
+    /// 评论湖组件
+    /// </summary>
+    public class CommentLake : IPLComponent<CommentLake>
+    {
+        private string MetaTable { get; init; }
+        private string CommentTable { get; init; }
+        /// <summary>
+        /// MySql数据库管理器
+        /// </summary>
+        private MySqlManager MySqlManager { get; init; }
+
+        /// <summary>
+        /// 默认构造
+        /// </summary>
+        private CommentLake() { }
+        /// <summary>
+        /// 工厂构造
+        /// </summary>
+        /// <param name="MetaTable">元数据表</param>
+        /// <param name="CommentTable">评论表</param>
+        /// <param name="MySqlManager">数据库管理器</param>
+        internal CommentLake(string MetaTable, string CommentTable, MySqlManager MySqlManager)
+        {
+            (this.MetaTable, this.CommentTable, this.MySqlManager) = (MetaTable, CommentTable, MySqlManager);
+        }
+
+        /// <summary>
+        /// 得到最大评论CommentID（私有）
+        /// </summary>
+        /// <returns>不存在返回1</returns>
+        private int GetMaxCommentID()
+        {
+            string SQL = $"SELECT max(CommentID) FROM {CommentTable}";
+
+            object MaxCommentID = MySqlManager.GetKey(SQL);
+            return MaxCommentID == DBNull.Value ? 1 : Convert.ToInt32(MaxCommentID);
+        }
+        /// <summary>
+        /// 获得目标文章下的最大评论楼层（私有）
+        /// </summary>
+        /// <returns>不存在返回1</returns>
+        private int GetMaxFloor(int PostID)
+        {
+            string SQL = $"SELECT max(Floor) FROM {CommentTable} WHERE PostID = {PostID}";
+
+            object MaxFloor = MySqlManager.GetKey(SQL);
+            return MaxFloor == DBNull.Value ? 1 : Convert.ToInt32(MaxFloor);
+        }
+
+        /// <summary>
+        /// 评论总计数
+        /// </summary>
+        public int TotalCommentCount
+        {
+            get
+            {
+                object Count = MySqlManager.GetKey($"SELECT COUNT(*) FROM {CommentTable}");
+                return Count == DBNull.Value ? 0 : Convert.ToInt32(Count);
+            }
+        }
+        /// <summary>
+        /// 得到目标文章的评论计数
+        /// </summary>
+        /// <param name="PostID">目标文章PostID</param>
+        /// <returns></returns>
+        public int GetCommentCount(int PostID)
+        {
+            object Count = MySqlManager.GetKey($"SELECT COUNT(*) FROM {CommentTable} WHERE PostID = {PostID}");
+            return Count == DBNull.Value ? 0 : Convert.ToInt32(Count);
+        }
+
+        /// <summary>
+        /// 获得评论属性
+        /// </summary>
+        /// <param name="CommentID">目标评论CommentID</param>
+        /// <param name="Prop">属性类型</param>
+        /// <returns></returns>
+        public string GetComment(int CommentID, CommentProp Prop)
+        {
+            /* int类型传入，SQL注入无效 */
+            string SQL = $"SELECT {Prop} FROM {CommentTable} WHERE CommentID = {CommentID}";
+            return MySqlManager.GetKey(SQL).ToString();
+        }
+
+        /// <summary>
+        /// 得到被评论文章的PostID列表
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetCommentedPostID()
+        {
+            List<int> List = new();
+
+            string SQL = string.Format("SELECT PostID FROM {0} JOIN {1} ON {0}.PostID={1}.PostID GROUP BY {0}.PostID", MetaTable, CommentTable);
+
+            foreach (DataRow Row in MySqlManager.GetTable(SQL).Rows)
+            {
+                List.Add(Convert.ToInt32(Row[0]));
+            }
+
+            return List;
+        }
+        /// <summary>
+        /// 获得目标文章的评论列表
+        /// </summary>
+        /// <param name="PostID">目标文章PostID</param>
+        /// <returns></returns>
+        public CommentRecordSet GetComments(int PostID)
+        {
+            CommentRecordSet CommentRecordSet = new();
+
+            /* 按楼层排序 */
+            string SQL = $"SELECT * FROM {CommentTable} WHERE PostID = ?PostID ORDER BY Floor";
+
+            DataTable result = MySqlManager.GetTable(SQL, new MySqlParameter[]
+            {
+                new("PostID", PostID)
+            });
+
+            foreach (DataRow Row in result.Rows)
+            {
+                CommentRecordSet.Add(new CommentRecord
+                {
+                    CommentID = Convert.ToInt32(Row["CommentID"]),
+                    HEAD = Convert.ToInt32(Row["HEAD"]),
+                    PostID = Convert.ToInt32(Row["PostID"]),
+                    Floor = Convert.ToInt32(Row["Floor"]),
+
+                    User = Convert.ToString(Row["User"]),
+                    Email = Convert.ToString(Row["Email"]),
+                    Content = Convert.ToString(Row["Content"]),
+                    WebSite = Convert.ToString(Row["WebSite"]),
+                    Time = Convert.ToDateTime(Row["Time"]),
+                });
+            }
+            return CommentRecordSet;
+        }
+        /// <summary>
+        /// 获得目标评论的回复列表
+        /// </summary>
+        /// <param name="CommentID"></param>
+        /// <returns></returns>
+        public CommentRecordSet GetCommentReplies(int CommentID)
+        {
+            CommentRecordSet CommentRecordSet = new();
+
+            DataTable result =
+                MySqlManager.GetTable($"SELECT * FROM {CommentTable} WHERE HEAD={CommentID} ORDER BY Floor");
+
+            foreach (DataRow Row in result.Rows)
+            {
+                CommentRecordSet.Add(new CommentRecord
+                {
+                    /* 数据库中的量 */
+                    CommentID = Convert.ToInt32(Row["CommentID"]),
+                    HEAD = Convert.ToInt32(Row["HEAD"]),
+                    PostID = Convert.ToInt32(Row["PostID"]),
+                    Floor = Convert.ToInt32(Row["Floor"]),
+
+                    User = Convert.ToString(Row["User"]),
+                    Email = Convert.ToString(Row["Email"]),
+                    Content = Convert.ToString(Row["Content"]),
+                    WebSite = Convert.ToString(Row["WebSite"]),
+                    Time = Convert.ToDateTime(Row["Time"]),
+                });
+            }
+            return CommentRecordSet;
+        }
+
+        /// <summary>
+        /// 添加评论(CommentID和Time由系统生成，无需传入)
+        /// </summary>
+        /// <param name="item">评论记录</param>
+        /// <returns></returns>
+        public bool NewComment(CommentRecord item)
+        {
+            string SQL = $"INSERT INTO {CommentTable} " +
+                        "( CommentID, HEAD, PostID, Floor, User, Email, Content, WebSite, Time) VALUES " +
+                        "(?CommentID,?HEAD,?PostID,?Floor,?User,?Email,?Content,?WebSite,?Time)";
+
+            MySqlParameter[] parameters =
+            {
+                new("CommentID", GetMaxCommentID() + 1 ),
+                new("HEAD", item.HEAD),
+                new("PostID", item.PostID),
+                new("Floor", GetMaxFloor(item.PostID) + 1 ),
+
+                new("User", item.User),
+                new("Email", item.Email),
+                new("Content", item.Content),
+                new("WebSite", item.WebSite),
+                new("Time", DateTime.Now),
+            };
+
+            return MySqlManager.DoInConnection(conn =>
+            {
+                return MySqlManager.DoInCommand(conn, cmd =>
+                {
+                    cmd.CommandText = SQL;
+                    cmd.Parameters.AddRange(parameters);
+
+                    return MySqlManager.DoInTransaction(cmd, tx =>
+                    {
+                        if (cmd.ExecuteNonQuery() == 1)
+                        {
+                            /* 指向表和拷贝表分别添加1行数据 */
+                            tx.Commit();
+                            return true;
+                        }
+                        else
+                        {
+                            tx.Rollback();
+                            return false;
+                        }
+                    });
+                });
+            });
+        }
+        /// <summary>
+        /// 删除评论(相关回复不会被删除)
+        /// </summary>
+        /// <param name="CommentID"></param>
+        /// <returns></returns>
+        public bool DelComment(int CommentID)
+        {
+            return MySqlManager.DoInConnection(conn =>
+            {
+                return MySqlManager.DoInCommand(conn, cmd =>
+                {
+                    cmd.CommandText = $"DELETE FROM {CommentTable} WHERE CommentID = {CommentID}";
+
+                    return MySqlManager.DoInTransaction(cmd, tx =>
+                    {
+                        if (cmd.ExecuteNonQuery() == 1)
+                        {
+                            /* 删除1条评论，操作行为1 */
+                            tx.Commit();
+                            return true;
+                        }
+                        else
+                        {
+                            tx.Rollback();
+                            return false;
+                        }
+                    });
+                });
+            });
         }
     }
 }

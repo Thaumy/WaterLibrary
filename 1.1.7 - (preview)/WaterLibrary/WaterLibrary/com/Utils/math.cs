@@ -24,27 +24,45 @@
         private MathH() { }
 
         /// <summary>
-        /// 顺序表示枚举
+        /// 排序顺序枚举
         /// </summary>
-        public sealed class ORDER
+        public enum SortOrder
         {
             /// <summary>
-            /// 升序(0123)
+            /// 升序
             /// </summary>
-            public static string ASC
-            {
-                get => "ASC";
-            }
+            /// <remarks>0,1,2,3,4,5,6</remarks>
+            ASC,
             /// <summary>
-            /// 降序(3210)
+            /// 降序
             /// </summary>
-            public static string DESC
-            {
-                get => "DESC";
-            }
+            /// <remarks>6,5,4,3,2,1,0</remarks>
+            DESC
         }
         /// <summary>
-        /// 交换值的方法，引用类型
+        /// 偏序关系枚举
+        /// </summary>
+        public enum Order
+        {
+            /// <summary>
+            /// 小于
+            /// </summary>
+            /// <remarks>A less than B</remarks>
+            LT,
+            /// <summary>
+            /// 大于
+            /// </summary>
+            /// <remarks>A greater than B</remarks>
+            GT,
+            /// <summary>
+            /// 等于
+            /// </summary>
+            /// <remarks>A equal to B</remarks>
+            EQ
+        }
+
+        /// <summary>
+        /// 交换值，引用类型
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
@@ -55,7 +73,7 @@
             j = temp;
         }
         /// <summary>
-        /// 判断小于的方法
+        /// 判断小于
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
@@ -65,7 +83,7 @@
             return i.CompareTo(j) < 0;
         }
         /// <summary>
-        /// 判断奇数的方法
+        /// 判断奇数
         /// </summary>
         /// <param name="num">待判断的数值</param>
         /// <returns>num为奇数返回true，num为偶数返回false</returns>

@@ -39,94 +39,328 @@
             公司
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.Component.CommentLake">
-            <summary>
-            评论湖组件
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Component.CommentLake.MySqlManager">
+        <member name="T:WaterLibrary.MySQL.MySqlManager">
             <summary>
             MySql数据库管理器
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.#ctor">
+        <member name="P:WaterLibrary.MySQL.MySqlManager.Connection">
             <summary>
-            默认构造
+            数据库连接访问器
+            </summary>
+            <remarks>若连接为一次性使用，请使用DoInConnection。从此属性获取的连接对象需手动销毁。</remarks>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.TryCleanConnPool">
+            <summary>
+            尝试清理连接池
+            </summary>
+            <remarks>由于连接池具有内部复用机制，经常清理连接池可能会造成不良后果。</remarks>
+            <remarks>此方法仅仅会尝试清理连接池，并不是所有连接都会被强制关闭</remarks>
+        </member>
+        <member name="P:WaterLibrary.MySQL.MySqlManager.ConnPoolSize">
+            <summary>
+            连接池容量
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.#ctor(System.String,System.String,WaterLibrary.MySQL.MySqlManager)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.#ctor(WaterLibrary.MySQL.MySqlConnMsg,System.UInt32)">
             <summary>
-            工厂构造
+            连接信息构造
             </summary>
-            <param name="MetaTable">元数据表</param>
-            <param name="CommentTable">评论表</param>
-            <param name="MySqlManager">数据库管理器</param>
+            <param name="msg">MySQL数据库连接信息</param>
+            <param name="connPoolSize">连接池最大容量</param>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetMaxCommentID">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.#ctor(WaterLibrary.MySQL.MySqlConnMsg,System.String,System.UInt32)">
             <summary>
-            得到最大评论CommentID（私有）
+            带有目标数据库的连接信息构造
             </summary>
-            <returns>不存在返回1</returns>
+            <param name="msg">MySQL数据库连接信息</param>
+            <param name="Database">目标数据库</param>
+            <param name="connPoolSize">连接池最大容量</param>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetMaxFloor(System.Int32)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInConnection``1(System.Func{MySql.Data.MySqlClient.MySqlConnection,``0})">
             <summary>
-            获得目标文章下的最大评论楼层（私有）
+            连接托管器
             </summary>
-            <returns>不存在返回1</returns>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Component.CommentLake.TotalCommentCount">
-            <summary>
-            评论总计数
-            </summary>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetCommentCount(System.Int32)">
-            <summary>
-            得到目标文章的评论计数
-            </summary>
-            <param name="PostID">目标文章PostID</param>
+            <remarks>此托管器提供了一个打开的数据库连接，当委托完成时，连接会自动销毁。</remarks>
+            <typeparam name="T">返回值类型</typeparam>
+            <param name="todo">委托</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetComment(System.Int32,WaterLibrary.pilipala.Entity.CommentProp)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInCommand``1(MySql.Data.MySqlClient.MySqlConnection,System.Func{MySql.Data.MySqlClient.MySqlCommand,``0})">
             <summary>
-            获得评论属性
+            命令托管器
             </summary>
-            <param name="CommentID">目标评论CommentID</param>
-            <param name="Prop">属性类型</param>
+            <remarks>此托管器提供了一个数据库命令，当委托完成时，命令会自动销毁。</remarks>
+            <typeparam name="T">返回值类型</typeparam>
+            <param name="Connection">承载命令的数据库连接</param>
+            <param name="todo">委托</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetCommentedPostID">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInTransaction``1(MySql.Data.MySqlClient.MySqlCommand,System.Func{MySql.Data.MySqlClient.MySqlTransaction,``0})">
             <summary>
-            得到被评论文章的PostID列表
+            事务托管器
             </summary>
+            <remarks>此托管器提供了一个已经启动的事务，当委托完成时，事务会自动销毁。事务的提交等操作需在委托中完成。</remarks>
+            <typeparam name="T">返回值类型</typeparam>
+            <param name="Command">承载事务的数据库命令</param>
+            <param name="todo">委托</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetComments(System.Int32)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetTable(System.String)">
             <summary>
-            获得目标文章的评论列表
+            获取单张数据表
             </summary>
-            <param name="PostID">目标文章PostID</param>
+            <param name="SQL">SQL语句，用于查询数据表</param>
+            <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetTable(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            获取单张数据表（适用于参数化查询）
+            </summary>
+            <param name="SQL">携带查询参数的SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.String)">
+            <summary>
+            取得首个键值（键匹配查询）
+            </summary>
+            <param name="SQL">SQL语句</param>
+            <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            取得首个键值（键匹配查询）
+            </summary>
+            <param name="SQL">携带查询参数的SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.ValueTuple{System.String,System.String,System.Object},System.String)">
+            <summary>
+            取得指定键值（键匹配查询）
+            </summary>
+            <param name="MySqlKey">操作定位器</param>
+            <param name="KeyName">键名</param>
+            <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetRow(System.String)">
+            <summary>
+            获得数据行
+            </summary>
+            <param name="SQL">SQL语句</param>
+            <returns>操作异常或目标行不存在时，返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetRow(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            获得数据行（适用于参数化查询）
+            </summary>
+            <param name="SQL">携带查询参数的SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>操作异常或目标行不存在时，返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetRow(System.Data.DataTable,System.String,System.Object)">
+            <summary>
+            从DataTable中提取指定行
+            </summary>
+            <param name="DataTable">数据表实例</param>
+            <param name="KeyName">键名</param>
+            <param name="KeyValue">键值</param>
+            <returns>返回获得的DataRow数据行实例，表为空或未检索到返回null</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String)">
+            <summary>
+            取得查询结果中的第一列
+            </summary>
+            <typeparam name="T">元素类型</typeparam>
+            <param name="SQL">用于查询的SQL语句</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetCommentReplies(System.Int32)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String,System.String)">
             <summary>
-            获得目标评论的回复列表
+            取得查询结果中的指定列
             </summary>
-            <param name="CommentID"></param>
+            <typeparam name="T">元素类型</typeparam>
+            <param name="SQL">用于查询的SQL语句</param>
+            <param name="Key">目标列键名</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.NewComment(WaterLibrary.pilipala.Entity.Comment)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
             <summary>
-            添加评论(CommentID和Time由系统生成，无需传入)
+            取得查询结果中的第一列
             </summary>
-            <param name="Comment">评论内容</param>
+            <typeparam name="T">元素类型</typeparam>
+            <param name="SQL">携带查询参数的SQL语句</param>
+            <param name="parameters">查询参数列表</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Component.CommentLake.DelComment(System.Int32)">
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
             <summary>
-            删除评论(相关回复不会被删除)
+            取得查询结果中的指定列
             </summary>
-            <param name="CommentID"></param>
+            <typeparam name="T">元素类型</typeparam>
+            <param name="SQL">携带查询参数的SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <param name="Key">目标列键名</param>
             <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.Data.DataTable)">
+            <summary>
+            从DataTable中提取第一列（此方法无空值判断）
+            </summary>
+            <typeparam name="T">元素类型</typeparam>
+            <param name="DataTable">数据表实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.Data.DataTable,System.String)">
+            <summary>
+            从DataTable中提取指定列（此方法无空值判断）
+            </summary>
+            <typeparam name="T">元素类型</typeparam>
+            <param name="DataTable">数据表实例</param>
+            <param name="Key">目标列键名</param>
+            <returns>返回非泛型List{object}实例</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String)">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="SQL">SQL语句</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="SQL">SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="WHERE">定位键值对</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.ValueTuple{System.String,System.Object},System.Object)">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="OldValue">被更新键的旧值</param>
+            <returns>是否操作成功</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteInsert(System.String,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+            插入操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="Table">目标表</param>
+            <param name="Pairs">键值对</param>
+            <returns>返回插入的成功与否</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteDelete(System.String,System.ValueTuple{System.String,System.Object})">
+            <summary>
+            删除操作
+            </summary>
+            <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="Table">目标表</param>
+            <param name="WHERE">定位键值对，满足此条件的行将被删除</param>
+            <returns></returns>
+        </member>
+        <member name="T:WaterLibrary.MySQL.MySqlManagerExtension">
+            <summary>
+            扩展方法
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String)">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="SQL">SQL语句</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+            <summary>
+            执行任意SQL语句
+            </summary>
+            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="SQL">SQL语句</param>
+            <param name="parameters">查询参数列表</param>
+            <returns>返回受影响的行数</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="WHERE">定位键值对</param>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.Object)">
+            <summary>
+            更新操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">事务</param>
+            <param name="Table">目标表</param>
+            <param name="SET">被更新键值对</param>
+            <param name="OldValue">被更新键的旧值</param>
+            <returns>是否操作成功</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteInsert(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+            插入操作
+            </summary>
+            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="Table">目标表</param>
+            <param name="Pairs">键值对</param>
+            <returns>返回插入的成功与否</returns>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteDelete(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object})">
+            <summary>
+            删除操作
+            </summary>
+            <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
+            <param name="cmd">承载命令</param>
+            <param name="Table">目标表</param>
+            <param name="Pair">键值对，满足此条件的行将被删除</param>
+            <returns></returns>
+        </member>
+        <member name="T:WaterLibrary.MySQL.MySqlConnMsg">
+            <summary>
+            MySql数据库连接信息
+            数据源
+            数据库
+            端口
+            用户名
+            密码
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.MySQL.MySqlConnMsg.#ctor(System.String,System.Int32,System.String,System.String)">
+            <summary>
+            MySql数据库连接信息
+            数据源
+            数据库
+            端口
+            用户名
+            密码
+            </summary>
         </member>
         <member name="T:WaterLibrary.pilipala.Component.ComponentFactory">
             <summary>
@@ -569,174 +803,200 @@
             <param name="args">方法参数表</param>
             <returns></returns>
         </member>
-        <member name="T:WaterLibrary.pilipala.Entity.CommentProp">
+        <member name="T:WaterLibrary.pilipala.Component.CommentLake">
             <summary>
-            评论属性枚举
+            评论湖组件
             </summary>
         </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.PostID">
+        <member name="P:WaterLibrary.pilipala.Component.CommentLake.MySqlManager">
             <summary>
-            被评论的文章PostID
+            MySql数据库管理器
             </summary>
         </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.User">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.#ctor">
             <summary>
-            评论用户
+            默认构造
             </summary>
         </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Email">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.#ctor(System.String,System.String,WaterLibrary.MySQL.MySqlManager)">
             <summary>
-            用户邮箱
+            工厂构造
+            </summary>
+            <param name="MetaTable">元数据表</param>
+            <param name="CommentTable">评论表</param>
+            <param name="MySqlManager">数据库管理器</param>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetMaxCommentID">
+            <summary>
+            得到最大评论CommentID（私有）
+            </summary>
+            <returns>不存在返回1</returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetMaxFloor(System.Int32)">
+            <summary>
+            获得目标文章下的最大评论楼层（私有）
+            </summary>
+            <returns>不存在返回1</returns>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Component.CommentLake.TotalCommentCount">
+            <summary>
+            评论总计数
             </summary>
         </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Content">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetCommentCount(System.Int32)">
             <summary>
-            评论内容
+            得到目标文章的评论计数
             </summary>
-        </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.WebSite">
-            <summary>
-            用户站点
-            </summary>
-        </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.HEAD">
-            <summary>
-            回复到的评论CommentID
-            </summary>
-        </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Time">
-            <summary>
-            评论创建时间
-            </summary>
-        </member>
-        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Floor">
-            <summary>
-            所在楼层
-            </summary>
-        </member>
-        <member name="T:WaterLibrary.pilipala.Entity.Comment">
-            <summary>
-            评论
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.Item(System.String)">
-            <summary>
-            索引器
-            </summary>
-            <param name="Key">索引名</param>
+            <param name="PostID">目标文章PostID</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Comment.ToJSON">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetComment(System.Int32,WaterLibrary.pilipala.Entity.CommentProp)">
             <summary>
-            将当前对象序列化到JSON
+            获得评论属性
             </summary>
+            <param name="CommentID">目标评论CommentID</param>
+            <param name="Prop">属性类型</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.Comment.#ctor">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetCommentedPostID">
             <summary>
-            初始化
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.CommentID">
-            <summary>
-            评论CommentID
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.HEAD">
-            <summary>
-            回复到的评论CommentID
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.PostID">
-            <summary>
-            被评论的文章PostID
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.Floor">
-            <summary>
-            所在楼层
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.User">
-            <summary>
-            评论用户
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.Email">
-            <summary>
-            用户邮箱
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.Content">
-            <summary>
-            评论内容
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.WebSite">
-            <summary>
-            用户站点
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.Comment.Time">
-            <summary>
-            评论创建时间
-            </summary>
-        </member>
-        <member name="T:WaterLibrary.pilipala.Entity.CommentSet">
-            <summary>
-            评论数据集
-            </summary>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.ToJSON">
-            <summary>
-            将当前对象序列化到JSON
+            得到被评论文章的PostID列表
             </summary>
             <returns></returns>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.CommentSet.Count">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetComments(System.Int32)">
             <summary>
-            当前数据集的评论对象数
+            获得目标文章的评论列表
             </summary>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.Add(WaterLibrary.pilipala.Entity.Comment)">
-            <summary>
-            添加评论
-            </summary>
-            <param name="Comment">评论对象</param>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.Last">
-            <summary>
-            取得数据集中的最后一个评论对象
-            </summary>
+            <param name="PostID">目标文章PostID</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.Map(System.Action{WaterLibrary.pilipala.Entity.Comment})">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.GetCommentReplies(System.Int32)">
             <summary>
-            将function应用到本数据集的所有元素
+            获得目标评论的回复列表
             </summary>
-            <remarks>
-            函数式API
-            </remarks>
-            <param name="function"></param>
-            <returns>返回操作后的数据集</returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.WithinMonthCount">
-            <summary>
-            数据集内最近一月(30天内)的评论数量
-            </summary>
+            <param name="CommentID"></param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.WithinWeekCount">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.NewComment(WaterLibrary.pilipala.Entity.CommentRecord)">
             <summary>
-            数据集内最近一周(7天内)的评论数量
+            添加评论(CommentID和Time由系统生成，无需传入)
             </summary>
+            <param name="item">评论记录</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentSet.WithinDayCount">
+        <member name="M:WaterLibrary.pilipala.Component.CommentLake.DelComment(System.Int32)">
             <summary>
-            数据集内最近一天(24小时内)的评论数量
+            删除评论(相关回复不会被删除)
             </summary>
+            <param name="CommentID"></param>
             <returns></returns>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Database.PLTables">
+            <summary>
+            数据库表集合
+            用户表
+            元数据表
+            主表
+            归档表
+            评论表
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Database.PLTables.#ctor(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            数据库表集合
+            用户表
+            元数据表
+            主表
+            归档表
+            评论表
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Database.PLViews">
+            <summary>
+            数据库视图视图集合
+            显性联合视图（不包含备份）
+            隐性联合视图（包含备份）
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Database.PLViews.#ctor(System.String,System.String)">
+            <summary>
+            数据库视图视图集合
+            显性联合视图（不包含备份）
+            隐性联合视图（包含备份）
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Database.PLDatabase">
+            <summary>
+            啪啦数据库操作盒
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.Database">
+            <summary>
+            数据库名
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.Tables">
+            <summary>
+            数据表
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.ViewsSet">
+            <summary>
+            数据视图
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.MySqlManager">
+            <summary>
+            数据库管理器实例
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.IPLComponent`1">
+            <summary>
+            噼里啪啦配件接口
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.PiliPala">
+            <summary>
+            内核
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.PiliPala.Tables">
+            <summary>
+            核心表结构
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.PiliPala.ViewsSet">
+            <summary>
+            核心视图结构
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.PiliPala.MySqlManager">
+            <summary>
+            MySql控制器
+            </summary>
+        </member>
+        <member name="F:WaterLibrary.pilipala.PiliPala.TableCache">
+            <summary>
+            插件表名键值对
+            </summary>
+        </member>
+        <member name="F:WaterLibrary.pilipala.PiliPala.ViewCache">
+            <summary>
+            插件表名键值对
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.pilipala.PiliPala.INIT(WaterLibrary.pilipala.Database.PLDatabase)">
+            <summary>
+            初始化内核
+            </summary>
+            <param name="PLDatabase">噼里啪啦数据库操作盒</param>
+        </member>
+        <member name="M:WaterLibrary.pilipala.PiliPala.#ctor(WaterLibrary.pilipala.Database.PLDatabase)">
+            <summary>
+            初始化pilipala内核
+            </summary>
+            <param name="PLDatabase">pilipala数据库信息</param>
         </member>
         <member name="T:WaterLibrary.pilipala.Entity.PostRecord">
             <summary>
@@ -1015,7 +1275,7 @@
             <summary>
             默认构造
             </summary>
-            <param name="enumerator">UuidList的迭代器</param>
+            <param name="enumerator">UUIDList的迭代器</param>
         </member>
         <member name="P:WaterLibrary.pilipala.Entity.PostStack.ID">
             <summary>
@@ -1031,6 +1291,12 @@
         <member name="M:WaterLibrary.pilipala.Entity.PostStack.GetMinID">
             <summary>
             得到最小ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostStack.ToJSON">
+            <summary>
+            将当前对象序列化到JSON
             </summary>
             <returns></returns>
         </member>
@@ -1159,9 +1425,9 @@
             <param name="ID">文章栈ID</param>
             <returns>索引无果返回null</returns>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostStackSet.System#Collections#IEnumerable#GetEnumerator">
+        <member name="M:WaterLibrary.pilipala.Entity.PostStackSet.GetEnumerator">
             <summary>
-            迭代器
+            取得迭代器
             </summary>
             <returns></returns>
         </member>
@@ -1178,7 +1444,7 @@
         </member>
         <member name="P:WaterLibrary.pilipala.Entity.PostStackSet.Count">
             <summary>
-            当前数据集的文章对象数
+            当前数据集的元素数
             </summary>
         </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostStackSet.Last">
@@ -1260,6 +1526,43 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:WaterLibrary.pilipala.Entity.PostTree">
+            <summary>
+            文章树
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.PostTree.ID">
+            <summary>
+            树ID
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostTree.GetEnumerator">
+            <summary>
+            取得迭代器
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.PostTree.#ctor(System.UInt32)">
+            <summary>
+            编辑构造
+            </summary>
+            <param name="ID">树ID</param>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.PostTree.Value">
+            <summary>
+            树根值
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.PostTree.Leaves">
+            <summary>
+            叶子集
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.PostTree.Nodes">
+            <summary>
+            分支节点集
+            </summary>
+        </member>
         <member name="T:WaterLibrary.pilipala.Entity.PostProp">
             <summary>
             文章属性枚举
@@ -1340,432 +1643,174 @@
             星星计数
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.Database.PLTables">
+        <member name="T:WaterLibrary.pilipala.Entity.CommentProp">
             <summary>
-            数据库表集合
-            用户表
-            元数据表
-            主表
-            归档表
-            评论表
+            评论属性枚举
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Database.PLTables.#ctor(System.String,System.String,System.String,System.String,System.String)">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.PostID">
             <summary>
-            数据库表集合
-            用户表
-            元数据表
-            主表
-            归档表
-            评论表
+            被评论的文章PostID
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.Database.PLViews">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.User">
             <summary>
-            数据库视图视图集合
-            显性联合视图（不包含备份）
-            隐性联合视图（包含备份）
+            评论用户
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Database.PLViews.#ctor(System.String,System.String)">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Email">
             <summary>
-            数据库视图视图集合
-            显性联合视图（不包含备份）
-            隐性联合视图（包含备份）
+            用户邮箱
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.Database.PLDatabase">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Content">
             <summary>
-            啪啦数据库操作盒
+            评论内容
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.Database">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.WebSite">
             <summary>
-            数据库名
+            用户站点
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.Tables">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.HEAD">
             <summary>
-            数据表
+            回复到的评论CommentID
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.ViewsSet">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Time">
             <summary>
-            数据视图
+            评论创建时间
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Database.PLDatabase.MySqlManager">
+        <member name="F:WaterLibrary.pilipala.Entity.CommentProp.Floor">
             <summary>
-            数据库管理器实例
+            所在楼层
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.IPLComponent`1">
+        <member name="T:WaterLibrary.pilipala.Entity.CommentRecord">
             <summary>
-            噼里啪啦配件接口
+            评论记录
             </summary>
         </member>
-        <member name="T:WaterLibrary.pilipala.CORE">
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.Item(System.String)">
             <summary>
-            pilipala内核
+            索引器
             </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.CORE.Tables">
-            <summary>
-            核心表结构
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.CORE.ViewsSet">
-            <summary>
-            核心视图结构
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.pilipala.CORE.MySqlManager">
-            <summary>
-            MySql控制器
-            </summary>
-        </member>
-        <member name="F:WaterLibrary.pilipala.CORE.TableCache">
-            <summary>
-            插件表名键值对
-            </summary>
-        </member>
-        <member name="F:WaterLibrary.pilipala.CORE.ViewCache">
-            <summary>
-            插件表名键值对
-            </summary>
-        </member>
-        <member name="M:WaterLibrary.pilipala.CORE.INIT(WaterLibrary.pilipala.Database.PLDatabase)">
-            <summary>
-            初始化内核
-            </summary>
-            <param name="PLDatabase">噼里啪啦数据库操作盒</param>
-        </member>
-        <member name="M:WaterLibrary.pilipala.CORE.#ctor(WaterLibrary.pilipala.Database.PLDatabase)">
-            <summary>
-            初始化pilipala内核
-            </summary>
-            <param name="PLDatabase">pilipala数据库信息</param>
-        </member>
-        <member name="T:WaterLibrary.MySQL.MySqlManager">
-            <summary>
-            MySql数据库管理器
-            </summary>
-        </member>
-        <member name="P:WaterLibrary.MySQL.MySqlManager.Connection">
-            <summary>
-            数据库连接访问器
-            </summary>
-            <remarks>若连接为一次性使用，请使用DoInConnection。从此属性获取的连接对象需手动销毁。</remarks>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.CleanConnectionPool">
-            <summary>
-            清理连接池
-            </summary>
-            <remarks>由于连接池具有内部复用机制，经常清理连接池可能会造成不良后果。</remarks>
-            <remarks>此方法仅仅会尝试清理连接池，并不是所有连接都会被强制关闭</remarks>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.#ctor">
-            <summary>
-            默认构造
-            </summary>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.#ctor(WaterLibrary.MySQL.MySqlConnMsg)">
-            <summary>
-            连接信息构造
-            </summary>
-            <param name="MySqlConnMsg">MySQL数据库连接信息</param>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.#ctor(WaterLibrary.MySQL.MySqlConnMsg,System.String)">
-            <summary>
-            带有目标数据库的连接信息构造
-            </summary>
-            <param name="MySqlConnMsg">MySQL数据库连接信息</param>
-            <param name="Database">目标数据库</param>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInConnection``1(System.Func{MySql.Data.MySqlClient.MySqlConnection,``0})">
-            <summary>
-            连接托管器
-            </summary>
-            <remarks>此托管器提供了一个打开的数据库连接，当委托完成时，连接会自动销毁。</remarks>
-            <typeparam name="T">返回值类型</typeparam>
-            <param name="todo">委托</param>
+            <param name="Key">索引名</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInCommand``1(MySql.Data.MySqlClient.MySqlConnection,System.Func{MySql.Data.MySqlClient.MySqlCommand,``0})">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecord.ToJSON">
             <summary>
-            命令托管器
+            将当前对象序列化到JSON
             </summary>
-            <remarks>此托管器提供了一个数据库命令，当委托完成时，命令会自动销毁。</remarks>
-            <typeparam name="T">返回值类型</typeparam>
-            <param name="Connection">承载命令的数据库连接</param>
-            <param name="todo">委托</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.DoInTransaction``1(MySql.Data.MySqlClient.MySqlCommand,System.Func{MySql.Data.MySqlClient.MySqlTransaction,``0})">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecord.#ctor">
             <summary>
-            事务托管器
+            初始化
             </summary>
-            <remarks>此托管器提供了一个已经启动的事务，当委托完成时，事务会自动销毁。事务的提交等操作需在委托中完成。</remarks>
-            <typeparam name="T">返回值类型</typeparam>
-            <param name="Command">承载事务的数据库命令</param>
-            <param name="todo">委托</param>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.CommentID">
+            <summary>
+            评论CommentID
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.HEAD">
+            <summary>
+            回复到的评论CommentID
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.PostID">
+            <summary>
+            被评论的文章PostID
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.Floor">
+            <summary>
+            所在楼层
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.User">
+            <summary>
+            评论用户
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.Email">
+            <summary>
+            用户邮箱
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.Content">
+            <summary>
+            评论内容
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.WebSite">
+            <summary>
+            用户站点
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.Time">
+            <summary>
+            评论创建时间
+            </summary>
+        </member>
+        <member name="T:WaterLibrary.pilipala.Entity.CommentRecordSet">
+            <summary>
+            评论记录集
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.ToJSON">
+            <summary>
+            将当前对象序列化到JSON
+            </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetTable(System.String)">
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecordSet.Count">
             <summary>
-            获取单张数据表
+            当前数据集的评论对象数
             </summary>
-            <param name="SQL">SQL语句，用于查询数据表</param>
-            <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetTable(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.Add(WaterLibrary.pilipala.Entity.CommentRecord)">
             <summary>
-            获取单张数据表（适用于参数化查询）
+            添加评论
             </summary>
-            <param name="SQL">携带查询参数的SQL语句</param>
-            <param name="parameters">查询参数列表</param>
-            <returns>返回一个DataTable对象，无结果或错误则返回null</returns>
+            <param name="Comment">评论对象</param>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.String)">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.Last">
             <summary>
-            取得首个键值（键匹配查询）
+            取得数据集中的最后一个评论对象
             </summary>
-            <param name="SQL">SQL语句</param>
-            <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
-            <summary>
-            取得首个键值（键匹配查询）
-            </summary>
-            <param name="SQL">携带查询参数的SQL语句</param>
-            <param name="parameters">查询参数列表</param>
-            <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetKey(System.ValueTuple{System.String,System.String,System.Object},System.String)">
-            <summary>
-            取得指定键值（键匹配查询）
-            </summary>
-            <param name="MySqlKey">操作定位器</param>
-            <param name="KeyName">键名</param>
-            <returns>返回结果集中的第一行第一列，若查询无果或异常则返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetRow(System.String)">
-            <summary>
-            获得数据行
-            </summary>
-            <param name="SQL">SQL语句</param>
-            <returns>操作异常或目标行不存在时，返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetRow(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
-            <summary>
-            获得数据行（适用于参数化查询）
-            </summary>
-            <param name="SQL">携带查询参数的SQL语句</param>
-            <param name="parameters">查询参数列表</param>
-            <returns>操作异常或目标行不存在时，返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetRow(System.Data.DataTable,System.String,System.Object)">
-            <summary>
-            从DataTable中提取指定行
-            </summary>
-            <param name="DataTable">数据表实例</param>
-            <param name="KeyName">键名</param>
-            <param name="KeyValue">键值</param>
-            <returns>返回获得的DataRow数据行实例，表为空或未检索到返回null</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String)">
-            <summary>
-            取得查询结果中的第一列
-            </summary>
-            <typeparam name="T">元素类型</typeparam>
-            <param name="SQL">用于查询的SQL语句</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String,System.String)">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.Map(System.Action{WaterLibrary.pilipala.Entity.CommentRecord})">
             <summary>
-            取得查询结果中的指定列
+            将function应用到本数据集的所有元素
             </summary>
-            <typeparam name="T">元素类型</typeparam>
-            <param name="SQL">用于查询的SQL语句</param>
-            <param name="Key">目标列键名</param>
+            <remarks>
+            函数式API
+            </remarks>
+            <param name="function"></param>
+            <returns>返回操作后的数据集</returns>
+        </member>
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.WithinMonthCount">
+            <summary>
+            数据集内最近一月(30天内)的评论数量
+            </summary>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.WithinWeekCount">
             <summary>
-            取得查询结果中的第一列
+            数据集内最近一周(7天内)的评论数量
             </summary>
-            <typeparam name="T">元素类型</typeparam>
-            <param name="SQL">携带查询参数的SQL语句</param>
-            <param name="parameters">查询参数列表</param>
             <returns></returns>
         </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.String,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.WithinDayCount">
             <summary>
-            取得查询结果中的指定列
+            数据集内最近一天(24小时内)的评论数量
             </summary>
-            <typeparam name="T">元素类型</typeparam>
-            <param name="SQL">携带查询参数的SQL语句</param>
-            <param name="parameters">查询参数列表</param>
-            <param name="Key">目标列键名</param>
             <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.Data.DataTable)">
-            <summary>
-            从DataTable中提取第一列（此方法无空值判断）
-            </summary>
-            <typeparam name="T">元素类型</typeparam>
-            <param name="DataTable">数据表实例</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.GetColumn``1(System.Data.DataTable,System.String)">
-            <summary>
-            从DataTable中提取指定列（此方法无空值判断）
-            </summary>
-            <typeparam name="T">元素类型</typeparam>
-            <param name="DataTable">数据表实例</param>
-            <param name="Key">目标列键名</param>
-            <returns>返回非泛型List{object}实例</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String)">
-            <summary>
-            执行任意SQL语句
-            </summary>
-            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
-            <param name="SQL">SQL语句</param>
-            <returns>返回受影响的行数</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteAny(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
-            <summary>
-            执行任意SQL语句
-            </summary>
-            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
-            <param name="SQL">SQL语句</param>
-            <param name="parameters">查询参数列表</param>
-            <returns>返回受影响的行数</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
-            <summary>
-            更新操作
-            </summary>
-            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="Table">目标表</param>
-            <param name="SET">被更新键值对</param>
-            <param name="WHERE">定位键值对</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteUpdate(System.String,System.ValueTuple{System.String,System.Object},System.Object)">
-            <summary>
-            更新操作
-            </summary>
-            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="Table">目标表</param>
-            <param name="SET">被更新键值对</param>
-            <param name="OldValue">被更新键的旧值</param>
-            <returns>是否操作成功</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteInsert(System.String,System.ValueTuple{System.String,System.Object}[])">
-            <summary>
-            插入操作
-            </summary>
-            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="Table">目标表</param>
-            <param name="Pairs">键值对</param>
-            <returns>返回插入的成功与否</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManager.ExecuteDelete(System.String,System.ValueTuple{System.String,System.Object})">
-            <summary>
-            删除操作
-            </summary>
-            <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="Table">目标表</param>
-            <param name="WHERE">定位键值对，满足此条件的行将被删除</param>
-            <returns></returns>
-        </member>
-        <member name="T:WaterLibrary.MySQL.MySqlManagerExtension">
-            <summary>
-            扩展方法
-            </summary>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String)">
-            <summary>
-            执行任意SQL语句
-            </summary>
-            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
-            <param name="cmd">承载命令</param>
-            <param name="SQL">SQL语句</param>
-            <returns>返回受影响的行数</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteAny(MySql.Data.MySqlClient.MySqlCommand,System.String,MySql.Data.MySqlClient.MySqlParameter[])">
-            <summary>
-            执行任意SQL语句
-            </summary>
-            <remarks>此方法中的所有SQL语句将在同一个事务内进行，SQL语句中任何一部分的执行失败都将导致整个事务被回滚。</remarks>
-            <param name="cmd">承载命令</param>
-            <param name="SQL">SQL语句</param>
-            <param name="parameters">查询参数列表</param>
-            <returns>返回受影响的行数</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.ValueTuple{System.String,System.Object})">
-            <summary>
-            更新操作
-            </summary>
-            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="cmd">承载命令</param>
-            <param name="Table">目标表</param>
-            <param name="SET">被更新键值对</param>
-            <param name="WHERE">定位键值对</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteUpdate(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object},System.Object)">
-            <summary>
-            更新操作
-            </summary>
-            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="cmd">事务</param>
-            <param name="Table">目标表</param>
-            <param name="SET">被更新键值对</param>
-            <param name="OldValue">被更新键的旧值</param>
-            <returns>是否操作成功</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteInsert(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object}[])">
-            <summary>
-            插入操作
-            </summary>
-            <remarks>仅允许更新一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="cmd">承载命令</param>
-            <param name="Table">目标表</param>
-            <param name="Pairs">键值对</param>
-            <returns>返回插入的成功与否</returns>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlManagerExtension.ExecuteDelete(MySql.Data.MySqlClient.MySqlCommand,System.String,System.ValueTuple{System.String,System.Object})">
-            <summary>
-            删除操作
-            </summary>
-            <remarks>仅允许删除一条记录，在其他情况下事务将被回滚。只保证Value上的参数化查询。</remarks>
-            <param name="cmd">承载命令</param>
-            <param name="Table">目标表</param>
-            <param name="Pair">键值对，满足此条件的行将被删除</param>
-            <returns></returns>
-        </member>
-        <member name="T:WaterLibrary.MySQL.MySqlConnMsg">
-            <summary>
-            MySql数据库连接信息
-            数据源
-            数据库
-            端口
-            用户名
-            密码
-            </summary>
-        </member>
-        <member name="M:WaterLibrary.MySQL.MySqlConnMsg.#ctor(System.String,System.Int32,System.String,System.String)">
-            <summary>
-            MySql数据库连接信息
-            数据源
-            数据库
-            端口
-            用户名
-            密码
-            </summary>
         </member>
         <member name="T:WaterLibrary.Utils.ConvertH">
             <summary>
@@ -1826,31 +1871,56 @@
             私有构造
             </summary>
         </member>
-        <member name="T:WaterLibrary.Utils.MathH.ORDER">
+        <member name="T:WaterLibrary.Utils.MathH.SortOrder">
             <summary>
-            顺序表示枚举
+            排序顺序枚举
             </summary>
         </member>
-        <member name="P:WaterLibrary.Utils.MathH.ORDER.ASC">
+        <member name="F:WaterLibrary.Utils.MathH.SortOrder.ASC">
             <summary>
-            升序(0123)
+            升序
+            </summary>
+            <remarks>0,1,2,3,4,5,6</remarks>
+        </member>
+        <member name="F:WaterLibrary.Utils.MathH.SortOrder.DESC">
+            <summary>
+            降序
+            </summary>
+            <remarks>6,5,4,3,2,1,0</remarks>
+        </member>
+        <member name="T:WaterLibrary.Utils.MathH.Order">
+            <summary>
+            偏序关系枚举
             </summary>
         </member>
-        <member name="P:WaterLibrary.Utils.MathH.ORDER.DESC">
+        <member name="F:WaterLibrary.Utils.MathH.Order.LT">
             <summary>
-            降序(3210)
+            小于
             </summary>
+            <remarks>A less than B</remarks>
+        </member>
+        <member name="F:WaterLibrary.Utils.MathH.Order.GT">
+            <summary>
+            大于
+            </summary>
+            <remarks>A greater than B</remarks>
+        </member>
+        <member name="F:WaterLibrary.Utils.MathH.Order.EQ">
+            <summary>
+            等于
+            </summary>
+            <remarks>A equal to B</remarks>
         </member>
         <member name="M:WaterLibrary.Utils.MathH.Exch``1(``0@,``0@)">
             <summary>
-            交换值的方法，引用类型
+            交换值，引用类型
             </summary>
             <param name="i"></param>
             <param name="j"></param>
         </member>
         <member name="M:WaterLibrary.Utils.MathH.Less``1(``0,``0)">
             <summary>
-            判断小于的方法
+            判断小于
             </summary>
             <param name="i"></param>
             <param name="j"></param>
@@ -1858,7 +1928,7 @@
         </member>
         <member name="M:WaterLibrary.Utils.MathH.IsOdd(System.Int32)">
             <summary>
-            判断奇数的方法
+            判断奇数
             </summary>
             <param name="num">待判断的数值</param>
             <returns>num为奇数返回true，num为偶数返回false</returns>

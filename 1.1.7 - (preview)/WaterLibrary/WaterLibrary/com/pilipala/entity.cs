@@ -74,7 +74,7 @@
                 var SQL = $"SELECT {field} FROM `{table}` WHERE PostID = ?ID";
                 var para = new MySqlParameter("ID", ID);
 
-                var result = manager.GetRow(SQL, para)[field];
+                var result = manager.GetKey(SQL, para);
 
                 fieldCache[field] = result;//写入缓存并返回
                 return result;
@@ -97,7 +97,7 @@
                 var SQL = $"SELECT {field} FROM `{table}` WHERE UUID = ?UUID";
                 var para = new MySqlParameter("UUID", UUID);
 
-                var result = manager.GetRow(SQL, para)[field];
+                var result = manager.GetKey(SQL, para);
 
                 fieldCache[field] = result;//写入缓存并返回
                 return result;
@@ -147,10 +147,11 @@
         }
 
 
-        private readonly string metaTable = CORE.Tables.Meta;
-        private readonly string stackTable = CORE.Tables.Stack;
-        private readonly string unionView = CORE.ViewsSet.DirtyViews.NegUnion;
-        private readonly MySqlManager manager = CORE.MySqlManager;
+        private readonly string metaTable = PiliPala.Tables.Meta;
+        private readonly string stackTable = PiliPala.Tables.Stack;
+        private readonly string unionView = PiliPala.ViewsSet.DirtyViews.NegUnion;
+        private readonly MySqlManager manager = PiliPala.MySqlManager;
+
 
         /// <summary>
         /// 新建模式
@@ -279,7 +280,7 @@
         /// </summary>
         public uint ID
         {
-            get => Convert.ToUInt32(GetFieldByUUID(CORE.Tables.Stack, "PostID"));
+            get => Convert.ToUInt32(GetFieldByUUID(stackTable, "PostID"));
         }
         /// <summary>
         /// 全局标识
@@ -293,16 +294,16 @@
         /// </summary>
         public string Title
         {
-            get => Convert.ToString(GetFieldByUUID(CORE.Tables.Stack, "Title"));
-            set => SetFieldByUUID(CORE.Tables.Stack, "Title", value);
+            get => Convert.ToString(GetFieldByUUID(stackTable, "Title"));
+            set => SetFieldByUUID(stackTable, "Title", value);
         }
         /// <summary>
         /// 概要
         /// </summary>
         public string Summary
         {
-            get => Convert.ToString(GetFieldByUUID(CORE.Tables.Stack, "Summary"));
-            set => SetFieldByUUID(CORE.Tables.Stack, "Summary", value);
+            get => Convert.ToString(GetFieldByUUID(stackTable, "Summary"));
+            set => SetFieldByUUID(stackTable, "Summary", value);
         }
         /// <summary>
         /// 尝试概要
@@ -323,8 +324,8 @@
         /// </summary>
         public string Content
         {
-            get => Convert.ToString(GetFieldByUUID(CORE.Tables.Stack, "Content"));
-            set => SetFieldByUUID(CORE.Tables.Stack, "Content", value);
+            get => Convert.ToString(GetFieldByUUID(stackTable, "Content"));
+            set => SetFieldByUUID(stackTable, "Content", value);
         }
         /// <summary>
         /// 获得Html格式的文章内容，所有Markdown标记均会被转换为等效的Html标记
@@ -516,7 +517,7 @@
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new PostStackEnumerator(UuidList.Value.GetEnumerator());
+            return new PostStackEnumerator(UUIDList.Value.GetEnumerator());
         }
         /// <summary>
         /// 内部迭代器
@@ -528,7 +529,7 @@
             /// <summary>
             /// 默认构造
             /// </summary>
-            /// <param name="enumerator">UuidList的迭代器</param>
+            /// <param name="enumerator">UUIDList的迭代器</param>
             public PostStackEnumerator(List<string>.Enumerator enumerator)
             {
                 this.enumerator = enumerator;
@@ -539,11 +540,11 @@
             void IEnumerator.Reset() => throw new NotSupportedException();
         }
 
-        private readonly System.Lazy<List<string>> UuidList;
-        private readonly string metaTable = CORE.Tables.Meta;
-        private readonly string stackTable = CORE.Tables.Stack;
-        private readonly string unionView = CORE.ViewsSet.DirtyViews.NegUnion;
-        private readonly MySqlManager manager = CORE.MySqlManager;
+        private readonly System.Lazy<List<string>> UUIDList;
+        private readonly string metaTable = PiliPala.Tables.Meta;
+        private readonly string stackTable = PiliPala.Tables.Stack;
+        private readonly string unionView = PiliPala.ViewsSet.DirtyViews.NegUnion;
+        private readonly MySqlManager manager = PiliPala.MySqlManager;
 
         /// <summary>
         /// 文章栈ID
@@ -574,13 +575,23 @@
         }
 
         /// <summary>
+        /// 将当前对象序列化到JSON
+        /// </summary>
+        /// <returns></returns>
+        public string ToJSON()
+        {
+            return JsonConvert.SerializeObject
+                (this, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
+        }
+
+        /// <summary>
         /// 新建模式
         /// </summary>
         public PostStack()
         {
             ID = GetMaxID() + 1;
 
-            UuidList = new(() =>
+            UUIDList = new(() =>
             {
                 var list = new List<string>();
 
@@ -662,11 +673,11 @@
         {
             this.ID = ID;
 
-            UuidList = new(() =>
+            UUIDList = new(() =>
             {
                 var list = new List<string>();
 
-                var SQL = $"SELECT UUID FROM {stackTable} WHERE PostID = ?ID";
+                var SQL = $"SELECT UUID FROM {stackTable} WHERE PostID = ?ID ORDER BY LCT ASC";
                 var para = new MySqlParameter("ID", ID);
 
                 var result = manager.GetTable(SQL, para);
@@ -684,7 +695,7 @@
         /// </summary>
         public int Count
         {
-            get { return UuidList.Value.Count; }
+            get { return UUIDList.Value.Count; }
         }
 
         /// <summary>
@@ -694,7 +705,7 @@
         {
             get
             {
-                var peekUUID = UuidList.Value.Last();
+                var peekUUID = UUIDList.Value.Last();
                 var peek = new PostRecord(peekUUID, true, false);
                 return peek;
             }
@@ -706,7 +717,7 @@
         /// <returns></returns>
         public void Pop()
         {
-            var lastestIndex = UuidList.Value.Count - 1;
+            var lastestIndex = UUIDList.Value.Count - 1;
 
             if (lastestIndex == 0)
             {
@@ -715,7 +726,7 @@
             else
             {
                 Rollback();
-                UuidList.Value.RemoveAt(lastestIndex);
+                UUIDList.Value.RemoveAt(lastestIndex);
             }
         }
         /// <summary>
@@ -758,7 +769,7 @@
                             {
                                 /* meta表修改1行数据 */
                                 tx.Commit();
-                                UuidList.Value.Add(item.UUID);
+                                UUIDList.Value.Add(item.UUID);
                                 return true;
                             }
                             else
@@ -798,7 +809,7 @@
                         {
                             /* 指向表只删除1行数据，拷贝表至少删除1行数据 */
                             tx.Commit();
-                            UuidList.Value.Clear();
+                            UUIDList.Value.Clear();
                             return true;
                         }
                         else
@@ -820,7 +831,7 @@
         /// <returns></returns>
         public bool Delete(string UUID)
         {
-            if (UuidList.Value.Contains(UUID))
+            if (UUIDList.Value.Contains(UUID))
             {
                 return manager.DoInConnection(conn =>
                 {
@@ -843,7 +854,7 @@
                             {
                                 /* stack表删除一行数据 */
                                 tx.Commit();
-                                UuidList.Value.Remove(UUID);
+                                UUIDList.Value.Remove(UUID);
                                 return true;
                             }
                             else
@@ -870,7 +881,7 @@
         /// <returns></returns>
         public bool RePeek(string UUID)
         {
-            if (UuidList.Value.Contains(UUID))
+            if (UUIDList.Value.Contains(UUID))
             {
                 return manager.DoInConnection(conn =>
                 {
@@ -900,7 +911,7 @@
                                 tx.Commit();
 
                                 //交换Peek
-                                var newPeekIndex = UuidList.Value.FindIndex(
+                                var newPeekIndex = UUIDList.Value.FindIndex(
                                     (x) =>
                                     {
                                         if (x == UUID)
@@ -909,11 +920,11 @@
                                             return false;
                                     });
                                 var newPeekValue = UUID;
-                                var nowPeekIndex = UuidList.Value.Count - 1;
-                                var nowPeekValue = UuidList.Value.Last();
+                                var nowPeekIndex = UUIDList.Value.Count - 1;
+                                var nowPeekValue = UUIDList.Value.Last();
 
-                                UuidList.Value[newPeekIndex] = nowPeekValue;
-                                UuidList.Value[nowPeekIndex] = newPeekValue;
+                                UUIDList.Value[newPeekIndex] = nowPeekValue;
+                                UUIDList.Value[nowPeekIndex] = newPeekValue;
 
                                 return true;
                             }
@@ -956,7 +967,7 @@
                         {
                             /* 删除stack表的所有冗余，不存在冗余时影响行数为0 */
                             tx.Commit();
-                            UuidList.Value.RemoveRange(1, UuidList.Value.Count - 1);
+                            UUIDList.Value.RemoveRange(1, UUIDList.Value.Count - 1);
                             return true;
                         }
                         else
@@ -1141,10 +1152,10 @@
             }
         }
         /// <summary>
-        /// 迭代器
+        /// 取得迭代器
         /// </summary>
         /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
+        public IEnumerator GetEnumerator()
         {
             return PostStackList.GetEnumerator();
         }
@@ -1168,7 +1179,7 @@
                 .SerializeObject(this, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
         }
         /// <summary>
-        /// 当前数据集的文章对象数
+        /// 当前数据集的元素数
         /// </summary>
         public int Count
         {
@@ -1240,7 +1251,21 @@
         /// </summary>
         /// <returns></returns>
         public int WithinDayCreateCount() => CreateCounter(-1);
-        private int CreateCounter(int Days) => (from el in PostStackList where el.Peek.CT > DateTime.Now.AddDays(Days) select el).Count();
+        private int CreateCounter(int Days)
+        {
+            var now = DateTime.Now;
+            var time = now.AddDays(Days);
+
+            var set = Filter((x) =>
+            {
+                if (x.Peek.CT > time)
+                    return true;
+                else
+                    return false;
+            });
+
+            return set.Count;
+        }
 
         /// <summary>
         /// 数据集内最近一月(30天内)的文章修改数
@@ -1257,28 +1282,150 @@
         /// </summary>
         /// <returns></returns>
         public int WithinDayUpdateCount() => UpdateCounter(-1);
-        private int UpdateCounter(int Days) => (from el in PostStackList where el.Peek.CT > DateTime.Now.AddDays(Days) select el).Count();
+        private int UpdateCounter(int Days)
+        {
+            var now = DateTime.Now;
+            var time = now.AddDays(Days);
+
+            var set = Filter((x) =>
+            {
+                if (x.Peek.LCT > time)
+                    return true;
+                else
+                    return false;
+            });
+
+            return set.Count;
+        }
     }
 
 
-    /*/// <summary>
+    /// <summary>
     /// 文章树
     /// </summary>
-    public class PostTree
+    public class PostTree : IEnumerable
     {
-        private List<string> list = new();
-        public int ID = -1;
+        private readonly PostStack value;
+        private readonly System.Lazy<PostStackSet> AllCache;
+        private System.Lazy<PostStackSet> LeavesCache { get; set; }
+        private System.Lazy<PostStackSet> NodesCache { get; set; }
+        private readonly string metaTable = PiliPala.Tables.Meta;
+        private readonly MySqlManager manager = PiliPala.MySqlManager;
 
-        public PostTree(int ID)
+        /// <summary>
+        /// 树ID
+        /// </summary>
+        public uint ID { get; init; }
+
+        /// <summary>
+        /// 取得迭代器
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator GetEnumerator()
+        {
+            return AllCache.Value.GetEnumerator();
+        }
+
+        /// <summary>
+        /// 编辑构造
+        /// </summary>
+        /// <param name="ID">树ID</param>
+        public PostTree(uint ID)
         {
             this.ID = ID;
+            value = new(ID);
+            AllCache = new(() =>
+            {
+                var list = new PostStackSet();
+
+                var SQL = $"SELECT PostID FROM {metaTable} WHERE Root = ?ID";
+                var para = new MySqlParameter("ID", ID);
+
+                var result = manager.GetColumn<uint>(SQL, para);
+                foreach (var ID in result)
+                {
+                    var item = new PostStack(ID);
+                    list.Add(item);
+                }
+
+                return list;
+            });
+
+            LeavesCache = new(() =>
+            {
+                var list = new PostStackSet();
+                var nodesCache = new PostStackSet();
+
+                foreach (PostStack item in AllCache.Value)
+                {
+                    var subTree = new PostTree(item.ID);
+                    if (subTree.AllCache.Value.Count == 0)
+                    {
+                        list.Add(item);
+                    }
+                    else
+                    {
+                        nodesCache.Add(item);
+                    }
+                }
+
+                NodesCache = new(nodesCache);//同时写另一个缓存
+                return list;
+            });
+            NodesCache = new(() =>
+            {
+                var list = new PostStackSet();
+                var leavesCache = new PostStackSet();
+
+                foreach (PostStack item in AllCache.Value)
+                {
+                    var subTree = new PostTree(item.ID);
+                    if (subTree.AllCache.Value.Count > 0)
+                    {
+                        list.Add(item);
+                    }
+                    else
+                    {
+                        leavesCache.Add(item);
+                    }
+                }
+
+                LeavesCache = new(leavesCache);//同时写另一个缓存
+                return list;
+            });
         }
 
-        public List<string> GetNodes()
+        /// <summary>
+        /// 树根值
+        /// </summary>
+        public PostStack Value
         {
-            return null;
+            get
+            {
+                return value;
+            }
         }
-    }*/
+        /// <summary>
+        /// 叶子集
+        /// </summary>
+        public PostStackSet Leaves
+        {
+            get
+            {
+                return LeavesCache.Value;
+            }
+        }
+        /// <summary>
+        /// 分支节点集
+        /// </summary>
+        public PostStackSet Nodes
+        {
+            get
+            {
+                return NodesCache.Value;
+            }
+        }
+    }
 
 
     /// <summary>
@@ -1346,5 +1493,242 @@
         /// 星星计数
         /// </summary>
         StarCount
+    }
+}
+
+namespace WaterLibrary.pilipala.Entity
+{
+    using System;
+    using System.Linq;
+    using System.Collections;
+    using System.Collections.Generic;
+
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
+
+    /// <summary>
+    /// 评论属性枚举
+    /// </summary>
+    public enum CommentProp
+    {
+        /// <summary>
+        /// 被评论的文章PostID
+        /// </summary>
+        PostID,
+        /// <summary>
+        /// 评论用户
+        /// </summary>
+        User,
+        /// <summary>
+        /// 用户邮箱
+        /// </summary>
+        Email,
+        /// <summary>
+        /// 评论内容
+        /// </summary>
+        Content,
+        /// <summary>
+        /// 用户站点
+        /// </summary>
+        WebSite,
+        /// <summary>
+        /// 回复到的评论CommentID
+        /// </summary>
+        HEAD,
+        /// <summary>
+        /// 评论创建时间
+        /// </summary>
+        Time,
+        /// <summary>
+        /// 所在楼层
+        /// </summary>
+        Floor,
+    }
+    /// <summary>
+    /// 评论记录
+    /// </summary>
+    public class CommentRecord
+    {
+        /// <summary>
+        /// 索引器
+        /// </summary>
+        /// <param name="Key">索引名</param>
+        /// <returns></returns>
+        public object this[string Key]
+        {
+            /* 通过反射获取属性 */
+            get => GetType().GetProperty(Key).GetValue(this);
+            set
+            {
+                /* 通过反射设置属性 */
+                Type ThisType = GetType();
+                Type KeyType = ThisType.GetProperty(Key).GetValue(this).GetType();
+                ThisType.GetProperty(Key).SetValue(this, Convert.ChangeType(value, KeyType));
+            }
+        }
+        /// <summary>
+        /// 将当前对象序列化到JSON
+        /// </summary>
+        /// <returns></returns>
+        public string ToJSON()
+        {
+            return JsonConvert.SerializeObject
+                (this, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
+        }
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public CommentRecord()
+        {
+            /* -1表示未被赋值，同时也于数据库的非负冲突 */
+            CommentID = -1;
+            HEAD = -1;
+            PostID = -1;
+            Floor = -1;
+
+            User = "";
+            Email = "";
+            Content = "";
+            WebSite = "";
+            Time = new();
+        }
+
+        /// <summary>
+        /// 评论CommentID
+        /// </summary>
+        public int CommentID { get; set; }
+        /// <summary>
+        /// 回复到的评论CommentID
+        /// </summary>
+        public int HEAD { get; set; }
+        /// <summary>
+        /// 被评论的文章PostID
+        /// </summary>
+        public int PostID { get; set; }
+        /// <summary>
+        /// 所在楼层
+        /// </summary>
+        public int Floor { get; set; }
+        /// <summary>
+        /// 评论用户
+        /// </summary>
+        public string User { get; set; }
+        /// <summary>
+        /// 用户邮箱
+        /// </summary>
+        public string Email { get; set; }
+        /// <summary>
+        /// 评论内容
+        /// </summary>
+        public string Content { get; set; }
+        /// <summary>
+        /// 用户站点
+        /// </summary>
+        public string WebSite { get; set; }
+        /// <summary>
+        /// 评论创建时间
+        /// </summary>
+        public DateTime Time { get; set; }
+    }
+    /// <summary>
+    /// 评论记录集
+    /// </summary>
+    public class CommentRecordSet : IEnumerable
+    {
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return CommentList.GetEnumerator();
+        }
+        private readonly List<CommentRecord> CommentList = new List<CommentRecord>();
+        /// <summary>
+        /// 将当前对象序列化到JSON
+        /// </summary>
+        /// <returns></returns>
+        public string ToJSON()
+        {
+            return JsonConvert.SerializeObject
+                (this, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
+        }
+        /// <summary>
+        /// 当前数据集的评论对象数
+        /// </summary>
+        public int Count
+        {
+            get => CommentList.Count;
+        }
+
+        /// <summary>
+        /// 添加评论
+        /// </summary>
+        /// <param name="Comment">评论对象</param>
+        public void Add(CommentRecord Comment) => CommentList.Add(Comment);
+        /// <summary>
+        /// 取得数据集中的最后一个评论对象
+        /// </summary>
+        /// <returns></returns>
+        public CommentRecord Last() => CommentList.Last();
+        /// <summary>
+        /// 将function应用到本数据集的所有元素
+        /// </summary>
+        /// <remarks>
+        /// 函数式API
+        /// </remarks>
+        /// <param name="function"></param>
+        /// <returns>返回操作后的数据集</returns>
+        public CommentRecordSet Map(Action<CommentRecord> function)
+        {
+            CommentList.ForEach(function);
+            return this;
+        }
+
+        /// <summary>
+        /// 数据集内最近一月(30天内)的评论数量
+        /// </summary>
+        /// <returns></returns>
+        public int WithinMonthCount()
+        {
+            int Count = 0;
+            CommentList.ForEach(el =>
+            {
+                if (el.Time > DateTime.Now.AddDays(-30))
+                {
+                    Count++;
+                }
+            });
+            return Count;
+        }
+        /// <summary>
+        /// 数据集内最近一周(7天内)的评论数量
+        /// </summary>
+        /// <returns></returns>
+        public int WithinWeekCount()
+        {
+            int Count = 0;
+            CommentList.ForEach(el =>
+            {
+                if (el.Time > DateTime.Now.AddDays(-7))
+                {
+                    Count++;
+                }
+            });
+            return Count;
+        }
+        /// <summary>
+        /// 数据集内最近一天(24小时内)的评论数量
+        /// </summary>
+        /// <returns></returns>
+        public int WithinDayCount()
+        {
+            int Count = 0;
+            CommentList.ForEach(el =>
+            {
+                if (el.Time > DateTime.Now.AddDays(-1))
+                {
+                    Count++;
+                }
+            });
+            return Count;
+        }
     }
 }
