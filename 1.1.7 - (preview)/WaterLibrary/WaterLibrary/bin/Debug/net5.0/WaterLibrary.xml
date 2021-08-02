@@ -1003,19 +1003,6 @@
             文章记录
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostRecord.Item(System.String)">
-            <summary>
-            属性索引器
-            </summary>
-            <param name="Prop">属性</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostRecord.ToJSON">
-            <summary>
-            将当前对象序列化到JSON
-            </summary>
-            <returns></returns>
-        </member>
         <member name="P:WaterLibrary.pilipala.Entity.PostRecord.ReadOnly">
             <summary>
             数据结构只读
@@ -1260,18 +1247,18 @@
             文章栈
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostStack.System#Collections#IEnumerable#GetEnumerator">
+        <member name="M:WaterLibrary.pilipala.Entity.PostStack.GetEnumerator">
             <summary>
-            取得迭代器
+            获得默认迭代器
             </summary>
             <returns></returns>
         </member>
-        <member name="T:WaterLibrary.pilipala.Entity.PostStack.PostStackEnumerator">
+        <member name="T:WaterLibrary.pilipala.Entity.PostStack.Enumerator">
             <summary>
             内部迭代器
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostStack.PostStackEnumerator.#ctor(System.Collections.Generic.List{System.String}.Enumerator)">
+        <member name="M:WaterLibrary.pilipala.Entity.PostStack.Enumerator.#ctor(System.Collections.Generic.IEnumerator{System.String})">
             <summary>
             默认构造
             </summary>
@@ -1291,12 +1278,6 @@
         <member name="M:WaterLibrary.pilipala.Entity.PostStack.GetMinID">
             <summary>
             得到最小ID
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostStack.ToJSON">
-            <summary>
-            将当前对象序列化到JSON
             </summary>
             <returns></returns>
         </member>
@@ -1427,7 +1408,7 @@
         </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostStackSet.GetEnumerator">
             <summary>
-            取得迭代器
+            获取默认迭代器
             </summary>
             <returns></returns>
         </member>
@@ -1536,29 +1517,19 @@
             树ID
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.PostTree.GetEnumerator">
-            <summary>
-            取得迭代器
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:WaterLibrary.pilipala.Entity.PostTree.#ctor(System.UInt32)">
             <summary>
             编辑构造
             </summary>
             <param name="ID">树ID</param>
-        </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostTree.Value">
-            <summary>
-            树根值
-            </summary>
+            <remarks>树ID即为树根值的文章栈ID，若为0则表示</remarks>
         </member>
         <member name="P:WaterLibrary.pilipala.Entity.PostTree.Leaves">
             <summary>
             叶子集
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.PostTree.Nodes">
+        <member name="P:WaterLibrary.pilipala.Entity.PostTree.Branches">
             <summary>
             分支节点集
             </summary>
@@ -1693,19 +1664,6 @@
             评论记录
             </summary>
         </member>
-        <member name="P:WaterLibrary.pilipala.Entity.CommentRecord.Item(System.String)">
-            <summary>
-            索引器
-            </summary>
-            <param name="Key">索引名</param>
-            <returns></returns>
-        </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentRecord.ToJSON">
-            <summary>
-            将当前对象序列化到JSON
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:WaterLibrary.pilipala.Entity.CommentRecord.#ctor">
             <summary>
             初始化
@@ -1761,11 +1719,12 @@
             评论记录集
             </summary>
         </member>
-        <member name="M:WaterLibrary.pilipala.Entity.CommentRecordSet.ToJSON">
+        <member name="P:WaterLibrary.pilipala.Entity.CommentRecordSet.Item(System.Int32)">
             <summary>
-            将当前对象序列化到JSON
+            评论记录索引器
             </summary>
-            <returns></returns>
+            <param name="CommentID">评论记录ID</param>
+            <returns>索引无果返回null</returns>
         </member>
         <member name="P:WaterLibrary.pilipala.Entity.CommentRecordSet.Count">
             <summary>
@@ -2301,6 +2260,28 @@
             <summary>
             容器值
             </summary>
+        </member>
+        <member name="T:WaterLibrary.Utils.IJsonSerializable">
+            <summary>
+            可被序列化为Json的
+            </summary>
+        </member>
+        <member name="M:WaterLibrary.Utils.IJsonSerializable.ToJson">
+            <summary>
+            将当前对象序列化到JSON
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:WaterLibrary.Utils.IIndexable`2">
+            <summary>
+            可索引的
+            </summary>
+        </member>
+        <member name="P:WaterLibrary.Utils.IIndexable`2.Item(`0)">
+            <summary>
+            索引器
+            </summary>
+            <param name="key">键</param>
         </member>
     </members>
 </doc>
