@@ -805,7 +805,7 @@
         /// <returns>返回插件UUID</returns>
         public string LoadPlugin(string path, string pluginName, params object[] args)
         {
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.LoadFrom(path);
+            Assembly assembly = Assembly.LoadFrom(path);
 
             var type = assembly.GetType(pluginName);
             var inst = Activator.CreateInstance(type, args);

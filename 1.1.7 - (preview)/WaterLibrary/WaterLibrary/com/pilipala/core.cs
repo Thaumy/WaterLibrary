@@ -2,10 +2,13 @@
 
 namespace WaterLibrary.pilipala
 {
-    using System.Collections.Generic;
+    using System;
+
+    using Newtonsoft.Json.Linq;
 
     using WaterLibrary.MySQL;
     using WaterLibrary.pilipala.Database;
+    using WaterLibrary.Utils;
 
 
     namespace Database
@@ -29,6 +32,7 @@ namespace WaterLibrary.pilipala
         /// <summary>
         /// 啪啦数据库操作盒
         /// </summary>
+        [Obsolete("过时的数据结构")]
         public struct PLDatabase
         {
             /// <summary>
@@ -79,34 +83,78 @@ namespace WaterLibrary.pilipala
         public static MySqlManager MySqlManager { get; private set; }
 
         /// <summary>
-        /// 插件表名键值对
-        /// </summary>
-        public static Dictionary<string, string> TableCache;
-        /// <summary>
-        /// 插件表名键值对
-        /// </summary>
-        public static Dictionary<string, string> ViewCache;
-
-        /// <summary>
         /// 初始化内核
         /// </summary>
         /// <param name="PLDatabase">噼里啪啦数据库操作盒</param>
+        [Obsolete("请使用重载：INIT(string configJsonString)")]
         public static void INIT(PLDatabase PLDatabase)
         {
             if (Singleton == null)
             {
-                Singleton = new(PLDatabase);
+                Singleton = new();
+
+                MySqlManager = PLDatabase.MySqlManager;
+                Tables = PLDatabase.Tables;
+                ViewsSet = PLDatabase.ViewsSet;
+            }
+            else
+            {
+                throw new Exception("尝试重复加载内核");
             }
         }
         /// <summary>
-        /// 初始化pilipala内核
+        /// 初始化内核
         /// </summary>
-        /// <param name="PLDatabase">pilipala数据库信息</param>
-        private PiliPala(PLDatabase PLDatabase)
+        /// <param name="configYamlString">配置文件Yaml字符串</param>
+        public static void INIT(string configYamlString)
         {
-            MySqlManager = PLDatabase.MySqlManager;
-            Tables = PLDatabase.Tables;
-            ViewsSet = PLDatabase.ViewsSet;
+            if (Singleton == null)
+            {
+                var jsonString = ConvertH.YamlToJson(configYamlString);
+                var root = JObject.Parse(jsonString);
+
+                var TablesNode = root["Database"]["Tables"];
+                Tables = new(
+                    TablesNode.Value<string>("user"),
+                    TablesNode.Value<string>("meta"),
+                    TablesNode.Value<string>("stack"),
+                    TablesNode.Value<string>("archive"),
+                    TablesNode.Value<string>("comment"));
+
+                var ViewsSetNode = root["Database"]["ViewsSet"];
+                ViewsSet = new(
+                    new(
+                        ViewsSetNode["CleanViews"].Value<string>("posUnion"),
+                        ViewsSetNode["CleanViews"].Value<string>("negUnion")),
+                    new(
+                        ViewsSetNode["DirtyViews"].Value<string>("posUnion"),
+                        ViewsSetNode["DirtyViews"].Value<string>("negUnion")));
+
+                var ConnectionNode = root["Database"]["Connection"];
+                var msg = new MySqlConnMsg(
+                    ConnectionNode.Value<string>("dataSource"),
+                    ConnectionNode.Value<int>("port"),
+                    ConnectionNode.Value<string>("usr"),
+                    ConnectionNode.Value<string>("pwd")
+                    );
+                MySqlManager = new MySqlManager
+                    (msg,
+                    ConnectionNode.Value<string>("schema"),
+                    ConnectionNode.Value<uint>("poolSize"));
+
+                Singleton = new();
+            }
+            else
+            {
+                throw new Exception("尝试重复加载内核");
+            }
+        }
+
+        /// <summary>
+        /// 私有构造
+        /// </summary>
+        private PiliPala()
+        {
         }
     }
 }

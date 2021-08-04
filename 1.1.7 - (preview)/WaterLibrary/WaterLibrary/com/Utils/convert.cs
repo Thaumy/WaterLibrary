@@ -1,10 +1,12 @@
 ﻿namespace WaterLibrary.Utils
 {
+    using System.IO;
     using System.Reflection;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
 
     using Markdig;
+    using YamlDotNet.Serialization;
 
 
     /// <summary>
@@ -63,6 +65,25 @@
                 Result += info.GetValue(temp) + Delimiter;
             }
             return Result[0..^1];
+        }
+        /// <summary>
+        /// 将Yaml字符串转为Json字符串
+        /// </summary>
+        /// <param name="yaml">Yaml字符串</param>
+        /// <returns></returns>
+        public static string YamlToJson(string yaml)
+        {
+            var input = new StringReader(yaml);
+            var deserializer = new DeserializerBuilder().Build();
+            var deserialized = deserializer.Deserialize(input);
+
+            var serializer = new SerializerBuilder()
+                .JsonCompatible()
+                .Build();
+
+            var json = serializer.Serialize(deserialized);
+
+            return json;
         }
 
         /// <summary>

@@ -102,15 +102,15 @@
         /// 带有目标数据库的连接信息构造
         /// </summary>
         /// <param name="msg">MySQL数据库连接信息</param>
-        /// <param name="Database">目标数据库</param>
+        /// <param name="schema">目标数据库</param>
         /// <param name="connPoolSize">连接池最大容量</param>
-        public MySqlManager(MySqlConnMsg msg, string Database, uint connPoolSize = 32)
+        public MySqlManager(MySqlConnMsg msg, string schema, uint connPoolSize = 32)
         {
             ConnPoolSize = connPoolSize;
             ConnectionPool = new();
             ConnectionString = /* USING目标数据库 */
             $@";DataSource={msg.DataSource}
-               ;DataBase={Database}
+               ;DataBase={schema}
                ;Port={msg.Port }
                ;UserID={msg.User}
                ;Password={msg.PWD}
