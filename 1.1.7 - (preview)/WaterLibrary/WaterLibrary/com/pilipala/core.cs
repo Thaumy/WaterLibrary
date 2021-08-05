@@ -1,6 +1,4 @@
-﻿
-
-namespace WaterLibrary.pilipala
+﻿namespace WaterLibrary.pilipala
 {
     using System;
 

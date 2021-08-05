@@ -23,7 +23,7 @@
         {
             get
             {
-                Console.WriteLine($"当前连接数：{ConnectionPool.Count}");
+                //Console.WriteLine($"当前连接数：{ConnectionPool.Count}");
                 MySqlConnection New()
                 {
                     ConnectionPool.Add(new(ConnectionString));
@@ -32,7 +32,7 @@
                 }
                 if (ConnectionPool.Count <= ConnPoolSize / 2)//连接数较少时，考虑新建
                 {
-                    Console.WriteLine("新建连接");
+                    //Console.WriteLine("新建连接");
                     return New();
                 }
                 else if (ConnectionPool.Count <= ConnPoolSize)//连接数较多时，考虑在循环复用的基础上新建
@@ -42,18 +42,18 @@
                         if (el.State is ConnectionState.Broken or ConnectionState.Closed)
                         {
                             el.Open();
-                            Console.WriteLine("连接复用");
+                            //Console.WriteLine("连接复用");
                             return el;
                         }
                     }
                     //找不到可分配连接时，新建
-                    Console.WriteLine("新建连接");
+                    //Console.WriteLine("新建连接");
                     return New();
                 }
                 else
                 {
                     TryCleanConnPool();//连接数过多时，清理后新建
-                    Console.WriteLine("清理后新建");
+                    //Console.WriteLine("清理后新建");
                     return New();
                 }
             }

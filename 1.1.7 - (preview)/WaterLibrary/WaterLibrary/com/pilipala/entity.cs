@@ -224,7 +224,33 @@
 
             if (!lazy)
             {
-                //TODO
+                {
+                    var SQL = $"SELECT * FROM `{stackTable}` WHERE UUID = ?UUID";
+                    var para = new MySqlParameter("UUID", UUID);
+                    var result = manager.GetRow(SQL, para);
+
+                    fieldCache["ID"] = result["PostID"];
+                    fieldCache["LCT"] = result["LCT"];
+                    fieldCache["Title"] = result["Title"];
+                    fieldCache["Summary"] = result["Summary"];
+                    fieldCache["Content"] = result["Content"];
+                    fieldCache["Label"] = result["Label"];
+                    fieldCache["Cover"] = result["Cover"];
+                }
+                {
+                    var SQL = $"SELECT * FROM `{metaTable}` WHERE PostID = ?ID";
+                    var para = new MySqlParameter("ID", ID);
+                    var result = manager.GetRow(SQL, para);
+
+                    fieldCache["Root"] = result["Root"];
+                    fieldCache["CT"] = result["CT"];
+                    fieldCache["Mode"] = result["Mode"];
+                    fieldCache["Type"] = result["Type"];
+                    fieldCache["User"] = result["User"];
+                    fieldCache["UVCount"] = result["UVCount"];
+                    fieldCache["StarCount"] = result["StarCount"];
+                    fieldCache["ArchiveID"] = result["ArchiveID"];
+                }
             }
         }
 
