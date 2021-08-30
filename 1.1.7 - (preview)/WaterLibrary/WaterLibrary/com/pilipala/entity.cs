@@ -507,7 +507,7 @@
     /// <summary>
     /// 文章栈
     /// </summary>
-    public class PostStack : PostTree, IJsonSerializable, IEnumerable<PostRecord>
+    public class PostStack : PostTree, IJsonSerializable, IEnumerable<PostRecord>, IComparable<PostStack>
     {
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -550,6 +550,19 @@
             void IEnumerator.Reset() => throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public int CompareTo(PostStack other)
+        {
+            if (ID > other.ID)
+                return 1;
+            if (ID < other.ID)
+                return -1;
+            return 0;
+        }
 
         private readonly System.Lazy<List<string>> UUIDList;
         private readonly string metaTable = PiliPala.Tables.Meta;
@@ -1029,15 +1042,11 @@
         /// <returns>查询不到返回null</returns>
         public PostStack GT(PostProp Prop)
         {
-            var SQL = (Prop == PostProp.PostID) switch /* 对查询PostID有优化 */
-            {
-                true => $"SELECT PostID FROM `{unionView}` WHERE PostID=( SELECT min(PostID) FROM `{unionView}` WHERE PostID > {ID})",
-                false => string.Format
+            var SQL = string.Format
                 (
                 $"SELECT PostID FROM `{0}` WHERE {1}=( SELECT min({1}) FROM `{0}` WHERE {1} > ( SELECT {1} FROM `{0}` WHERE PostID = {2} ))"
                 , unionView, Prop, ID
-                )
-            };
+                );
 
             var NextID = manager.GetKey(SQL);
 
@@ -1053,20 +1062,11 @@
         /// <returns>查询不到返回null</returns>
         public PostStack GT(PostProp Prop, string REGEXP, PostProp FilterProp)
         {
-            var SQL = (Prop == PostProp.PostID) switch
-            {
-                true => string.Format
-                (
-                "SELECT PostID FROM `{0}` WHERE {1}=( SELECT min({1}) FROM `{0}` WHERE PostID > {2} AND {3} REGEXP ?REGEXP )"
-                , unionView, Prop, ID, FilterProp
-                ),
-                false => string.Format
+            var SQL = string.Format
                 (
                 "SELECT PostID FROM `{0}` WHERE {1}=( SELECT min({1}) FROM `{0}` WHERE {1} > ( SELECT {1} FROM `{0}` WHERE PostID = ?ID ) AND {2} REGEXP ?REGEXP )"
                 , unionView, Prop, FilterProp
-                )
-            };
-
+                );
 
             var paras = new MySqlParameter[]
             {
@@ -1084,15 +1084,11 @@
         /// <returns>查询不到返回null</returns>
         public PostStack LT(PostProp Prop)
         {
-            var SQL = (Prop == PostProp.PostID) switch /* 对查询PostID有优化 */
-            {
-                true => $"SELECT PostID FROM `{unionView}` WHERE PostID=( SELECT max(PostID) FROM `{unionView}` WHERE PostID < {ID})",
-                false => string.Format
+            var SQL = string.Format
                 (
                 "SELECT PostID FROM `{0}` WHERE {1}=( SELECT max({1}) FROM `{0}` WHERE {1} < ( SELECT {1} FROM `{0}` WHERE PostID = {2} ))"
                 , unionView, Prop, ID
-                )
-            };
+                );
 
             object PrevID = manager.GetKey(SQL);
 
@@ -1107,19 +1103,11 @@
         /// <returns>查询不到返回null</returns>
         public PostStack LT(PostProp Prop, string REGEXP, PostProp FilterProp)
         {
-            var SQL = (Prop == PostProp.PostID) switch
-            {
-                true => string.Format
-                (
-                "SELECT PostID FROM `{0}` WHERE {1}=( SELECT max({1}) FROM `{0}` WHERE PostID < {2} AND {3} REGEXP ?REGEXP )"
-                , unionView, Prop, ID, FilterProp
-                ),
-                false => string.Format
+            var SQL = string.Format
                 (
                 "SELECT PostID FROM `{0}` WHERE {1}=( SELECT max({1}) FROM `{0}` WHERE {1} < ( SELECT {1} FROM `{0}` WHERE PostID = ?ID ) AND {2} REGEXP ?REGEXP )"
                 , unionView, Prop, FilterProp
-                )
-            };
+                );
 
             var paras = new MySqlParameter[]
             {
@@ -1129,6 +1117,35 @@
             object PrevID = manager.GetKey(SQL, paras);
 
             return PrevID == null ? null : new PostStack(Convert.ToUInt32(PrevID));
+        }
+
+        /// <summary>
+        /// 得到下一个文章
+        /// </summary>
+        /// <param name="ps"></param>
+        /// <returns></returns>
+        public static PostStack operator ++(PostStack ps)
+        {
+            var metaTable = PiliPala.Tables.Meta;
+            var ID = ps.ID;
+            var SQL = $"SELECT PostID FROM `{metaTable}` WHERE PostID=( SELECT min(PostID) FROM `{metaTable}` WHERE PostID > {ID})";
+            var NextID = PiliPala.MySqlManager.GetKey(SQL);
+
+            return NextID == null ? null : new PostStack(Convert.ToUInt32(NextID));
+        }
+        /// <summary>
+        /// 得到上一个文章
+        /// </summary>
+        /// <param name="ps"></param>
+        /// <returns></returns>
+        public static PostStack operator --(PostStack ps)
+        {
+            var metaTable = PiliPala.Tables.Meta;
+            var ID = ps.ID;
+            var SQL = $"SELECT PostID FROM `{metaTable}` WHERE PostID=( SELECT max(PostID) FROM `{metaTable}` WHERE PostID < {ID})";
+            var NextID = PiliPala.MySqlManager.GetKey(SQL);
+
+            return NextID == null ? null : new PostStack(Convert.ToUInt32(NextID));
         }
     }
     /// <summary>
