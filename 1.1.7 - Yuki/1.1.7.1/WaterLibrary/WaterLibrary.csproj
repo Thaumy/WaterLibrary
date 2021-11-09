@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Version>1.1.7</Version>
+    <Authors>Thaumy</Authors>
+    <Company>H2OMELON'SOCIE</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Default core of pilipala</Description>
+    <Copyright>Copyright 2019-2021 H2OMELON'SOCIE All Rights Reserved</Copyright>
+    <PackageReleaseNotes>WaterLibrary 1.17 'Yuki'</PackageReleaseNotes>
+    <AssemblyVersion>1.1.7.1</AssemblyVersion>
+    <FileVersion>1.1.7.1</FileVersion>
+    <PackageProjectUrl>https://github.com/Thaumy/WaterLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Thaumy/WaterLibrary</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>F:\project\GitHub\WaterLibrary\1.1.7 - Yuki\1.1.7.1\WaterLibrary\WaterLibrary.xml</DocumentationFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.25.0" />
+    <PackageReference Include="MySql.Data" Version="8.0.26" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Security.Cryptography.OpenSsl" Version="5.0.0" />
+    <PackageReference Include="YamlDotNet" Version="11.2.1" />
+  </ItemGroup>
+
+</Project>
