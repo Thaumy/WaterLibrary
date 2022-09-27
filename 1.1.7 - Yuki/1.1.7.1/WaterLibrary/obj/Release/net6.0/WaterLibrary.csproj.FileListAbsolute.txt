@@ -1,0 +1,10 @@
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/bin/Release/net6.0/WaterLibrary.dll
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/bin/Release/net6.0/WaterLibrary.pdb
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.csproj.AssemblyReference.cache
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.GeneratedMSBuildEditorConfig.editorconfig
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.AssemblyInfoInputs.cache
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.AssemblyInfo.cs
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.csproj.CoreCompileInputs.cache
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.dll
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/ref/WaterLibrary.dll
+/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/Release/net6.0/WaterLibrary.pdb

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>WaterLibrary</id>
+    <version>1.1.7</version>
+    <authors>Thaumy</authors>
+    <projectUrl>https://github.com/Thaumy/WaterLibrary</projectUrl>
+    <description>Default core of pilipala</description>
+    <releaseNotes>WaterLibrary 1.17 'Yuki'</releaseNotes>
+    <copyright>Copyright 2019-2021 H2OMELON'SOCIE All Rights Reserved</copyright>
+    <repository type="git" url="https://github.com/Thaumy/WaterLibrary" />
+    <dependencies>
+      <group targetFramework="net6.0">
+        <dependency id="Markdig" version="0.25.0" exclude="Build,Analyzers" />
+        <dependency id="MySql.Data" version="8.0.26" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="13.0.1" exclude="Build,Analyzers" />
+        <dependency id="System.Security.Cryptography.OpenSsl" version="5.0.0" exclude="Build,Analyzers" />
+        <dependency id="YamlDotNet" version="11.2.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="/home/thaumy/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/bin/Release/net6.0/WaterLibrary.dll" target="lib/net6.0/WaterLibrary.dll" />
+  </files>
+</package>

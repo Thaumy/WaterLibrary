@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net5.0": {
+    "net6.0": {
       "BouncyCastle.NetCore/1.8.5": {
         "type": "package",
         "compile": {
@@ -1022,7 +1022,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net5.0": [
+    "net6.0": [
       "Markdig >= 0.25.0",
       "MySql.Data >= 8.0.26",
       "Newtonsoft.Json >= 13.0.1",
@@ -1031,36 +1031,29 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Thaumy\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/home/thaumy/.nuget/packages/": {}
   },
   "project": {
     "version": "1.1.7",
     "restore": {
-      "projectUniqueName": "F:\\project\\GitHub\\WaterLibrary\\1.1.7 - Yuki\\1.1.7.1\\WaterLibrary\\WaterLibrary.csproj",
+      "projectUniqueName": "/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/WaterLibrary.csproj",
       "projectName": "WaterLibrary",
-      "projectPath": "F:\\project\\GitHub\\WaterLibrary\\1.1.7 - Yuki\\1.1.7.1\\WaterLibrary\\WaterLibrary.csproj",
-      "packagesPath": "C:\\Users\\Thaumy\\.nuget\\packages\\",
-      "outputPath": "F:\\project\\GitHub\\WaterLibrary\\1.1.7 - Yuki\\1.1.7.1\\WaterLibrary\\obj\\",
+      "projectPath": "/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/WaterLibrary.csproj",
+      "packagesPath": "/home/thaumy/.nuget/packages/",
+      "outputPath": "/home/thaumy/data/dev/repo/WaterLibrary/1.1.7 - Yuki/1.1.7.1/WaterLibrary/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Thaumy\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/home/thaumy/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "net5.0"
+        "net6.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net5.0": {
-          "targetAlias": "net5.0",
+        "net6.0": {
+          "targetAlias": "net6.0",
           "projectReferences": {}
         }
       },
@@ -1071,8 +1064,8 @@
       }
     },
     "frameworks": {
-      "net5.0": {
-        "targetAlias": "net5.0",
+      "net6.0": {
+        "targetAlias": "net6.0",
         "dependencies": {
           "Markdig": {
             "target": "Package",
@@ -1110,7 +1103,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/6.0.108/RuntimeIdentifierGraph.json"
       }
     }
   }
